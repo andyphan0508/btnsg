@@ -1,6 +1,7 @@
 import Nav from './components/Nav.jsx'
 import Hero from './components/Hero.jsx'
 import Intro from './components/Intro.jsx'
+import Board from './components/Board.jsx'
 import ThemeYear from './components/ThemeYear.jsx'
 import Schedule from './components/Schedule.jsx'
 import Ministries from './components/Ministries.jsx'
@@ -14,6 +15,7 @@ export default function App() {
       <Hero />
       <main className="wrap">
         <Intro />
+        <Board />
         <ThemeYear />
         <Schedule />
         <Ministries />

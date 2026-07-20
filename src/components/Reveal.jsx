@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 
 /** Fade-up-on-scroll wrapper; renders instantly when reduced motion is on. */
-export default function Reveal({ as: Tag = 'div', className = '', children, ...rest }) {
+export default function Reveal({
+  as: Tag = 'div',
+  className = '',
+  children,
+  variant = 'slide-up',
+  delay,
+  duration,
+  style,
+  ...rest
+}) {
   const ref = useRef(null)
   const [shown, setShown] = useState(false)
 
@@ -22,9 +31,7 @@ export default function Reveal({ as: Tag = 'div', className = '', children, ...r
 
     // Fallback for browsers/webviews that throttle IntersectionObserver.
     const check = () => {
-      // Reveal once the element has entered (or passed) the viewport, so fast
-      // scrolling can never leave an element permanently hidden above the fold.
-      if (el.getBoundingClientRect().top < window.innerHeight * 0.95) reveal()
+      if (el.getBoundingClientRect().top < window.innerHeight * 0.98) reveal()
     }
 
     const cleanup = () => {
@@ -38,7 +45,7 @@ export default function Reveal({ as: Tag = 'div', className = '', children, ...r
         (entries) => {
           if (entries.some((en) => en.isIntersecting)) reveal()
         },
-        { rootMargin: '0px 0px -8% 0px' },
+        { rootMargin: '0px 0px -5% 0px' },
       )
       io.observe(el)
     }
@@ -49,8 +56,21 @@ export default function Reveal({ as: Tag = 'div', className = '', children, ...r
     return cleanup
   }, [])
 
+  const customStyle = {
+    ...style,
+    transitionDelay: delay ? `${delay}ms` : undefined,
+    transitionDuration: duration ? `${duration}ms` : undefined,
+  }
+
+  const variantClass = `rv-${variant}`
+
   return (
-    <Tag ref={ref} className={`rv${shown ? ' in' : ''}${className ? ' ' + className : ''}`} {...rest}>
+    <Tag
+      ref={ref}
+      className={`rv ${variantClass}${shown ? ' in' : ''}${className ? ' ' + className : ''}`}
+      style={customStyle}
+      {...rest}
+    >
       {children}
     </Tag>
   )

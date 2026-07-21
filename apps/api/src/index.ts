@@ -8,7 +8,9 @@ import { ValidationError } from "./routes/crud.js";
 import {
   announcementsRouter,
   attendanceRouter,
+  emailTemplatesRouter,
   expensesRouter,
+  memberChangesRouter,
   membersRouter,
   plansRouter,
   requestsRouter,
@@ -31,6 +33,8 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/members", membersRouter);
+app.use("/api/member-changes", memberChangesRouter);
+app.use("/api/email-templates", emailTemplatesRouter);
 app.use("/api/attendance", attendanceRouter);
 app.use("/api/schedule", scheduleRouter);
 app.use("/api/announcements", announcementsRouter);

@@ -1,9 +1,12 @@
+import { Router } from 'express';
 import type {
   Announcement,
   AttendanceRecord,
   AttendanceSession,
+  EmailTemplate,
   Expense,
   Member,
+  MemberFieldChange,
   Plan,
   PlanChecklistItem,
   RequestItem,
@@ -13,7 +16,9 @@ import type {
 import {
   announcementsCol,
   attendanceCol,
+  emailTemplatesCol,
   expensesCol,
+  memberChangesCol,
   membersCol,
   plansCol,
   requestsCol,
@@ -39,6 +44,14 @@ const sanitizeMember: Sanitizer<Member> = (body, isPartial) => {
   if (!isPartial || body.status !== undefined) fields.status = oneOf(body, 'status', ['active', 'inactive'] as const, 'active');
   if (!isPartial || body.duties !== undefined) fields.duties = stringArray(body, 'duties');
   if (body.gender !== undefined) fields.gender = oneOf(body, 'gender', ['nam', 'nu'] as const, 'nam');
+  if (body.stage !== undefined) {
+    const stage = optionalString(body, 'stage');
+    if (stage !== undefined) {
+      fields.stage = oneOf({ stage }, 'stage', ['thieu_nien', 'thanh_nien', 'thanh_trang'] as const);
+    } else {
+      fields.stage = undefined;
+    }
+  }
   fields.birthday = optionalString(body, 'birthday');
   fields.phone = optionalString(body, 'phone');
   fields.email = optionalString(body, 'email');
@@ -180,8 +193,82 @@ const sanitizePlan: Sanitizer<Plan> = (body, isPartial) => {
   return fields;
 };
 
+/* ---------- Email templates ---------- */
+const sanitizeEmailTemplate: Sanitizer<EmailTemplate> = (body, isPartial) => {
+  const fields: Partial<EmailTemplate> = {};
+  if (!isPartial || body.name !== undefined) fields.name = requireString(body, 'name');
+  if (!isPartial || body.subject !== undefined) fields.subject = requireString(body, 'subject');
+  if (!isPartial || body.body !== undefined) fields.body = requireString(body, 'body');
+  fields.description = optionalString(body, 'description');
+  return fields;
+};
+
+/* ---------- Audit log thành viên ---------- */
+const MEMBER_AUDIT_FIELDS: (keyof Member)[] = [
+  'name',
+  'gender',
+  'birthday',
+  'phone',
+  'email',
+  'role',
+  'boardRole',
+  'duties',
+  'group',
+  'joinedAt',
+  'status',
+  'stage',
+  'notes',
+];
+
+const asComparable = (value: unknown): string | undefined => {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (Array.isArray(value)) return value.join(', ');
+  return String(value);
+};
+
+const diffMember = (before: Member, after: Member): MemberFieldChange[] => {
+  const changes: MemberFieldChange[] = [];
+  for (const field of MEMBER_AUDIT_FIELDS) {
+    const from = asComparable(before[field]);
+    const to = asComparable(after[field]);
+    if (from !== to) changes.push({ field, from, to });
+  }
+  return changes;
+};
+
+const logMemberChange = (
+  action: 'create' | 'update' | 'delete',
+  member: Member,
+  changes: MemberFieldChange[] = [],
+): void => {
+  memberChangesCol.insert({
+    memberId: member.id,
+    memberName: member.name,
+    action,
+    changes,
+  });
+};
+
 /* ---------- Routers ---------- */
-export const membersRouter = createCrudRouter(membersCol, sanitizeMember);
+export const membersRouter = createCrudRouter(membersCol, sanitizeMember, {
+  afterCreate: (item) => logMemberChange('create', item),
+  afterUpdate: (before, after) => {
+    const changes = diffMember(before, after);
+    if (changes.length > 0) logMemberChange('update', after, changes);
+  },
+  afterDelete: (before) => logMemberChange('delete', before),
+});
+
+export const memberChangesRouter = Router();
+memberChangesRouter.get('/', (_req, res) => {
+  const items = memberChangesCol
+    .list()
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 200);
+  res.json({ data: items });
+});
+
+export const emailTemplatesRouter = createCrudRouter(emailTemplatesCol, sanitizeEmailTemplate);
 export const attendanceRouter = createCrudRouter(attendanceCol, sanitizeAttendance);
 export const scheduleRouter = createCrudRouter(scheduleCol, sanitizeSchedule);
 export const announcementsRouter = createCrudRouter(announcementsCol, sanitizeAnnouncement);

@@ -6,8 +6,16 @@ Hệ thống web của Ban Thanh Niên, Hội Thánh Tin Lành Việt Nam – Ch
 |---|---|---|
 | `apps/landing` | Trang giới thiệu công khai (React + Vite, JSX) | 5173 |
 | `apps/dashboard` | Dashboard quản lý nội bộ (React + TypeScript) | 5174 |
-| `apps/api` | Backend API (Express + TypeScript, lưu trữ JSON) | 4000 |
-| `packages/shared` | Types & hằng số TypeScript dùng chung | — |
+| `apps/api` | Backend API cho chế độ local/demo (Express + JSON) | 5080 |
+| `packages/shared` | Types, hằng số & hàm tính tuổi/giai đoạn dùng chung | — |
+| `supabase/` | SQL migration cho database production (Supabase) | — |
+| `tools/apps-script/` | Google Apps Script gửi email hàng loạt cho BĐH | — |
+
+**Hai chế độ chạy** (tự chọn theo biến môi trường, xem [DEPLOY.md](DEPLOY.md)):
+
+- **Demo/local** — không cấu hình gì: dữ liệu qua `apps/api`, bỏ qua đăng nhập (quyền admin).
+- **Production** — có `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`: chạy trên Supabase
+  (Postgres + Auth), đăng nhập bắt buộc, phân quyền Quản trị / Ban Điều Hành, host trên Vercel.
 
 ## Chạy dự án
 
@@ -34,7 +42,13 @@ Cổng API đổi bằng biến môi trường `API_PORT` (mặc định 4000).
 Các chức năng chính (mỗi màn hình là một thư mục trong `apps/dashboard/src/screens/`):
 
 - **Tổng quan** — thống kê thành viên, tỷ lệ tham gia, công việc, request, số dư quỹ.
-- **Thành viên** — quản lý ban viên & Ban Điều Hành: tìm kiếm, lọc, thêm/sửa/xoá.
+- **Thành viên** — tìm kiếm, lọc theo vai trò/trạng thái/nhóm nhỏ/giai đoạn, sắp xếp theo
+  tên/nhóm/tuổi/năm tham gia; import từ Excel, xuất Excel; cột tuổi + số năm tham gia;
+  bảng cảnh báo *chuẩn bị lên Thanh tráng* (đủ 30 tuổi) và *Thiếu niên lên Thanh niên*
+  (đủ 18 tuổi), báo trước 1 năm; lịch sử thay đổi danh sách trực quan.
+- **Email BĐH** — chọn template, điền trường là nội dung tự điền vào template (preview tức thì),
+  gửi hàng loạt cho BĐH qua Google Apps Script; quản lý template ngay trên màn hình.
+- **Tài khoản** (chỉ Quản trị) — duyệt tài khoản mới, phân quyền Quản trị / BĐH.
 - **Điểm danh** — tạo buổi điểm danh theo lịch sinh hoạt, đánh dấu có mặt / vắng / vắng phép.
 - **Lịch sinh hoạt** — các buổi định kỳ hằng tuần và sự kiện một lần.
 - **Công việc** — bảng Kanban (Cần làm / Đang làm / Hoàn thành), phân công cho thành viên.
@@ -49,11 +63,13 @@ Các chức năng chính (mỗi màn hình là một thư mục trong `apps/dash
 Lần chạy đầu tiên tự seed: 11 thành viên Ban Điều Hành, lịch sinh hoạt tuần, thông báo chào mừng
 và kế hoạch chủ đề năm. Muốn làm lại từ đầu chỉ cần xoá thư mục `data/`.
 
-REST endpoints: `/api/members`, `/api/attendance`, `/api/schedule`, `/api/announcements`,
-`/api/tasks`, `/api/requests`, `/api/expenses`, `/api/plans`, `/api/stats/overview`, `/api/health`.
+REST endpoints: `/api/members`, `/api/member-changes`, `/api/email-templates`, `/api/attendance`,
+`/api/schedule`, `/api/announcements`, `/api/tasks`, `/api/requests`, `/api/expenses`,
+`/api/plans`, `/api/stats/overview`, `/api/health`.
 
-> Lưu ý: dashboard chưa có đăng nhập — chỉ dùng trong mạng nội bộ tin cậy.
-> Khi cần triển khai công khai, bổ sung lớp xác thực (đây là hạng mục kế tiếp).
+Ở production, dashboard bỏ qua Express và nói chuyện thẳng với Supabase (Postgres + RLS);
+schema nằm ở `supabase/migrations/0001_init.sql` — lịch sử thay đổi thành viên được ghi tự động
+bằng trigger trong database.
 
 ## Trang giới thiệu (landing)
 
@@ -64,8 +80,12 @@ Toàn bộ nội dung (lịch sinh hoạt, chủ đề năm, mục vụ, liên h
 - `apps/landing/src/index.css` — design system "Ember & Ivory", hỗ trợ sáng/tối.
 - `apps/landing/src/fonts.css` + `public/fonts/` — font tự phục vụ, không phụ thuộc CDN.
 
+## Triển khai
+
+Xem [DEPLOY.md](DEPLOY.md): hướng dẫn từng bước tạo Supabase + chạy SQL, deploy Google
+Apps Script (gửi email) và deploy 2 project Vercel (landing + dashboard).
+
 ## Việc cần làm tiếp
 
-- Thêm xác thực (đăng nhập) cho dashboard trước khi triển khai công khai.
+- Thông báo đẩy về thiết bị thành viên (web push) — chưa ưu tiên.
 - Mục **Hoạt động qua các năm** trên landing: tổng hợp nội dung từ Fanpage Facebook.
-- Cân nhắc chuyển JSON storage sang SQLite/Postgres khi dữ liệu lớn dần.

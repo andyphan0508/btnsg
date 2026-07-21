@@ -1,8 +1,10 @@
 import type {
   Announcement,
   AttendanceSession,
+  EmailTemplate,
   Expense,
   Member,
+  MemberChange,
   Plan,
   RequestItem,
   ScheduleEvent,
@@ -11,6 +13,8 @@ import type {
 import { Collection } from './db.js';
 
 export const membersCol = new Collection<Member>('members');
+export const memberChangesCol = new Collection<MemberChange>('member_changes');
+export const emailTemplatesCol = new Collection<EmailTemplate>('email_templates');
 export const attendanceCol = new Collection<AttendanceSession>('attendance');
 export const scheduleCol = new Collection<ScheduleEvent>('schedule');
 export const announcementsCol = new Collection<Announcement>('announcements');

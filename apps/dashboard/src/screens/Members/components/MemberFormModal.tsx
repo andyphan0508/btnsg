@@ -4,6 +4,7 @@ import Modal from '../../../ui/Modal';
 
 export type MemberFormValues = {
   name: string;
+  gender: '' | 'nam' | 'nu';
   role: 'member' | 'leader';
   boardRole: string;
   duties: string;
@@ -13,11 +14,13 @@ export type MemberFormValues = {
   birthday: string;
   joinedAt: string;
   status: 'active' | 'inactive';
+  stage: '' | 'thieu_nien' | 'thanh_nien' | 'thanh_trang';
   notes: string;
 };
 
 const EMPTY_FORM: MemberFormValues = {
   name: '',
+  gender: '',
   role: 'member',
   boardRole: '',
   duties: '',
@@ -27,6 +30,7 @@ const EMPTY_FORM: MemberFormValues = {
   birthday: '',
   joinedAt: '',
   status: 'active',
+  stage: '',
   notes: '',
 };
 
@@ -50,6 +54,8 @@ const MemberFormModal = ({ isOpen, editingMember, isSaving, saveError, onClose, 
     }
     setFormValues({
       name: editingMember.name,
+      gender: editingMember.gender ?? '',
+      stage: editingMember.stage ?? '',
       role: editingMember.role,
       boardRole: editingMember.boardRole ?? '',
       duties: editingMember.duties.join(', '),
@@ -121,8 +127,33 @@ const MemberFormModal = ({ isOpen, editingMember, isSaving, saveError, onClose, 
           <input className="input" value={formValues.group} onChange={(e) => setField('group', e.target.value)} />
         </div>
         <div className="field">
+          <label className="field-label">Giới tính</label>
+          <select
+            className="select"
+            value={formValues.gender}
+            onChange={(e) => setField('gender', e.target.value as MemberFormValues['gender'])}
+          >
+            <option value="">— Chưa rõ —</option>
+            <option value="nam">Nam</option>
+            <option value="nu">Nữ</option>
+          </select>
+        </div>
+        <div className="field">
           <label className="field-label">Ngày sinh</label>
           <input type="date" className="input" value={formValues.birthday} onChange={(e) => setField('birthday', e.target.value)} />
+        </div>
+        <div className="field">
+          <label className="field-label">Giai đoạn (tự tính nếu bỏ trống)</label>
+          <select
+            className="select"
+            value={formValues.stage}
+            onChange={(e) => setField('stage', e.target.value as MemberFormValues['stage'])}
+          >
+            <option value="">Tự tính theo ngày sinh</option>
+            <option value="thieu_nien">Thiếu niên</option>
+            <option value="thanh_nien">Thanh niên</option>
+            <option value="thanh_trang">Thanh tráng</option>
+          </select>
         </div>
         <div className="field">
           <label className="field-label">Số điện thoại</label>

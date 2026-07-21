@@ -8,6 +8,12 @@ export type Sanitizer<T extends BaseEntity> = (
   isPartial: boolean,
 ) => Partial<Omit<T, keyof BaseEntity>>;
 
+export type CrudHooks<T extends BaseEntity> = {
+  afterCreate?: (item: T) => void;
+  afterUpdate?: (before: T, after: T) => void;
+  afterDelete?: (before: T) => void;
+};
+
 /**
  * Tạo router CRUD chuẩn cho một collection:
  * GET / — danh sách, GET /:id — chi tiết,
@@ -16,6 +22,7 @@ export type Sanitizer<T extends BaseEntity> = (
 export const createCrudRouter = <T extends BaseEntity>(
   collection: Collection<T>,
   sanitize: Sanitizer<T>,
+  hooks?: CrudHooks<T>,
 ): Router => {
   const router = Router();
 
@@ -35,25 +42,30 @@ export const createCrudRouter = <T extends BaseEntity>(
   router.post('/', (req, res) => {
     const fields = sanitize(req.body ?? {}, false) as Omit<T, keyof BaseEntity>;
     const item = collection.insert(fields);
+    hooks?.afterCreate?.(item);
     res.status(201).json({ data: item });
   });
 
   router.put('/:id', (req, res) => {
+    const before = collection.get(req.params.id);
     const patch = sanitize(req.body ?? {}, true);
     const item = collection.update(req.params.id, patch);
-    if (!item) {
+    if (!item || !before) {
       res.status(404).json({ error: 'Không tìm thấy bản ghi' });
       return;
     }
+    hooks?.afterUpdate?.(before, item);
     res.json({ data: item });
   });
 
   router.delete('/:id', (req, res) => {
+    const before = collection.get(req.params.id);
     const removed = collection.remove(req.params.id);
-    if (!removed) {
+    if (!removed || !before) {
       res.status(404).json({ error: 'Không tìm thấy bản ghi' });
       return;
     }
+    hooks?.afterDelete?.(before);
     res.json({ data: { id: req.params.id } });
   });
 

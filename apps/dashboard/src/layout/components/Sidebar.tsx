@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import logoImg from '../../assets/logobtnsg.jpg';
+import { useAuth } from '../../auth/AuthContext';
 
 type NavItem = {
   to: string;
@@ -111,10 +112,35 @@ const WORK_NAV: NavItem[] = [
       </svg>
     ),
   },
+  {
+    to: '/email-bdh',
+    label: 'Email BĐH',
+    icon: (
+      <svg {...ICON_PROPS}>
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="M22 7l-10 6L2 7" />
+      </svg>
+    ),
+  },
+];
+
+const ADMIN_NAV: NavItem[] = [
+  {
+    to: '/tai-khoan',
+    label: 'Tài khoản',
+    icon: (
+      <svg {...ICON_PROPS}>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M20 21a8 8 0 0 0-16 0" />
+        <path d="M19 8l1.5 1.5M22 6l-1.5.5" />
+      </svg>
+    ),
+  },
 ];
 
 const Sidebar = () => {
   const styles = createStyles();
+  const { isAdmin } = useAuth();
 
   const renderLink = (item: NavItem) => (
     <NavLink
@@ -142,6 +168,12 @@ const Sidebar = () => {
         {MAIN_NAV.map(renderLink)}
         <div className="sidebar-section-label">Điều hành</div>
         {WORK_NAV.map(renderLink)}
+        {isAdmin && (
+          <>
+            <div className="sidebar-section-label">Quản trị</div>
+            {ADMIN_NAV.map(renderLink)}
+          </>
+        )}
       </nav>
       <div className="sidebar-foot">HTTL Sài Gòn · Từ 1942</div>
     </aside>

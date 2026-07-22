@@ -161,6 +161,26 @@ Triển khai (y hệt Bước 2b, chỉ khác file script và tên biến):
 5. Copy URL `/exec` → đặt vào biến `VITE_NEWS_SCRIPT_URL` của **project landing**
    (local: `apps/landing/.env`; Vercel: Environment Variables → Redeploy).
 
+**Đăng bài từ Dashboard (màn hình "Đăng bài Tin tức"):** dashboard soạn bài bằng Markdown
+(có preview), tự nén ảnh về ~1600px rồi upload thẳng lên folder Tin Tức — không cần mở
+Google Drive thủ công nữa. Cách bật:
+
+1. Trong `News.gs`, sửa `var SHARED_SECRET = '...'` thành một chuỗi bí mật của riêng bạn
+   (chỉ thao tác GHI cần secret — GET đọc tin của landing vẫn công khai như cũ).
+2. Deploy **New version** (Manage deployments → ✏️ — nhớ GIỮ NGUYÊN deployment cũ).
+3. Đặt biến cho **project dashboard** (local: `apps/dashboard/.env`; Vercel: project dashboard):
+
+   ```
+   VITE_NEWS_SCRIPT_URL=https://script.google.com/macros/s/AKfyc.../exec?secret=CHUOI_BI_MAT
+   ```
+
+   (Cùng URL /exec với landing nhưng **kèm `?secret=`** — landing thì KHÔNG kèm secret.)
+4. Chưa cấu hình biến này thì màn hình Đăng bài chạy chế độ **mô phỏng** (không ghi Drive thật).
+
+Màn hình hỗ trợ: đăng bài mới, sửa bài (đổi nội dung/metadata, thêm ảnh), xoá bài (folder
+được chuyển vào Thùng rác Drive — khôi phục được trong 30 ngày), chọn ảnh bìa, chèn ảnh vào
+nội dung, và tự làm mới cache sau mỗi thao tác để web hiển thị ngay.
+
 **Nên làm — cài trigger hâm nóng cache (giúp web luôn tải nhanh):** trong editor Apps
 Script → **Triggers** (biểu tượng ⏰ cột trái) → **Add Trigger** → Function `warmCache` ·
 Event source **Time-driven** · **Minutes timer** · **Every 10 minutes** → Save. Từ đó cache
@@ -195,7 +215,7 @@ Tạo **2 project** trên <https://vercel.com> trỏ cùng repo Git này:
 | Root Directory | `apps/dashboard` |
 | Framework Preset | Vite |
 | Build Command | (mặc định) `npm run build` |
-| Environment Variables | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APPS_SCRIPT_URL` |
+| Environment Variables | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APPS_SCRIPT_URL`, `VITE_NEWS_SCRIPT_URL` (kèm `?secret=` — đăng bài Tin tức, Bước 2c) |
 
 Vercel tự nhận ra npm workspaces và cài dependency từ gốc repo. File
 `apps/dashboard/vercel.json` đã có sẵn rewrite SPA (`/* → index.html`) cho react-router.

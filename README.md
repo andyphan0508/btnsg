@@ -48,6 +48,9 @@ Các chức năng chính (mỗi màn hình là một thư mục trong `apps/dash
   (đủ 18 tuổi), báo trước 1 năm; lịch sử thay đổi danh sách trực quan.
 - **Email BĐH** — chọn template, điền trường là nội dung tự điền vào template (preview tức thì),
   gửi hàng loạt cho BĐH qua Google Apps Script; quản lý template ngay trên màn hình.
+- **Đăng bài Tin tức** — soạn bài Markdown có preview đúng giao diện landing, ảnh tự nén
+  (~1600px) rồi upload thẳng lên folder Tin Tức trên Google Drive qua Apps Script webhook
+  (`VITE_NEWS_SCRIPT_URL` kèm `?secret=`); hỗ trợ sửa/xoá bài, chọn ảnh bìa, chèn ảnh vào bài.
 - **Tài khoản** (chỉ Quản trị) — duyệt tài khoản mới, phân quyền Quản trị / BĐH.
 - **Điểm danh** — tạo buổi điểm danh theo lịch sinh hoạt, đánh dấu có mặt / vắng / vắng phép.
 - **Lịch sinh hoạt** — các buổi định kỳ hằng tuần và sự kiện một lần.

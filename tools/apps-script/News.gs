@@ -45,6 +45,10 @@
 // DÁN FOLDER ID CỦA FOLDER "TIN TỨC" VÀO ĐÂY.
 var NEWS_FOLDER_ID = 'DAN_FOLDER_ID_VAO_DAY';
 
+// ĐỔI CHUỖI NÀY trước khi deploy — dashboard đăng bài phải gửi kèm ?secret= trùng khớp.
+// (GET đọc tin tức vẫn công khai, không cần secret — chỉ THAO TÁC GHI mới cần.)
+var SHARED_SECRET = 'doi-chuoi-bi-mat-nay';
+
 // Thời gian cache (giây) để đỡ đọc Drive mỗi lần tải trang.
 // Để dài hơn chu kỳ trigger warmCache (10 phút) — trigger ghi đè cache đều đặn
 // nên dữ liệu vẫn mới trong ~10 phút, còn cache thì không bao giờ nguội.
@@ -70,6 +74,139 @@ function warmCache() {
       // 1 bài lỗi (VD vừa bị xoá) không nên làm hỏng cả lượt hâm nóng.
     }
   }
+}
+
+/**
+ * DASHBOARD ĐĂNG BÀI — doPost nhận JSON (Content-Type: text/plain để né CORS preflight),
+ * xác thực bằng ?secret=. Các action:
+ *   { action: "create-post", title, date, description, markdown, cover? } → { ok, id }
+ *   { action: "upload-image", postId, name, mimeType, dataBase64 }        → { ok, imageId }
+ *   { action: "update-post", postId, title, date, description, markdown, cover? } → { ok }
+ *   { action: "delete-post", postId }                                     → { ok } (chuyển vào thùng rác)
+ *   { action: "warm" }                                                    → { ok } (hâm nóng cache)
+ */
+function doPost(e) {
+  try {
+    var secret = (e && e.parameter && e.parameter.secret) || '';
+    if (secret !== SHARED_SECRET) {
+      return jsonResponse_({ ok: false, error: 'Sai secret — kiểm tra VITE_NEWS_SCRIPT_URL của dashboard (phải kèm ?secret=...).' });
+    }
+    var payload = JSON.parse(e.postData.contents);
+    var action = String(payload.action || '');
+    if (action === 'create-post') return jsonResponse_(createPost_(payload));
+    if (action === 'update-post') return jsonResponse_(updatePost_(payload));
+    if (action === 'upload-image') return jsonResponse_(uploadImage_(payload));
+    if (action === 'delete-post') return jsonResponse_(deletePost_(payload));
+    if (action === 'warm') {
+      warmCache();
+      return jsonResponse_({ ok: true });
+    }
+    return jsonResponse_({ ok: false, error: 'action không hợp lệ: ' + action });
+  } catch (err) {
+    return jsonResponse_({ ok: false, error: String(err) });
+  }
+}
+
+/** Tạo folder bài viết mới + ghi content.md. */
+function createPost_(payload) {
+  var title = String(payload.title || '').trim();
+  var markdown = String(payload.markdown || '').trim();
+  if (!title) return { ok: false, error: 'Thiếu tiêu đề bài viết.' };
+  if (!markdown) return { ok: false, error: 'Thiếu nội dung bài viết.' };
+
+  var root = DriveApp.getFolderById(NEWS_FOLDER_ID);
+  var folder = root.createFolder(title);
+  folder.createFile('content.md', buildMarkdownFile_(payload), 'text/markdown');
+  invalidateCache_(folder.getId());
+  return { ok: true, id: folder.getId() };
+}
+
+/** Ghi đè content.md của bài viết có sẵn (giữ nguyên ảnh trong folder). */
+function updatePost_(payload) {
+  var title = String(payload.title || '').trim();
+  var markdown = String(payload.markdown || '').trim();
+  if (!title) return { ok: false, error: 'Thiếu tiêu đề bài viết.' };
+  if (!markdown) return { ok: false, error: 'Thiếu nội dung bài viết.' };
+
+  var folder = getPostFolderChecked_(payload.postId);
+  var mdFile = findMarkdownFile_(folder);
+  if (mdFile) {
+    mdFile.setContent(buildMarkdownFile_(payload));
+  } else {
+    folder.createFile('content.md', buildMarkdownFile_(payload), 'text/markdown');
+  }
+  if (folder.getName() !== title) folder.setName(title);
+  invalidateCache_(folder.getId());
+  return { ok: true };
+}
+
+/** Lưu 1 ảnh (base64) vào folder bài viết. */
+function uploadImage_(payload) {
+  var name = String(payload.name || '').trim();
+  var dataBase64 = String(payload.dataBase64 || '');
+  if (!name || !dataBase64) return { ok: false, error: 'Thiếu tên file hoặc dữ liệu ảnh.' };
+
+  var folder = getPostFolderChecked_(payload.postId);
+  var bytes = Utilities.base64Decode(dataBase64);
+  var blob = Utilities.newBlob(bytes, String(payload.mimeType || 'image/jpeg'), name);
+  var file = folder.createFile(blob);
+  invalidateCache_(folder.getId());
+  return { ok: true, imageId: file.getId() };
+}
+
+/** Chuyển folder bài viết vào thùng rác (khôi phục được trong 30 ngày trên Drive). */
+function deletePost_(payload) {
+  var folder = getPostFolderChecked_(payload.postId);
+  folder.setTrashed(true);
+  invalidateCache_(String(payload.postId));
+  return { ok: true };
+}
+
+/** Ghép frontmatter + nội dung thành file .md hoàn chỉnh. */
+function buildMarkdownFile_(payload) {
+  var lines = ['---'];
+  lines.push('title: ' + oneLine_(payload.title));
+  var date = normalizeDate_(payload.date);
+  if (date) lines.push('date: ' + date);
+  var description = oneLine_(payload.description);
+  if (description) lines.push('description: ' + description);
+  var cover = oneLine_(payload.cover);
+  if (cover) lines.push('cover: ' + cover);
+  lines.push('---');
+  return lines.join('\n') + '\n\n' + String(payload.markdown || '').trim() + '\n';
+}
+
+/** Ép về 1 dòng để không phá cấu trúc frontmatter. */
+function oneLine_(value) {
+  return String(value || '').replace(/\s*\n\s*/g, ' ').trim();
+}
+
+/** Chỉ cho phép thao tác lên folder con TRỰC TIẾP của folder Tin Tức (an toàn). */
+function getPostFolderChecked_(postFolderId) {
+  var id = String(postFolderId || '').trim();
+  if (!id) throw new Error('Thiếu postId.');
+  var folder = DriveApp.getFolderById(id);
+  var parents = folder.getParents();
+  while (parents.hasNext()) {
+    if (parents.next().getId() === NEWS_FOLDER_ID) return folder;
+  }
+  throw new Error('Folder này không nằm trong thư mục Tin Tức — từ chối thao tác.');
+}
+
+function findMarkdownFile_(folder) {
+  var files = folder.getFiles();
+  while (files.hasNext()) {
+    var file = files.next();
+    if (isMarkdown_(file)) return file;
+  }
+  return null;
+}
+
+/** Xoá cache sau khi ghi để lượt đọc kế tiếp thấy dữ liệu mới ngay. */
+function invalidateCache_(postFolderId) {
+  var cache = CacheService.getScriptCache();
+  cache.remove('news:list');
+  if (postFolderId) cache.remove('news:post:' + postFolderId);
 }
 
 function doGet(e) {

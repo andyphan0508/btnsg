@@ -51,7 +51,7 @@ export const nameTimeline = [
 export const themeYear = {
   eyebrow: "Chủ đề năm 2026",
   title: "MÔN ĐỒ CHÚA CỨU THẾ",
-  song: "TC 356 — Theo Chúa Cứu Thế",
+  song: "TC 271 — Ngài Dìu Dắt Tôi",
   verse:
     '"Về phần con, hãy đứng vững trong những điều con đã học và tin quyết, vì biết mình đã học những điều đó với ai, và từ khi thơ ấu con đã biết Kinh Thánh vốn có thể khiến con khôn ngoan để được cứu bởi đức tin trong Đấng Christ Jêsus."',
   ref: "II Ti-mô-thê 3:14-15",
@@ -181,48 +181,57 @@ export const links = [
 export const board = [
   {
     name: "Hoàng Nguyễn Phương Uyên",
+    key: "uyen",
     role: "Trưởng Ban",
     duties: ["Uỷ viên Linh vụ", "Uỷ viên nhóm nhỏ"],
   },
   {
     name: "Trần Nhật Kỳ",
+    key: "ky",
     role: "Phó Ban",
     duties: ["Uỷ viên Công tác Xã hội", "Quản lý Nhà sinh viên"],
   },
   {
     name: "Trương Thị Thanh Ngân",
+    key: "ngan",
     role: "Thư ký",
     duties: ["Uỷ viên Đố Kinh Thánh"],
   },
   { name: "Nguyễn Đặng Thiên Kim", role: "Thủ quỹ", duties: ["Hậu cần"] },
   {
     name: "Nguyễn Văn Tới",
+    key: "toi",
     role: "Uỷ viên Du lịch dã ngoại",
     duties: ["Uỷ viên Giữ xe"],
   },
   {
     name: "Huỳnh Nguyên Bảo",
+    key: "bao",
     role: "Uỷ viên Kỹ thuật",
     duties: ["Uỷ viên Thăm viếng Chăm sóc"],
   },
   {
     name: "Bùi Tuấn Anh",
+    key: "tuan",
     role: "Nhóm trưởng",
     duties: ["Uỷ viên Truyền giảng"],
   },
   { name: "Phan An Duy", role: "Nhóm trưởng", duties: ["Quản lý Tài sản"] },
   {
     name: "Dương Thảo Nhi",
+    key: "nhi",
     role: "Nhóm trưởng",
     duties: ["Uỷ viên sinh hoạt"],
   },
   {
     name: "Nguyễn Anh Thư",
+    key: "thu",
     role: "Nhóm trưởng",
     duties: ["Uỷ viên Cầu nguyện"],
   },
   {
     name: "Trần Thảo Anh",
+    key: "thao",
     role: "Uỷ viên Âm nhạc",
     duties: ["Uỷ viên Truyền thông"],
   },

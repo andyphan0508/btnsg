@@ -1,26 +1,29 @@
+import { useEffect } from 'react'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import Nav from './components/Nav.jsx'
-import Hero from './components/Hero.jsx'
-import Intro from './components/Intro.jsx'
-import Board from './components/Board.jsx'
-import ThemeYear from './components/ThemeYear.jsx'
-import Schedule from './components/Schedule.jsx'
-import Ministries from './components/Ministries.jsx'
-import Contact from './components/Contact.jsx'
 import Footer from './components/Footer.jsx'
+import Home from './pages/Home.jsx'
+import Gallery from './pages/Gallery.jsx'
+
+/** Cuộn lên đầu khi đổi route (trừ khi có anchor #). */
+function ScrollManager() {
+  const { pathname, hash } = useLocation()
+  useEffect(() => {
+    if (hash) return
+    window.scrollTo(0, 0)
+  }, [pathname, hash])
+  return null
+}
 
 export default function App() {
   return (
     <>
+      <ScrollManager />
       <Nav />
-      <Hero />
-      <main className="wrap">
-        <Intro />
-        <Board />
-        <ThemeYear />
-        <Schedule />
-        <Ministries />
-        <Contact />
-      </main>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/thu-vien" element={<Gallery />} />
+      </Routes>
       <Footer />
     </>
   )

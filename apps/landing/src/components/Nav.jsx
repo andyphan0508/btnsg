@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { site, nav } from "../data/content.js";
 import logoImg from "../assets/logobtnsg.jpg";
 
 export default function Nav() {
+  const location = useLocation();
+  const isHome = location.pathname === "/";
+  // Ở trang chủ: anchor cuộn cùng trang. Ở trang khác: /#anchor để về trang chủ rồi cuộn.
+  const sectionHref = (href) => (isHome ? href : `/${href}`);
   const [theme, setTheme] = useState("light");
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -50,19 +55,22 @@ export default function Nav() {
         style={{ "--scroll-progress": scrollProgress }}
       />
       <div className="nav-in">
-        <a className="brand" href="#top">
+        <Link className="brand" to="/">
           <img src={logoImg} alt="Logo BTNSG" className="brand-logo-img" />
           <span className="brand-text">
             {site.brand}
             <span className="brand-city">&nbsp;{site.brandCity}</span>
           </span>
-        </a>
+        </Link>
         <div className="nav-links">
           {nav.map((item) => (
-            <a key={item.href} href={item.href} className="nav-link-item">
+            <a key={item.href} href={sectionHref(item.href)} className="nav-link-item">
               {item.label}
             </a>
           ))}
+          <Link to="/thu-vien" className="nav-link-item">
+            Thư viện ảnh
+          </Link>
         </div>
 
         <div style={{ display: "flex", alignItems: "center" }}>
@@ -142,13 +150,16 @@ export default function Nav() {
         {nav.map((item) => (
           <a
             key={item.href}
-            href={item.href}
+            href={sectionHref(item.href)}
             className="nav-link-item"
             onClick={() => setIsMenuOpen(false)}
           >
             {item.label}
           </a>
         ))}
+        <Link to="/thu-vien" className="nav-link-item" onClick={() => setIsMenuOpen(false)}>
+          Thư viện ảnh
+        </Link>
       </div>
     </nav>
   );

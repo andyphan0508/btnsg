@@ -67,6 +67,53 @@ Ghi chú:
 
 ---
 
+## Bước 2b — Thư viện ảnh landing (Google Drive qua Apps Script)
+
+Trang landing có **slider hoạt động** ở trang chủ và **trang Thư viện ảnh** (`/thu-vien`).
+Mô hình đơn giản: **MỘT folder Google Drive chứa toàn bộ ảnh** (không chia album) —
+bỏ thêm ảnh vào folder là web tự hiện, không phải sửa code.
+
+1. Trên Google Drive chuẩn bị 1 folder chứa toàn bộ ảnh cho web (VD `Hình website`).
+   Ảnh phải nằm **trực tiếp** trong folder này — ảnh trong folder con sẽ KHÔNG hiển thị.
+2. Chuột phải **folder → Share → "Anyone with the link" → Viewer** (ảnh phải công khai
+   trình duyệt mới hiển thị được).
+3. Lấy **Folder ID** từ URL `https://drive.google.com/drive/folders/<ID>`.
+4. Vào <https://script.google.com> → New project → dán [`tools/apps-script/Gallery.gs`](tools/apps-script/Gallery.gs).
+   Sửa dòng `var FOLDER_ID = '...'` thành Folder ID ở bước 3.
+5. Chạy hàm `doGet` một lần để cấp quyền đọc Drive (Review permissions → Allow).
+6. **Deploy → New deployment → bánh răng ⚙ → Web app**: Execute as **Me**,
+   Who has access **Anyone** → Deploy.
+7. Copy **Web app URL** — dạng `https://script.google.com/macros/s/AKfycb.../exec`.
+   ⚠️ KHÔNG lấy nhầm **Library URL** (dạng `.../macros/library/d/.../2`) — loại đó không dùng được.
+8. Đặt URL `/exec` vào biến `VITE_GALLERY_SCRIPT_URL` của **project landing** (local:
+   `apps/landing/.env`; Vercel: Environment Variables của project landing).
+
+Ghi chú:
+- Khác với webhook email, thư viện ảnh chỉ **đọc** dữ liệu công khai nên **không cần `?secret=`**.
+- Kết quả được cache 10 phút; thêm ảnh mới có thể chờ tới 10 phút mới xuất hiện
+  (hoặc mở `<URL>/exec?refresh=1` để làm mới ngay).
+- Chưa cấu hình biến này thì trang Thư viện vẫn chạy ở chế độ **dữ liệu mẫu**.
+
+### Web không hiện ảnh / hiện sai? Kiểm tra theo thứ tự
+
+1. **Mở `<URL>/exec?debug=1` trong trình duyệt** — script trả về tên folder, số ảnh thấy được,
+   danh sách subfolder (nếu ảnh lọt vào subfolder thì sẽ không hiển thị). Đây là cách nhanh
+   nhất để biết lỗi ở Apps Script hay ở web.
+2. **Đã Deploy "New version" chưa?** Mỗi lần sửa `Code.gs` (kể cả chỉ đổi `FOLDER_ID`)
+   phải vào **Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy**.
+   Nếu chỉ bấm Save, URL `/exec` vẫn chạy bản cũ.
+3. **Cache 10 phút**: vừa thêm/xoá ảnh thì mở `<URL>/exec?refresh=1` một lần.
+4. **`FOLDER_ID` đúng chưa?** — ID nằm trong URL `https://drive.google.com/drive/folders/<ID>`.
+5. **Folder đã share "Anyone with the link" chưa?** Danh sách ảnh có thể trả về được nhưng
+   ảnh sẽ không hiển thị nếu chưa công khai.
+6. **Biến môi trường của web**: chạy local thì `VITE_GALLERY_SCRIPT_URL` phải nằm trong
+   `apps/landing/.env` và phải **khởi động lại `npm run dev:landing`**; trên Vercel thì thêm
+   biến xong phải **Redeploy** (biến `VITE_*` được "nướng" vào lúc build).
+7. **Shortcut không được hỗ trợ** — ảnh phải nằm thật trong folder, không phải shortcut
+   trỏ từ nơi khác.
+
+---
+
 ## Bước 3 — Deploy Vercel
 
 Tạo **2 project** trên <https://vercel.com> trỏ cùng repo Git này:
@@ -89,7 +136,9 @@ Vercel tự nhận ra npm workspaces và cài dependency từ gốc repo. File
 |---|---|
 | Root Directory | `apps/landing` |
 | Framework Preset | Vite |
-| Environment Variables | (không cần) |
+| Environment Variables | `VITE_GALLERY_SCRIPT_URL` (nếu dùng thư viện ảnh Drive — Bước 2b) |
+
+File `apps/landing/vercel.json` đã có sẵn rewrite SPA cho react-router (`/thu-vien`).
 
 Sau đó gán domain tuỳ ý, ví dụ `btnsg.vercel.app` (landing) và `quanly-btnsg.vercel.app` (dashboard).
 

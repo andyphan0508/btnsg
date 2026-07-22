@@ -80,6 +80,12 @@ Toàn bộ nội dung (lịch sinh hoạt, chủ đề năm, mục vụ, liên h
 - `apps/landing/src/index.css` — design system "Ember & Ivory", hỗ trợ sáng/tối.
 - `apps/landing/src/fonts.css` + `public/fonts/` — font tự phục vụ, không phụ thuộc CDN.
 
+**Slider + Thư viện ảnh (Google Drive):** trang chủ có slider hoạt động; route `/thu-vien`
+(react-router) hiển thị lưới ảnh + lightbox, lấy từ **một folder Google Drive duy nhất** qua
+Google Apps Script ([Gallery.gs](tools/apps-script/Gallery.gs)) — bỏ thêm ảnh vào folder là
+web tự cập nhật. Cấu hình `VITE_GALLERY_SCRIPT_URL`; bỏ trống thì hiển thị dữ liệu mẫu.
+Xem [DEPLOY.md](DEPLOY.md) Bước 2b.
+
 ## Triển khai
 
 Xem [DEPLOY.md](DEPLOY.md): hướng dẫn từng bước tạo Supabase + chạy SQL, deploy Google

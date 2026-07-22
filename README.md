@@ -86,6 +86,14 @@ Google Apps Script ([Gallery.gs](tools/apps-script/Gallery.gs)) — bỏ thêm �
 web tự cập nhật. Cấu hình `VITE_GALLERY_SCRIPT_URL`; bỏ trống thì hiển thị dữ liệu mẫu.
 Xem [DEPLOY.md](DEPLOY.md) Bước 2b.
 
+**Tin tức (Markdown + Google Drive, kiểu "WordPress mini"):** route `/tin-tuc` là trang
+danh sách bài viết, `/tin-tuc/:id` là trang đọc bài. Mỗi bài viết = **một folder con** trong
+folder "Tin tức" trên Drive, chứa 1 file `.md` (frontmatter `title/date/description/cover`
++ nội dung Markdown) và các ảnh của bài — ảnh bìa tự nhận (`cover.*` hoặc ảnh đầu tiên),
+ảnh chèn trong bài viết bằng `![Chú thích](tên-ảnh.jpg)`. Dữ liệu qua Apps Script
+([News.gs](tools/apps-script/News.gs)), cấu hình `VITE_NEWS_SCRIPT_URL`; bỏ trống thì hiển
+thị dữ liệu mẫu. Xem [DEPLOY.md](DEPLOY.md) Bước 2c.
+
 ## Triển khai
 
 Xem [DEPLOY.md](DEPLOY.md): hướng dẫn từng bước tạo Supabase + chạy SQL, deploy Google

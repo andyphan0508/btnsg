@@ -68,6 +68,9 @@ export default function Nav() {
               {item.label}
             </a>
           ))}
+          <Link to="/tin-tuc" className="nav-link-item">
+            Tin tức
+          </Link>
           <Link to="/thu-vien" className="nav-link-item">
             Thư viện ảnh
           </Link>
@@ -157,6 +160,9 @@ export default function Nav() {
             {item.label}
           </a>
         ))}
+        <Link to="/tin-tuc" className="nav-link-item" onClick={() => setIsMenuOpen(false)}>
+          Tin tức
+        </Link>
         <Link to="/thu-vien" className="nav-link-item" onClick={() => setIsMenuOpen(false)}>
           Thư viện ảnh
         </Link>

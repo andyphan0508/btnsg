@@ -114,6 +114,64 @@ Ghi chú:
 
 ---
 
+## Bước 2c — Tin tức landing (Markdown + ảnh trên Google Drive, kiểu "WordPress mini")
+
+Trang landing có **trang Tin tức** (`/tin-tuc`): danh sách bài viết + trang đọc từng bài.
+Mô hình: **MỘT folder Google Drive "Tin tức"**, trong đó **mỗi bài viết là một folder con**
+chứa 1 file `.md` (nội dung) + các ảnh của bài — đăng bài mới chỉ là tạo folder mới trên
+Drive, không phải sửa code.
+
+```
+📁 Tin tức
+├── 📁 Trại hè 2026
+│   ├── 📄 bai-viet.md        ← nội dung Markdown (tên file tuỳ ý, đuôi .md)
+│   ├── 🖼️ cover.jpg          ← ảnh bìa (headline picture)
+│   └── 🖼️ sinh-hoat-1.jpg    ← ảnh chèn trong bài
+└── 📁 Thông báo tháng 8
+    └── ...
+```
+
+File `.md` có thể mở đầu bằng **frontmatter** (không bắt buộc):
+
+```markdown
+---
+title: Trại hè Thanh Niên 2026
+date: 2026-07-20
+description: Tóm tắt ngắn hiện ở trang danh sách tin.
+cover: cover.jpg
+---
+Nội dung bài viết bằng Markdown...
+
+![Chú thích ảnh](sinh-hoat-1.jpg)
+```
+
+Thiếu trường nào script tự suy ra: `title` = tên folder bài viết; `date` = ngày tạo file `.md`
+(cũng nhận `date: 20/7/2026`); `description` = đoạn văn đầu tiên; `cover` = ảnh tên `cover.*`
+hoặc ảnh đầu tiên theo tên. Ảnh chèn trong bài chỉ cần `![Chú thích](tên-file-ảnh)` với ảnh
+nằm cùng folder bài viết.
+
+Triển khai (y hệt Bước 2b, chỉ khác file script và tên biến):
+
+1. Tạo folder `Tin tức` trên Drive → Share → **"Anyone with the link" → Viewer**.
+2. Lấy **Folder ID** từ URL `https://drive.google.com/drive/folders/<ID>`.
+3. <https://script.google.com> → New project → dán [`tools/apps-script/News.gs`](tools/apps-script/News.gs),
+   sửa `var NEWS_FOLDER_ID = '...'`.
+4. Chạy `doGet` một lần để cấp quyền → **Deploy → Web app** (Execute as **Me**,
+   Who has access **Anyone**).
+5. Copy URL `/exec` → đặt vào biến `VITE_NEWS_SCRIPT_URL` của **project landing**
+   (local: `apps/landing/.env`; Vercel: Environment Variables → Redeploy).
+
+Ghi chú:
+- Cache 10 phút — vừa đăng/sửa bài thì mở `<URL>/exec?refresh=1` để làm mới ngay.
+- `<URL>/exec?debug=1` liệt kê từng bài script thấy được (bài thiếu file `.md` sẽ báo rõ).
+- Mỗi lần sửa `News.gs` phải **Deploy → Manage deployments → ✏️ → New version**.
+- Chưa cấu hình biến này thì trang Tin tức chạy ở chế độ **dữ liệu mẫu**.
+- Soạn `.md` bằng app ghi chú bất kỳ rồi upload, hoặc dùng tiện ích chỉnh sửa text
+  ngay trên Drive; lưu file với **UTF-8** để tiếng Việt hiển thị đúng (mặc định của
+  hầu hết editor hiện nay).
+
+---
+
 ## Bước 3 — Deploy Vercel
 
 Tạo **2 project** trên <https://vercel.com> trỏ cùng repo Git này:
@@ -136,9 +194,9 @@ Vercel tự nhận ra npm workspaces và cài dependency từ gốc repo. File
 |---|---|
 | Root Directory | `apps/landing` |
 | Framework Preset | Vite |
-| Environment Variables | `VITE_GALLERY_SCRIPT_URL` (nếu dùng thư viện ảnh Drive — Bước 2b) |
+| Environment Variables | `VITE_GALLERY_SCRIPT_URL` (thư viện ảnh — Bước 2b), `VITE_NEWS_SCRIPT_URL` (tin tức — Bước 2c) |
 
-File `apps/landing/vercel.json` đã có sẵn rewrite SPA cho react-router (`/thu-vien`).
+File `apps/landing/vercel.json` đã có sẵn rewrite SPA cho react-router (`/thu-vien`, `/tin-tuc`).
 
 Sau đó gán domain tuỳ ý, ví dụ `btnsg.vercel.app` (landing) và `quanly-btnsg.vercel.app` (dashboard).
 

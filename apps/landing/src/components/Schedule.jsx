@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import Reveal from './Reveal.jsx'
-import SubCommitteeModal from './SubCommitteeModal.jsx'
-import { schedule, subCommittees } from '../data/content.js'
+import { useState } from "react";
+import Reveal from "./Reveal.jsx";
+import SubCommitteeModal from "./SubCommitteeModal.jsx";
+import { schedule, subCommittees } from "../data/content.js";
 
 export default function Schedule() {
-  const [activeCommittee, setActiveCommittee] = useState(null)
+  const [activeCommittee, setActiveCommittee] = useState(null);
 
   return (
     <section className="section" id="sinh-hoat">
@@ -12,14 +12,15 @@ export default function Schedule() {
         <p className="eyebrow">Lịch sinh hoạt hằng tuần</p>
         <h2>Một tuần cùng Ban Thanh Niên</h2>
         <p className="lead">
-          Bạn mới đến lần đầu? Hãy bắt đầu với giờ nhóm thờ phượng chiều Chúa Nhật — luôn có các ban viên chào đón bạn.
+          Bạn mới đến lần đầu? Hãy bắt đầu với giờ nhóm thờ phượng chiều Chúa
+          Nhật — luôn có các ban viên chào đón bạn.
         </p>
       </Reveal>
-      
+
       <div className="sched-grid">
         {schedule.map((s, idx) => (
-          <Reveal 
-            className={`s-card-new${s.main ? ' main-highlight' : ''}`} 
+          <Reveal
+            className={`s-card-new${s.main ? " main-highlight" : ""}`}
             variant="slide-up"
             delay={idx * 120}
             key={`${s.day}-${s.time}`}
@@ -33,10 +34,16 @@ export default function Schedule() {
                 </span>
               )}
             </div>
-            
+
             <div className="s-body">
               <div className="s-time-row">
-                <svg className="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="s-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
@@ -48,7 +55,7 @@ export default function Schedule() {
           </Reveal>
         ))}
       </div>
-      
+
       <Reveal className="sub-comm-wrapper" variant="slide-up" delay={200}>
         <p className="sub-comm-title">Các tiểu ban công tác phụ trách:</p>
         <div className="chips-container">
@@ -65,10 +72,10 @@ export default function Schedule() {
         </div>
       </Reveal>
 
-      <SubCommitteeModal
+      {/* <SubCommitteeModal
         committee={activeCommittee}
         onClose={() => setActiveCommittee(null)}
-      />
+      /> */}
     </section>
-  )
+  );
 }

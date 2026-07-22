@@ -1,30 +1,22 @@
-import { useState } from "react";
 import Reveal from "./Reveal.jsx";
 import { contacts, links } from "../data/content.js";
 
+const CHURCH_ADDRESS =
+  "Hội Thánh Tin Lành Việt Nam Chi Hội Sài Gòn, 155 Trần Hưng Đạo, Quận 1, TP. Hồ Chí Minh";
+
+const MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(CHURCH_ADDRESS)}&hl=vi&z=17&output=embed`;
+const MAP_DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(CHURCH_ADDRESS)}`;
+
 export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [sent, setSent] = useState(false);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Simulated messaging trigger
-    setSent(true);
-    setTimeout(() => {
-      setFormData({ name: "", email: "", message: "" });
-      setSent(false);
-    }, 3000);
-  };
-
   return (
     <section className="section" id="lien-he">
       <Reveal className="sec-head" variant="slide-up">
         <p className="eyebrow">Kết nối &amp; liên hệ</p>
         <h2>Hẹn gặp bạn Chúa Nhật này</h2>
+        <p className="lead">
+          Muốn nhắn tin cho chúng tôi? Bấm nút 💬 ở góc phải màn hình để gửi lời
+          nhắn hoặc đăng ký tham gia.
+        </p>
       </Reveal>
 
       <div className="contact-grid">
@@ -91,80 +83,31 @@ export default function Contact() {
           </Reveal>
         </div>
 
-        {/* Messaging / Signup Form */}
-        <Reveal className="contact-form-card" variant="slide-left">
-          <h3>Gửi Lời Nhắn &amp; Đăng Ký Tham Gia</h3>
-          <p className="form-sub">
-            Bạn muốn tìm hiểu thêm về các hoạt động của Ban Thanh Niên? Hãy để
-            lại thông tin liên lạc.
-          </p>
-
-          <form onSubmit={handleSubmit} className="c-form">
-            <div className="form-group">
-              <input
-                type="text"
-                id="form-name"
-                required
-                placeholder=" "
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="form-input"
-              />
-              <label htmlFor="form-name" className="form-label">
-                Họ và tên của bạn
-              </label>
+        {/* Bản đồ Nhà thờ */}
+        <Reveal className="contact-map-card" variant="slide-left">
+          <div className="map-frame">
+            <iframe
+              title="Bản đồ Nhà thờ Tin Lành Sài Gòn — 155 Trần Hưng Đạo, Quận 1"
+              src={MAP_EMBED_URL}
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+          <div className="map-foot">
+            <div className="map-foot-info">
+              <strong>Nhà thờ Tin Lành Sài Gòn</strong>
+              <span>155 Trần Hưng Đạo, Phường Cô Giang, Quận 1</span>
             </div>
-
-            <div className="form-group">
-              <input
-                type="email"
-                id="form-email"
-                required
-                placeholder=" "
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="form-input"
-              />
-              <label htmlFor="form-email" className="form-label">
-                Địa chỉ Email hoặc Số điện thoại
-              </label>
-            </div>
-
-            <div className="form-group">
-              <textarea
-                id="form-message"
-                rows="4"
-                required
-                placeholder=" "
-                value={formData.message}
-                onChange={(e) =>
-                  setFormData({ ...formData, message: e.target.value })
-                }
-                className="form-input form-textarea"
-              ></textarea>
-              <label htmlFor="form-message" className="form-label">
-                Lời nhắn hoặc câu hỏi của bạn
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-gold btn-submit btn-glowing"
+            <a
+              className="btn btn-gold map-directions"
+              href={MAP_DIRECTIONS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {sent ? "Đang gửi thông tin..." : "Gửi lời nhắn ngay"}
-            </button>
-
-            {sent && (
-              <div className="form-success-alert">
-                ✨ Cảm ơn bạn! Thông tin đã được gửi. Chúng tôi sẽ liên hệ lại
-                sớm nhất.
-              </div>
-            )}
-          </form>
+              Chỉ đường <span className="arrow-right">→</span>
+            </a>
+          </div>
         </Reveal>
       </div>
     </section>

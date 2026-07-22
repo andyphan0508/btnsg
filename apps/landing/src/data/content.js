@@ -132,22 +132,22 @@ export const ministries = [
   {
     kind: "Sứ mệnh",
     title: "Truyền giảng",
-    desc: "Các kỳ truyền giảng chia sẻ Tin Lành cho người chưa tin — trọng tâm sứ mệnh của Hội Thánh.",
+    desc: "Những chương trình truyền giảng chia sẻ Tin Lành cho người chưa tin — trọng tâm sứ mệnh của Hội Thánh.",
   },
   {
     kind: "Cộng đồng",
     title: "Công tác xã hội",
-    desc: "Chương trình thiện nguyện, giúp đỡ cộng đồng qua Quỹ công tác xã hội của Ban.",
+    desc: "Chương trình gây dựng, xây dựng và giúp đỡ cộng đồng, kết nối với các Hội Thánh gặp khó khăn",
   },
   {
     kind: "Gắn kết",
     title: "Du lịch – dã ngoại",
-    desc: "Những chuyến đi hằng năm để gắn kết tình thân giữa các ban viên.",
+    desc: "Những chuyến đi hằng năm để gắn kết tình thân giữa các ban viên, kết nối tình anh em trong Chúa",
   },
   {
     kind: "Đào tạo",
     title: "Huấn luyện",
-    desc: "Đào tạo cho các tiểu ban: nhóm trưởng, truyền giảng, thăm viếng, âm nhạc.",
+    desc: "Đào tạo cho các tiểu ban: nhóm trưởng, truyền giảng, thăm viếng, âm nhạc, đào tạo các lớp kế thừa cho thế hệ tiếp theo.",
   },
   {
     kind: "Giao lưu",
@@ -180,12 +180,12 @@ export const partners = [
 
 export const contacts = [
   {
-    title: "Nhà thờ Hội Thánh",
-    desc: "155 Trần Hưng Đạo, Phường Cô Giang, Quận 1, TP. Hồ Chí Minh",
+    title: "Địa điểm Hội Thánh Tin Lành Chi Hội Sài ",
+    desc: "155 Trần Hưng Đạo, Phường Cầu Ông Lãnh, TP. Hồ Chí Minh",
   },
   {
     title: "Phòng sinh hoạt Ban Thanh Niên",
-    desc: "Lầu 2, số 161 Đề Thám, Quận 1, TP. Hồ Chí Minh",
+    desc: "Lầu 2, số 161 Đề Thám, Phường Cầu Ông Lãnh, TP. Hồ Chí Minh",
   },
 ];
 
@@ -198,8 +198,10 @@ export const links = [
     href: "https://httlsaigon.org",
     label: "Website Hội Thánh — httlsaigon.org",
   },
-  { href: "https://www.facebook.com/httlsaigon", label: "Facebook Hội Thánh" },
-  { href: "https://www.youtube.com/httlsaigon", label: "YouTube Hội Thánh" },
+  {
+    href: "https://www.youtube.com/@BanThanhnienSaiGon",
+    label: "YouTube Ban Thanh Niên",
+  },
 ];
 
 export const board = [

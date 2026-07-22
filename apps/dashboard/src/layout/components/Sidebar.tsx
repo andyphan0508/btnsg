@@ -122,6 +122,18 @@ const WORK_NAV: NavItem[] = [
       </svg>
     ),
   },
+  {
+    to: '/dang-bai',
+    label: 'Đăng bài Tin tức',
+    icon: (
+      <svg {...ICON_PROPS}>
+        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V6" />
+        <line x1="12" y1="7" x2="17" y2="7" />
+        <line x1="12" y1="11" x2="17" y2="11" />
+        <rect x="12" y="15" width="5" height="3" rx="0.5" />
+      </svg>
+    ),
+  },
 ];
 
 const ADMIN_NAV: NavItem[] = [

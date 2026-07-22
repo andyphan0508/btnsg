@@ -9,6 +9,7 @@ import EmailScreen from './screens/Email';
 import FinanceScreen from './screens/Finance';
 import LoginScreen from './screens/Login';
 import MembersScreen from './screens/Members';
+import NewsScreen from './screens/News';
 import OverviewScreen from './screens/Overview';
 import PlansScreen from './screens/Plans';
 import RequestsScreen from './screens/Requests';
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/thu-chi" element={<FinanceScreen />} />
             <Route path="/ke-hoach" element={<PlansScreen />} />
             <Route path="/email-bdh" element={<EmailScreen />} />
+            <Route path="/dang-bai" element={<NewsScreen />} />
             <Route element={<RequireAdmin />}>
               <Route path="/tai-khoan" element={<AccountsScreen />} />
             </Route>

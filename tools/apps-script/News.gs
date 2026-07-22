@@ -46,7 +46,31 @@
 var NEWS_FOLDER_ID = 'DAN_FOLDER_ID_VAO_DAY';
 
 // Thời gian cache (giây) để đỡ đọc Drive mỗi lần tải trang.
-var CACHE_SECONDS = 600; // 10 phút
+// Để dài hơn chu kỳ trigger warmCache (10 phút) — trigger ghi đè cache đều đặn
+// nên dữ liệu vẫn mới trong ~10 phút, còn cache thì không bao giờ nguội.
+var CACHE_SECONDS = 1800; // 30 phút
+
+/**
+ * HÂM NÓNG CACHE — chạy định kỳ để không người xem nào phải chờ đọc Drive.
+ *
+ * Cài đặt (1 lần, trong editor Apps Script):
+ *   Triggers (⏰ bên trái) → Add Trigger →
+ *     Function: warmCache · Event source: Time-driven ·
+ *     Type: Minutes timer · Every 10 minutes → Save.
+ *
+ * Từ đó: cache luôn ấm (web tải nhanh với mọi người xem) và bài mới đăng
+ * tự xuất hiện trong tối đa ~10 phút, không cần ai mở ?refresh=1 nữa.
+ */
+function warmCache() {
+  var list = listPosts_(true); // đọc Drive thật + ghi đè cache danh sách
+  for (var i = 0; i < list.posts.length; i++) {
+    try {
+      getPost_(list.posts[i].id, true); // hâm nóng luôn từng bài chi tiết
+    } catch (ignored) {
+      // 1 bài lỗi (VD vừa bị xoá) không nên làm hỏng cả lượt hâm nóng.
+    }
+  }
+}
 
 function doGet(e) {
   try {

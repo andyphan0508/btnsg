@@ -1,11 +1,16 @@
 import { Link } from 'react-router-dom'
 import { driveImage } from '../lib/gallery.js'
-import { formatNewsDate } from '../lib/news.js'
+import { formatNewsDate, prefetchPost } from '../lib/news.js'
 
 /** Thẻ lớn cho bài viết mới nhất — ảnh một bên, nội dung một bên. */
 export default function NewsFeaturedCard({ post }) {
   return (
-    <Link to={`/tin-tuc/${post.id}`} className="news-featured">
+    <Link
+      to={`/tin-tuc/${post.id}`}
+      className="news-featured"
+      onMouseEnter={() => prefetchPost(post.id)}
+      onFocus={() => prefetchPost(post.id)}
+    >
       <div className="news-featured-media">
         {post.demo ? (
           <div

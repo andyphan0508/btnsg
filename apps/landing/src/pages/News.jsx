@@ -2,27 +2,32 @@ import { useEffect, useState } from 'react'
 import Reveal from '../components/Reveal.jsx'
 import NewsCard from '../components/NewsCard.jsx'
 import NewsFeaturedCard from '../components/NewsFeaturedCard.jsx'
-import { fetchPosts, isNewsConfigured } from '../lib/news.js'
+import { fetchPosts, isNewsConfigured, readNewsCache, subscribeWindowFocus } from '../lib/news.js'
 
 export default function News() {
-  const [posts, setPosts] = useState([])
-  const [isLoadingPosts, setIsLoadingPosts] = useState(true)
+  // Vẽ ngay từ cache trình duyệt (nếu có), rồi fetch bản mới phía sau cập nhật đè.
+  const cachedPosts = readNewsCache('list')
+  const [posts, setPosts] = useState(cachedPosts || [])
+  const [isLoadingPosts, setIsLoadingPosts] = useState(!cachedPosts)
   const [postsError, setPostsError] = useState(null)
 
-  const loadPosts = async () => {
+  // silent = làm mới ngầm (đã có bài trên màn hình): lỗi lẻ tẻ không cần làm phiền người xem.
+  const loadPosts = async (silent) => {
     try {
-      setIsLoadingPosts(true)
       const data = await fetchPosts()
       setPosts(data)
+      setPostsError(null)
     } catch (error) {
-      setPostsError(error.message || 'Không tải được tin tức.')
+      if (!silent) setPostsError(error.message || 'Không tải được tin tức.')
     } finally {
       setIsLoadingPosts(false)
     }
   }
 
   useEffect(() => {
-    loadPosts()
+    loadPosts(Boolean(cachedPosts))
+    // Mỗi lần focus lại tab → gọi Apps Script làm mới danh sách ngầm.
+    return subscribeWindowFocus(() => loadPosts(true))
   }, [])
 
   const [featuredPost, ...otherPosts] = posts

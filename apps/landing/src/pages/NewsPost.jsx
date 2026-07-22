@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Markdown from '../components/Markdown.jsx'
 import { driveImage } from '../lib/gallery.js'
-import { fetchPost, formatNewsDate } from '../lib/news.js'
+import { fetchPost, formatNewsDate, readNewsCache, subscribeWindowFocus } from '../lib/news.js'
 
 /** Ước lượng thời gian đọc (phút) theo ~200 từ/phút. */
 const estimateReadMinutes = (content) => {
@@ -13,24 +13,33 @@ const estimateReadMinutes = (content) => {
 
 export default function NewsPost() {
   const { postId } = useParams()
-  const [post, setPost] = useState(null)
-  const [isLoadingPost, setIsLoadingPost] = useState(true)
+  // Vẽ ngay từ cache trình duyệt (đã prefetch khi rê chuột hoặc đọc lần trước),
+  // rồi fetch bản mới phía sau cập nhật đè.
+  const [post, setPost] = useState(() => readNewsCache(`post:${postId}`))
+  const [isLoadingPost, setIsLoadingPost] = useState(!post)
   const [postError, setPostError] = useState(null)
 
-  const loadPost = async () => {
+  // silent = làm mới ngầm (đã có bài trên màn hình): lỗi lẻ tẻ không cần làm phiền người xem.
+  const loadPost = async (silent) => {
     try {
-      setIsLoadingPost(true)
       const data = await fetchPost(postId)
       setPost(data)
+      setPostError(null)
     } catch (error) {
-      setPostError(error.message || 'Không tải được bài viết.')
+      if (!silent) setPostError(error.message || 'Không tải được bài viết.')
     } finally {
       setIsLoadingPost(false)
     }
   }
 
   useEffect(() => {
-    loadPost()
+    const cachedPost = readNewsCache(`post:${postId}`)
+    setPost(cachedPost)
+    setIsLoadingPost(!cachedPost)
+    setPostError(null)
+    loadPost(Boolean(cachedPost))
+    // Mỗi lần focus lại tab → gọi Apps Script làm mới bài viết ngầm.
+    return subscribeWindowFocus(() => loadPost(true))
   }, [postId])
 
   // Map "tên file ảnh (thường, chuẩn hoá NFC)" → Drive ID để Markdown resolve ![...](ten-anh.jpg).

@@ -6,6 +6,29 @@ const NEWS_URL = import.meta.env.VITE_NEWS_SCRIPT_URL || ''
 
 export const isNewsConfigured = Boolean(NEWS_URL)
 
+/* ---------- Cache trình duyệt (stale-while-revalidate) ----------
+   Lượt xem sau hiển thị NGAY từ localStorage, rồi âm thầm fetch bản mới để cập nhật.
+   Cache chỉ để vẽ nhanh — mỗi lần mở trang vẫn luôn fetch lại phía sau. */
+
+const CACHE_PREFIX = 'btnsg-news:'
+
+export function readNewsCache(key) {
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + key)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+function writeNewsCache(key, data) {
+  try {
+    localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(data))
+  } catch {
+    // localStorage đầy/bị chặn → bỏ qua, chỉ mất tối ưu chứ không lỗi.
+  }
+}
+
 /** Ngày yyyy-mm-dd → "20 tháng 7, 2026" cho giao diện. */
 export function formatNewsDate(isoDate) {
   if (!isoDate) return ''
@@ -62,9 +85,30 @@ function demoPost(id) {
 
 /* ---------- API công khai ---------- */
 
+// Quá thời gian này coi như URL script chết/mạng lỗi — báo lỗi thay vì treo "Đang tải" mãi.
+const FETCH_TIMEOUT_MS = 15000
+
 async function fetchJson(url) {
-  const response = await fetch(url, { redirect: 'follow' })
-  if (!response.ok) throw new Error(`Không gọi được Apps Script (HTTP ${response.status}).`)
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  let response
+  try {
+    response = await fetch(url, { redirect: 'follow', signal: controller.signal })
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error(
+        'Máy chủ tin tức phản hồi quá lâu — kiểm tra URL Apps Script còn hoạt động không (mở URL /exec trực tiếp trên trình duyệt).',
+      )
+    }
+    throw error
+  } finally {
+    clearTimeout(timeoutId)
+  }
+  if (!response.ok) {
+    throw new Error(
+      `Không gọi được Apps Script (HTTP ${response.status}) — URL deployment có thể đã đổi, kiểm tra lại VITE_NEWS_SCRIPT_URL.`,
+    )
+  }
   const text = await response.text()
   let data
   try {
@@ -83,7 +127,9 @@ async function fetchJson(url) {
 export async function fetchPosts() {
   if (!isNewsConfigured) return DEMO_POSTS
   const data = await fetchJson(NEWS_URL)
-  return Array.isArray(data.posts) ? data.posts : []
+  const posts = Array.isArray(data.posts) ? data.posts : []
+  if (posts.length > 0) writeNewsCache('list', posts)
+  return posts
 }
 
 /** Một bài viết đầy đủ: nội dung Markdown + danh sách ảnh của bài. */
@@ -91,5 +137,43 @@ export async function fetchPost(postId) {
   if (!postId) return null
   if (!isNewsConfigured) return demoPost(postId)
   const separator = NEWS_URL.includes('?') ? '&' : '?'
-  return fetchJson(`${NEWS_URL}${separator}post=${encodeURIComponent(postId)}`)
+  const post = await fetchJson(`${NEWS_URL}${separator}post=${encodeURIComponent(postId)}`)
+  if (post && post.id) writeNewsCache(`post:${post.id}`, post)
+  return post
+}
+
+/* ---------- Làm mới khi focus lại tab ---------- */
+
+const FOCUS_REFETCH_MIN_GAP_MS = 5000
+
+let lastFocusRefetchAt = 0
+
+/**
+ * Gắn listener: mỗi lần cửa sổ được focus lại → gọi refetch (làm mới dữ liệu ngầm).
+ * Chặn gọi dồn dập trong 5 giây (focus event có thể bắn liên tiếp).
+ * Trả về hàm cleanup cho useEffect.
+ */
+export function subscribeWindowFocus(refetch) {
+  const handleWindowFocus = () => {
+    const now = Date.now()
+    if (now - lastFocusRefetchAt < FOCUS_REFETCH_MIN_GAP_MS) return
+    lastFocusRefetchAt = now
+    refetch()
+  }
+  window.addEventListener('focus', handleWindowFocus)
+  return () => window.removeEventListener('focus', handleWindowFocus)
+}
+
+/* ---------- Prefetch khi rê chuột lên thẻ bài viết ---------- */
+
+const prefetchedIds = new Set()
+
+/** Tải trước bài viết (fire-and-forget) — bấm vào là bài đã nằm sẵn trong cache. */
+export function prefetchPost(postId) {
+  if (!postId || !isNewsConfigured) return
+  if (prefetchedIds.has(postId)) return
+  prefetchedIds.add(postId)
+  fetchPost(postId).catch(() => {
+    prefetchedIds.delete(postId) // lỗi mạng → cho phép thử lại lần rê chuột sau
+  })
 }

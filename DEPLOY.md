@@ -161,10 +161,22 @@ Triển khai (y hệt Bước 2b, chỉ khác file script và tên biến):
 5. Copy URL `/exec` → đặt vào biến `VITE_NEWS_SCRIPT_URL` của **project landing**
    (local: `apps/landing/.env`; Vercel: Environment Variables → Redeploy).
 
+**Nên làm — cài trigger hâm nóng cache (giúp web luôn tải nhanh):** trong editor Apps
+Script → **Triggers** (biểu tượng ⏰ cột trái) → **Add Trigger** → Function `warmCache` ·
+Event source **Time-driven** · **Minutes timer** · **Every 10 minutes** → Save. Từ đó cache
+không bao giờ nguội (không người xem nào phải chờ script đọc Drive) và bài mới đăng tự
+xuất hiện trong tối đa ~10 phút, không cần mở `?refresh=1`.
+
 Ghi chú:
-- Cache 10 phút — vừa đăng/sửa bài thì mở `<URL>/exec?refresh=1` để làm mới ngay.
+- Cache 30 phút, trigger `warmCache` làm mới mỗi 10 phút. Muốn bài mới hiện NGAY thì mở
+  `<URL>/exec?refresh=1` một lần.
+- Web cũng cache kết quả trong trình duyệt (localStorage): lượt xem sau hiển thị tức thì
+  rồi tự cập nhật ngầm; rê chuột lên thẻ bài viết là bài được tải trước.
 - `<URL>/exec?debug=1` liệt kê từng bài script thấy được (bài thiếu file `.md` sẽ báo rõ).
-- Mỗi lần sửa `News.gs` phải **Deploy → Manage deployments → ✏️ → New version**.
+- ⚠️ Mỗi lần sửa `News.gs` phải **Deploy → Manage deployments → ✏️ → New version** — cách này
+  GIỮ NGUYÊN URL cũ. Nếu lỡ bấm **New deployment** thì URL /exec ĐỔI MỚI HOÀN TOÀN và URL cũ
+  chết (trả 404 rất chậm, web sẽ báo "phản hồi quá lâu") → phải cập nhật lại
+  `VITE_NEWS_SCRIPT_URL` trong `apps/landing/.env` và trên Vercel (rồi Redeploy).
 - Chưa cấu hình biến này thì trang Tin tức chạy ở chế độ **dữ liệu mẫu**.
 - Soạn `.md` bằng app ghi chú bất kỳ rồi upload, hoặc dùng tiện ích chỉnh sửa text
   ngay trên Drive; lưu file với **UTF-8** để tiếng Việt hiển thị đúng (mặc định của

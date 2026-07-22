@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import Reveal from './Reveal.jsx'
+import SubCommitteeModal from './SubCommitteeModal.jsx'
 import { schedule, subCommittees } from '../data/content.js'
 
 export default function Schedule() {
+  const [activeCommittee, setActiveCommittee] = useState(null)
+
   return (
     <section className="section" id="sinh-hoat">
       <Reveal className="sec-head" variant="slide-up">
@@ -49,12 +53,22 @@ export default function Schedule() {
         <p className="sub-comm-title">Các tiểu ban công tác phụ trách:</p>
         <div className="chips-container">
           {subCommittees.map((c) => (
-            <span className="chip-badge" key={c}>
-              {c}
-            </span>
+            <button
+              type="button"
+              className="chip-badge"
+              key={c.id}
+              onClick={() => setActiveCommittee(c)}
+            >
+              <span aria-hidden="true">{c.icon}</span> {c.title}
+            </button>
           ))}
         </div>
       </Reveal>
+
+      <SubCommitteeModal
+        committee={activeCommittee}
+        onClose={() => setActiveCommittee(null)}
+      />
     </section>
   )
 }

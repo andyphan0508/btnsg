@@ -93,10 +93,34 @@ export const schedule = [
 ];
 
 export const subCommittees = [
-  "Tiểu ban: Nhóm trưởng",
-  "Tiểu ban: Truyền giảng",
-  "Tiểu ban: Thăm viếng",
-  "Tiểu ban: Âm nhạc – ca hát – ban đàn",
+  {
+    id: "nhom-truong",
+    title: "Tiểu ban: Nhóm trưởng",
+    icon: "👥",
+    desc: "Phụ trách các nhóm nhỏ trong Ban Thanh Niên — kèm cặp, cầu nguyện và chăm sóc thuộc linh cho từng ban viên theo nhóm.",
+    hue: 24,
+  },
+  {
+    id: "truyen-giang",
+    title: "Tiểu ban: Truyền giảng",
+    icon: "📣",
+    desc: "Tổ chức các chương trình truyền giảng, chia sẻ Tin Lành cho bạn trẻ chưa tin Chúa — trọng tâm sứ mệnh của Ban.",
+    hue: 200,
+  },
+  {
+    id: "tham-vieng",
+    title: "Tiểu ban: Thăm viếng",
+    icon: "🤝",
+    desc: "Thăm hỏi, cầu nguyện và chăm sóc ban viên lúc đau ốm, khó khăn, hoặc mới đến sinh hoạt cùng Ban.",
+    hue: 140,
+  },
+  {
+    id: "am-nhac",
+    title: "Tiểu ban: Âm nhạc – ca hát – ban đàn",
+    icon: "🎵",
+    desc: "Tập hát và chuẩn bị chương trình tôn vinh Chúa mỗi Chúa Nhật; ban đàn đệm nhạc cho các buổi nhóm trong tuần.",
+    hue: 300,
+  },
 ];
 
 export const ministries = [

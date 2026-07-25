@@ -79,7 +79,25 @@ bằng trigger trong database.
 Toàn bộ nội dung (lịch sinh hoạt, chủ đề năm, mục vụ, liên hệ…) nằm trong
 `apps/landing/src/data/content.js` — chỉ cần sửa file này, không cần đụng vào component.
 
-- `apps/landing/src/components/` — `Nav`, `Hero`, `Intro`, `Board`, `ThemeYear`, `Schedule`, `Ministries`, `Contact`, `Footer`; `Reveal` là wrapper hiệu ứng hiện dần khi cuộn.
+**Điều hướng đa trang (không còn one-page scroll):** mỗi mục là một route riêng —
+`/` (trang chủ rút gọn: Hero + slider + card khám phá), `/gioi-thieu`, `/chu-de`,
+`/sinh-hoat`, `/muc-vu`, `/lien-he`, `/tin-tuc`, `/thu-vien`. Danh sách route khai báo ở
+`nav` trong `data/content.js`.
+
+**Mobile:** thay menu xổ xuống bằng **thanh điều hướng dưới** (`components/BottomNav.jsx`):
+2 mục trái + **logo BTN tròn nổi ở giữa** + 2 mục phải; bấm logo mở sheet chứa các mục còn
+lại (khai báo ở `bottomNav` / `sheetNav` trong `data/content.js`). Thanh nav trên cùng ở
+mobile chỉ còn thương hiệu + nút sáng/tối.
+
+**Banner ảnh đầu mỗi trang:** `components/PageHero.jsx` lấy **ảnh thật từ thư viện Drive**
+(chọn ổn định theo đường dẫn nên mỗi trang một ảnh riêng, không đổi khi re-render), phủ
+gradient + blur tan dần xuống đúng màu nền trang, tiêu đề nổi bật, có parallax nhẹ khi cuộn.
+Thanh nav trên cùng **trong suốt khi ở đầu trang** để hoà vào ảnh, chỉ đặc lại khi cuộn.
+`components/PhotoStrip.jsx` chèn dải 4 ảnh cuối trang dẫn sang Thư viện. Danh sách ảnh được
+`lib/gallery.js` cache một lần cho cả phiên (`loadImages`), chuyển trang không gọi lại Apps Script.
+
+- `apps/landing/src/components/` — `Nav`, `BottomNav`, `Hero`, `PageHero`, `PhotoStrip`, `QuickNav`, `Intro`, `Board`, `ThemeYear`, `Schedule`, `Ministries`, `Contact`, `ContactFab`, `Footer`; `Reveal` là wrapper hiệu ứng hiện dần khi cuộn.
+- `apps/landing/src/pages/` — mỗi route một file: `Home`, `About`, `Theme`, `Activities`, `Ministry`, `ContactPage`, `Gallery`, `News`, `NewsPost`.
 - `apps/landing/src/index.css` — design system "Ember & Ivory", hỗ trợ sáng/tối.
 - `apps/landing/src/fonts.css` + `public/fonts/` — font tự phục vụ, không phụ thuộc CDN.
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Reveal from '../components/Reveal.jsx'
+import PageHero from '../components/PageHero.jsx'
 import NewsCard from '../components/NewsCard.jsx'
 import NewsFeaturedCard from '../components/NewsFeaturedCard.jsx'
 import { fetchPosts, isNewsConfigured, readNewsCache, subscribeWindowFocus } from '../lib/news.js'
@@ -33,14 +34,13 @@ export default function News() {
   const [featuredPost, ...otherPosts] = posts
 
   return (
-    <main className="wrap gallery-page">
-      <Reveal className="sec-head" variant="slide-up">
-        <p className="eyebrow">Tin tức</p>
-        <h2>Tin tức &amp; bài viết</h2>
-        <p className="lead">
-          Tin tức, thông báo và bài viết về các hoạt động của Ban Thanh Niên HTTL Sài Gòn.
-        </p>
-      </Reveal>
+    <>
+      <PageHero
+        eyebrow="Tin tức"
+        title="Tin tức & bài viết"
+        lead="Tin tức, thông báo và bài viết về các hoạt động của Ban Thanh Niên HTTL Sài Gòn."
+      />
+      <main className="wrap gallery-page page-view">
 
       {!isNewsConfigured && (
         <div className="gallery-note">
@@ -71,6 +71,7 @@ export default function News() {
           </div>
         </Reveal>
       )}
-    </main>
+      </main>
+    </>
   )
 }

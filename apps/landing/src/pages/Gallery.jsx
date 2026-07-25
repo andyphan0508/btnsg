@@ -10,6 +10,7 @@ import {
   FiChevronRight,
 } from 'react-icons/fi'
 import Reveal from '../components/Reveal.jsx'
+import PageHero from '../components/PageHero.jsx'
 import MediaTile from '../components/MediaTile.jsx'
 import Lightbox from '../components/Lightbox.jsx'
 import { fetchImages, isGalleryConfigured } from '../lib/gallery.js'
@@ -107,17 +108,13 @@ export default function Gallery() {
   }
 
   return (
-    <main className="wrap gallery-page">
-      {/* Header Stage Tối Giản */}
-      <Reveal className="sec-head gallery-header-head" variant="slide-up">
-        <p className="eyebrow">Thư viện khoảnh khắc</p>
-        <h2 className="gallery-title-main">
-          Hành Trình <span className="gallery-accent-text">Thắp Sáng Niềm Tin</span>
-        </h2>
-        <p className="lead">
-          Những hình ảnh ghi lại moments chân thật trong sự thờ phượng, nhóm lại và phục vụ của Ban Thanh Niên HTTL Sài Gòn.
-        </p>
-      </Reveal>
+    <>
+      <PageHero
+        eyebrow="Thư viện khoảnh khắc"
+        title="Hành trình thắp sáng niềm tin"
+        lead="Những hình ảnh chân thật trong sự thờ phượng, nhóm lại và phục vụ của Ban Thanh Niên HTTL Sài Gòn."
+      />
+      <main className="wrap gallery-page page-view">
 
       {!isGalleryConfigured && (
         <div className="gallery-note">
@@ -344,6 +341,7 @@ export default function Gallery() {
         onClose={() => setLightboxIndex(null)}
         onNavigate={navigate}
       />
-    </main>
+      </main>
+    </>
   )
 }

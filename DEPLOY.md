@@ -108,6 +108,20 @@ Ghi chú:
    ảnh sẽ không hiển thị nếu chưa công khai.
 6. **Biến môi trường của web**: chạy local thì `VITE_GALLERY_SCRIPT_URL` phải nằm trong
    `apps/landing/.env` và phải **khởi động lại `npm run dev:landing`**; trên Vercel thì thêm
+   vào Vercel settings và **Redeploy**.
+
+## Bước 2c — Gửi lời nhắn kết nối tới banthanhniensaigon@gmail.com (Apps Script Contact Webhook)
+
+Khi khách truy cập gửi lời nhắn qua nút 💬 Kết nối hoặc form liên hệ, web app sẽ gửi email thông báo trực tiếp tới **`banthanhniensaigon@gmail.com`**.
+
+1. Vào <https://script.google.com> → **New project**.
+2. Dán nội dung từ file [`tools/apps-script/Contact.gs`](tools/apps-script/Contact.gs).
+3. **Deploy → New deployment → bánh răng ⚙ → Web app**:
+   - Execute as: **Me** (Tài khoản Gmail của bạn)
+   - Who has access: **Anyone**
+   - Bấm **Deploy** và cấp quyền gửi email (Review permissions → Allow).
+4. Copy **Web app URL** (`https://script.google.com/macros/s/AKfycb.../exec`).
+5. Đặt URL này vào biến `VITE_CONTACT_SCRIPT_URL` của **project landing** (`apps/landing/.env` hoặc Vercel Environment Variables).
    biến xong phải **Redeploy** (biến `VITE_*` được "nướng" vào lúc build).
 7. **Shortcut không được hỗ trợ** — ảnh phải nằm thật trong folder, không phải shortcut
    trỏ từ nơi khác.

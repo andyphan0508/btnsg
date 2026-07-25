@@ -2380,9 +2380,9 @@ textarea:focus-visible {
     padding: 40px 32px;
   }
 }
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .section {
-    padding: 64px 0;
+    padding: 56px 0;
   }
   .nav-links {
     display: none;
@@ -2394,10 +2394,10 @@ textarea:focus-visible {
     display: flex;
   }
   .timeline-section-wrapper {
-    padding: 32px 22px;
+    padding: 28px 18px;
   }
   .timeline-card {
-    padding: 18px 20px;
+    padding: 18px;
   }
   .current-badge {
     position: static;
@@ -2405,15 +2405,15 @@ textarea:focus-visible {
     margin-top: 10px;
   }
   .contact-form-card {
-    padding: 30px 24px;
+    padding: 28px 20px;
   }
   .logo-card-container {
-    width: 250px;
-    height: 250px;
+    width: 240px;
+    height: 240px;
   }
   .logo-glass-card {
-    width: 224px;
-    height: 224px;
+    width: 210px;
+    height: 210px;
   }
 }
 
@@ -4249,3 +4249,435 @@ a.fab-channel:hover { border-color: var(--brand); background: var(--brand-soft);
   .map-frame { min-height: 280px; }
   .fab-btn { width: 52px; height: 52px; }
 }
+
+/* ============================================================
+   Điều hướng đa trang: QuickNav trang chủ, Bottom nav mobile
+   ============================================================ */
+
+:root { --bottom-nav-h: 64px; }
+
+/* Trang con: chừa chỗ cho thanh nav cố định phía trên */
+.page-view { padding-top: 96px; min-height: 70vh; }
+.page-view > .section:first-child { padding-top: 24px; }
+
+/* Trạng thái trang hiện tại trên nav trên cùng */
+.nav-link-item.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- Card điều hướng ở trang chủ ---------- */
+.quicknav-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.quicknav-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+}
+.quicknav-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--brand);
+  box-shadow: var(--shadow-md);
+}
+.quicknav-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  font-size: 1.15rem;
+}
+.quicknav-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.quicknav-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.quicknav-badge {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+.quicknav-desc { font-size: 0.85rem; color: var(--ink-2); line-height: 1.55; }
+.quicknav-arrow {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--ink-3);
+  transition: var(--transition);
+}
+.quicknav-card:hover .quicknav-arrow { color: var(--brand); transform: translateX(4px); }
+
+/* ---------- Bottom nav (mobile) ---------- */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 160;
+  height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(13, 19, 33, 0.94);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  align-items: center;
+}
+.bnav-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: var(--bottom-nav-h);
+}
+.bnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.62);
+  transition: var(--transition);
+  min-width: 56px;
+}
+.bnav-item.active { color: var(--brand-2); }
+.bnav-icon { width: 21px; height: 21px; }
+.bnav-label { font-size: 0.66rem; font-weight: 600; letter-spacing: 0.01em; }
+
+/* Logo tròn nổi giữa */
+.bnav-logo-btn {
+  flex-shrink: 0;
+  width: 62px;
+  height: 62px;
+  margin-top: -26px;
+  border-radius: 50%;
+  border: 3px solid var(--paper);
+  padding: 0;
+  cursor: pointer;
+  background: var(--grad-brand);
+  box-shadow: var(--shadow-brand);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  transition: transform 0.3s var(--ease-out);
+}
+.bnav-logo-btn:active { transform: scale(0.94); }
+.bnav-logo-btn.open { transform: rotate(135deg); }
+.bnav-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* ---------- Sheet mở từ logo ---------- */
+.bnav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 165;
+  background: rgba(8, 12, 22, 0.5);
+  backdrop-filter: blur(3px);
+  animation: fab-fade 0.2s ease;
+}
+.bnav-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 170;
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px 18px calc(24px + var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: 0 -18px 50px -12px rgba(0, 0, 0, 0.35);
+  transform: translateY(100%);
+  transition: transform 0.32s var(--ease-out);
+}
+.bnav-sheet.open { transform: translateY(0); }
+.bnav-sheet-handle {
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  margin: 2px auto 4px;
+}
+.bnav-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bnav-sheet-brand { display: flex; align-items: center; gap: 10px; }
+.bnav-sheet-logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.bnav-sheet-title { font-weight: 800; font-size: 0.96rem; color: var(--ink); }
+.bnav-sheet-sub { font-size: 0.74rem; color: var(--ink-3); }
+.bnav-sheet-close {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.bnav-sheet-list { display: flex; flex-direction: column; gap: 8px; }
+.bnav-sheet-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  text-decoration: none;
+  color: inherit;
+}
+.bnav-sheet-link.active { border-color: var(--brand); background: var(--brand-soft); }
+.bnav-sheet-link > span { display: flex; flex-direction: column; gap: 2px; }
+.bnav-sheet-link strong { font-size: 0.92rem; }
+.bnav-sheet-link small { font-size: 0.76rem; color: var(--ink-3); }
+.bnav-sheet-foot { display: flex; gap: 10px; }
+.bnav-sheet-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.bnav-sheet-action:hover { border-color: var(--brand); color: var(--brand-deep); }
+
+/* ---------- Bật bottom nav ở mobile, dọn chỗ cho nó ---------- */
+@media (max-width: 768px) {
+  .bottom-nav { display: flex; }
+  .bnav-sheet { display: flex; }
+
+  /* Chừa chỗ để thanh dưới không che nội dung/footer */
+  .footer { padding-bottom: calc(28px + var(--bottom-nav-h) + env(safe-area-inset-bottom)); }
+
+  /* Nâng FAB lên trên thanh dưới */
+  .contact-fab {
+    bottom: calc(14px + var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  }
+  .fab-panel {
+    max-height: calc(100vh - var(--bottom-nav-h) - 130px);
+  }
+
+  .page-view { padding-top: 84px; }
+  .quicknav-grid { grid-template-columns: 1fr; gap: 12px; }
+  .quicknav-card { padding: 16px; }
+}
+
+@media (max-width: 990px) and (min-width: 769px) {
+  .quicknav-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ============================================================
+   PageHero — banner ảnh đầu mỗi trang, blend với thanh nav,
+   gradient blur tan xuống đúng màu nền trang
+   ============================================================ */
+
+.page-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: flex-end;
+  min-height: 440px;
+  padding-top: 130px;
+  overflow: hidden;
+  background: var(--navy);
+}
+.page-hero.compact { min-height: 340px; }
+
+.page-hero-media { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.page-hero-layer {
+  position: absolute;
+  inset: -12% 0;
+  will-change: transform;
+}
+.page-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: hero-kenburns 30s ease-in-out infinite alternate;
+}
+.page-hero-demo { display: block; }
+
+/* Tối phía trên: giúp thanh nav trong suốt và chữ trắng luôn đọc rõ */
+.page-hero-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(10, 15, 28, 0.86) 0%, rgba(10, 15, 28, 0.32) 42%, rgba(10, 15, 28, 0.55) 100%);
+}
+/* Nửa dưới mờ dần — mask làm blur "đậm dần" xuống đáy */
+.page-hero-blur {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60%;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 75%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 75%);
+}
+/* Tan vào đúng màu nền trang (tự đổi theo sáng/tối) */
+.page-hero-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 46%;
+  background: linear-gradient(to bottom, transparent 0%, var(--paper) 92%);
+}
+
+.page-hero-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding-bottom: 52px;
+}
+.page-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 12px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+.page-hero-eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  background: var(--brand);
+  border-radius: 2px;
+}
+.page-hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 5vw, 3.3rem);
+  line-height: 1.12;
+  font-weight: 600;
+  color: #fff;
+  max-width: 15ch;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.55);
+}
+.page-hero-lead {
+  margin-top: 14px;
+  max-width: 60ch;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.86);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Trang có banner: nội dung nối tiếp ngay, không cần chừa chỗ cho nav nữa */
+.page-hero + .page-view { padding-top: 0; }
+
+/* Thanh nav hoà vào ảnh khi ở đầu trang, chỉ đặc lại khi cuộn */
+body:has(.page-hero) .nav:not(.nav-scrolled),
+body:has(.hero) .nav:not(.nav-scrolled) {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom-color: transparent;
+}
+
+/* ---------- Dải ảnh cuối trang ---------- */
+.photostrip-section { padding-top: 8px; }
+.photostrip-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.photostrip-head h3 {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.photostrip-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--brand);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.photostrip-more:hover { color: var(--brand-hover); }
+.photostrip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.photostrip-item {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+  box-shadow: var(--shadow-sm);
+}
+.photostrip-item .media-tile { transition: transform 0.5s var(--ease-out); }
+.photostrip-item:hover .media-tile { transform: scale(1.07); }
+
+@media (max-width: 768px) {
+  .page-hero { min-height: 340px; padding-top: 104px; }
+  .page-hero.compact { min-height: 280px; }
+  .page-hero-content { padding-bottom: 36px; }
+  .page-hero-title { max-width: 100%; }
+  .page-hero-lead { font-size: 0.92rem; }
+  .photostrip-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
+
+/* Trang có banner ảnh: bỏ khoảng chừa cho nav để ảnh tràn lên sau thanh nav
+   (nav lúc này trong suốt → ảnh và nav hoà làm một). Trình duyệt không hỗ trợ
+   :has() sẽ giữ nguyên hành vi cũ — nav nền đặc, ảnh bắt đầu dưới nav. */
+body:has(.page-hero),
+body:has(.hero) {
+  /* !important vì quy tắc body gốc (dòng ~166) cũng dùng !important */
+  padding-top: 0 !important;
+}
+/* Hero trang chủ bù lại đúng phần vừa bỏ để nội dung không chui dưới nav */
+body:has(.hero) .hero { padding-top: 64px; }

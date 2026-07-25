@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import { FiSun, FiMoon } from "react-icons/fi";
 import { site, nav } from "../data/content.js";
 import logoImg from "../assets/logobtnsg.jpg";
 
+/**
+ * Thanh điều hướng trên: đầy đủ các trang ở desktop.
+ * Trên mobile chỉ còn thương hiệu + nút đổi giao diện — điều hướng do
+ * BottomNav (thanh dưới, logo tròn ở giữa) đảm nhiệm.
+ */
 export default function Nav() {
-  const location = useLocation();
-  const isHome = location.pathname === "/";
-  // Ở trang chủ: anchor cuộn cùng trang. Ở trang khác: /#anchor để về trang chủ rồi cuộn.
-  const sectionHref = (href) => (isHome ? href : `/${href}`);
   const [theme, setTheme] = useState("light");
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -62,110 +63,30 @@ export default function Nav() {
             <span className="brand-city">&nbsp;{site.brandCity}</span>
           </span>
         </Link>
+
         <div className="nav-links">
           {nav.map((item) => (
-            <a key={item.href} href={sectionHref(item.href)} className="nav-link-item">
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `nav-link-item${isActive ? " active" : ""}`
+              }
+            >
               {item.label}
-            </a>
+            </NavLink>
           ))}
-          <Link to="/tin-tuc" className="nav-link-item">
-            Tin tức
-          </Link>
-          <Link to="/thu-vien" className="nav-link-item">
-            Thư viện ảnh
-          </Link>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center" }}>
-          {/* Sun/Moon Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="theme-btn"
-            aria-label="Chuyển chế độ sáng/tối"
-            title="Chuyển chế độ sáng/tối"
-          >
-            {theme === "light" ? (
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="icon-moon"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-            ) : (
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="icon-sun"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-              </svg>
-            )}
-          </button>
-
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="nav-burger"
-            aria-label="Mở menu"
-            aria-expanded={isMenuOpen}
-          >
-            {isMenuOpen ? (
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            ) : (
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile dropdown panel */}
-      <div className={`nav-mobile-panel${isMenuOpen ? " open" : ""}`}>
-        {nav.map((item) => (
-          <a
-            key={item.href}
-            href={sectionHref(item.href)}
-            className="nav-link-item"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            {item.label}
-          </a>
-        ))}
-        <Link to="/tin-tuc" className="nav-link-item" onClick={() => setIsMenuOpen(false)}>
-          Tin tức
-        </Link>
-        <Link to="/thu-vien" className="nav-link-item" onClick={() => setIsMenuOpen(false)}>
-          Thư viện ảnh
-        </Link>
+        <button
+          onClick={toggleTheme}
+          className="theme-btn"
+          aria-label="Chuyển chế độ sáng/tối"
+          title="Chuyển chế độ sáng/tối"
+          type="button"
+        >
+          {theme === "light" ? <FiMoon size={18} /> : <FiSun size={18} />}
+        </button>
       </div>
     </nav>
   );

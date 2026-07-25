@@ -59,3 +59,44 @@ export async function fetchFeatured(limit = 6) {
   const step = images.length / limit
   return Array.from({ length: limit }, (_, i) => images[Math.floor(i * step)])
 }
+
+/* ---------- Cache dùng chung + chọn ảnh theo trang ---------- */
+
+let imagesPromise = null
+
+/**
+ * Tải danh sách ảnh một lần cho cả phiên, các trang dùng chung.
+ * (Chuyển trang không gọi lại Apps Script.)
+ */
+export function loadImages() {
+  if (!imagesPromise) {
+    imagesPromise = fetchImages().catch((err) => {
+      imagesPromise = null // cho phép thử lại ở lần sau
+      throw err
+    })
+  }
+  return imagesPromise
+}
+
+/** Băm chuỗi → số, để mỗi trang luôn nhận cùng một ảnh (không nhảy loạn khi re-render). */
+function hashSeed(seed) {
+  let h = 0
+  for (let i = 0; i < seed.length; i += 1) {
+    h = (h * 31 + seed.charCodeAt(i)) >>> 0
+  }
+  return h
+}
+
+/** Chọn 1 ảnh ổn định theo seed (thường là đường dẫn trang). */
+export function pickImage(images, seed, offset = 0) {
+  if (!images || images.length === 0) return null
+  return images[(hashSeed(seed) + offset) % images.length]
+}
+
+/** Chọn n ảnh liên tiếp, không trùng, bắt đầu từ vị trí theo seed. */
+export function pickImages(images, seed, count) {
+  if (!images || images.length === 0) return []
+  const start = hashSeed(seed) % images.length
+  const total = Math.min(count, images.length)
+  return Array.from({ length: total }, (_, i) => images[(start + i) % images.length])
+}

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import { FiBookOpen, FiClock, FiMapPin, FiUsers, FiArrowRight } from "react-icons/fi";
+import { FiBookOpen, FiArrowRight } from "react-icons/fi";
 import { FaChurch, FaFacebookF, FaFire } from "react-icons/fa6";
-import { site, themeYear } from "../data/content.js";
+import { site, heroMeta } from "../data/content.js";
 import logoImg from "../assets/logobtnsg.jpg";
 import { assets } from "../assets/index.ts";
 
@@ -60,18 +60,10 @@ export default function Hero() {
       <div className="hero-in hero-split">
         {/* Left narrative content */}
         <div className="hero-content">
-          {/* Live Heartbeat Status Badge */}
-          <div className="hero-status-pill">
-            <span className="status-ping">
-              <span className="status-ping-dot"></span>
-              <span className="status-ping-wave"></span>
-            </span>
-            <span className="status-church">
-              <FaChurch style={{ marginRight: 6, verticalAlign: "middle" }} /> Chi Hội Sài Gòn
-            </span>
-            <span className="status-sep">•</span>
-            <span className="status-tag">Thắp Sáng Niềm Tin Từ 1942</span>
-          </div>
+          {/* Church Badge */}
+          <p className="eyebrow hero-church-badge">
+            <FaChurch style={{ marginRight: 6 }} /> {site.church}
+          </p>
 
           {/* Main Title */}
           <h1 className="hero-title-main">
@@ -114,92 +106,34 @@ export default function Hero() {
               <FaFacebookF size={18} />
             </a>
           </div>
+
+          {/* Clean Meta Info */}
+          <div className="hero-meta">
+            {heroMeta.map((m) => (
+              <span className="hero-meta-item" key={m.strong}>
+                {m.pre} <b>{m.strong}</b>
+              </span>
+            ))}
+          </div>
         </div>
 
-        {/* Right Visual Stage — 3D Glass Medallion & Interactive Floating Cards */}
+        {/* Right Visual Stage — Elegant 3D Glass Medallion */}
         <div className="hero-visual">
-          <div className="hero-stage">
-            {/* Pulsing halo behind main card */}
-            <div className="stage-halo" />
-
-            {/* Central Medallion */}
-            <div className="logo-card-container">
-              <div className="logo-glass-card">
-                <img
-                  src={logoImg}
-                  alt="Ban Thanh Niên HTTL Sài Gòn Logo"
-                  className="logo-card-img"
-                />
-              </div>
+          <div className="logo-card-container">
+            <div className="logo-glass-card">
+              <img
+                src={logoImg}
+                alt="Ban Thanh Niên HTTL Sài Gòn Logo"
+                className="logo-card-img"
+              />
             </div>
-
-            {/* Floating Glass Card 1: Worship Schedule */}
-            <div className="floating-card float-card-worship">
-              <div className="float-card-icon">
-                <FaChurch />
-              </div>
-              <div className="float-card-info">
-                <span className="float-card-label">Thờ phượng Chúa Nhật</span>
-                <strong className="float-card-val">14:30 Hàng Tuần</strong>
-                <span className="float-card-sub">Lầu 2, 161 Đề Thám, Q.1</span>
-              </div>
-            </div>
-
-            {/* Floating Glass Card 2: Theme Year 2026 */}
-            <div className="floating-card float-card-theme">
-              <div className="float-card-badge">CHỦ ĐỀ 2026</div>
-              <div className="float-card-title">{themeYear.title}</div>
-              <div className="float-card-verse">"{themeYear.ref}"</div>
-            </div>
-
-            {/* Floating Glass Card 3: Community Stat */}
-            <div className="floating-card float-card-stat">
-              <div className="float-stat-num">200+</div>
-              <div className="float-stat-desc">Ban viên gắn kết & sinh hoạt</div>
-            </div>
+            <div className="logo-halo" />
           </div>
         </div>
 
         {/* Background Watermark Year */}
         <div className="hero-year" aria-hidden="true">
           1942
-        </div>
-      </div>
-
-      {/* Hero Dock Bar: Quick Info at the bottom of hero */}
-      <div className="hero-dock-wrap">
-        <div className="hero-dock">
-          <div className="dock-item">
-            <FaChurch className="dock-icon" />
-            <div className="dock-text">
-              <strong>Chi Hội Sài Gòn</strong>
-              <span>Từ năm 1942</span>
-            </div>
-          </div>
-          <div className="dock-divider"></div>
-          <div className="dock-item">
-            <FiClock className="dock-icon" />
-            <div className="dock-text">
-              <strong>14:30 Chúa Nhật</strong>
-              <span>Buổi nhóm thờ phượng</span>
-            </div>
-          </div>
-          <div className="dock-divider"></div>
-          <div className="dock-item">
-            <FiMapPin className="dock-icon" />
-            <div className="dock-text">
-              <strong>161 Đề Thám, Q.1</strong>
-              <span>Phòng Nhóm Lầu 2</span>
-            </div>
-          </div>
-          <div className="dock-divider"></div>
-          <div className="dock-item">
-            <FiUsers className="dock-icon" />
-            <div className="dock-text">
-              <strong>5+ Tiểu Ban</strong>
-              <span>Phục vụ & Mục vụ</span>
-            </div>
-          </div>
         </div>
       </div>
     </header>

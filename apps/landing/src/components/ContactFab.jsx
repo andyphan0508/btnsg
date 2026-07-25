@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
+import { FiX, FiMessageSquare, FiSend, FiCheckCircle, FiAlertCircle, FiMapPin, FiArrowUpRight } from "react-icons/fi";
+import { FaFacebookF } from "react-icons/fa6";
 import { site, contacts, links } from "../data/content.js";
+import { sendContactMessage } from "../lib/contact.js";
 
 /**
  * FAB (nút nổi) góc phải dưới — mở panel "Kết nối":
- * kênh liên hệ + form gửi lời nhắn (chuyển từ section Liên hệ sang đây,
- * nhường chỗ cho bản đồ Nhà Thờ).
+ * gửi tin nhắn đến banthanhniensaigon@gmail.com qua Apps Script webhook.
  */
 export default function ContactFab() {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [formData, setFormData] = useState({ name: "", contact: "", message: "" });
+  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState(null);
 
   // Đóng bằng phím Esc
   useEffect(() => {
@@ -21,13 +25,22 @@ export default function ContactFab() {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSent(true);
-    setTimeout(() => {
-      setFormData({ name: "", email: "", message: "" });
-      setSent(false);
-    }, 3000);
+    setLoading(true);
+    setError(null);
+    try {
+      await sendContactMessage(formData);
+      setSent(true);
+      setFormData({ name: "", contact: "", message: "" });
+      setTimeout(() => {
+        setSent(false);
+      }, 6000);
+    } catch (err) {
+      setError(err.message || "Gửi không thành công. Vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,9 +52,12 @@ export default function ContactFab() {
         <div className="fab-panel" role="dialog" aria-label="Kết nối với Ban Thanh Niên" aria-hidden={!open}>
           <div className="fab-panel-head">
             <div>
-              <div className="fab-panel-title">Kết nối với chúng tôi</div>
-              <div className="fab-panel-sub">Ban Thanh Niên luôn mong được gặp bạn 🧡</div>
+              <div className="fab-panel-title">Kết nối với Ban Thanh Niên</div>
+              <div className="fab-panel-sub">Lời nhắn sẽ được chuyển thẳng về banthanhniensaigon@gmail.com 🧡</div>
             </div>
+            <button className="fab-close-btn" onClick={() => setOpen(false)} type="button" aria-label="Đóng">
+              <FiX size={20} />
+            </button>
           </div>
 
           <div className="fab-panel-body">
@@ -53,24 +69,19 @@ export default function ContactFab() {
               rel="noopener noreferrer"
             >
               <span className="fab-channel-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                </svg>
+                <FaFacebookF size={18} />
               </span>
               <span>
                 <strong>Nhắn tin Fanpage</strong>
                 <small>Kênh phản hồi nhanh nhất của Ban</small>
               </span>
-              <span className="fab-channel-arrow">↗</span>
+              <FiArrowUpRight className="fab-channel-arrow" />
             </a>
 
             {contacts.map((c) => (
               <div className="fab-channel fab-channel-static" key={c.title}>
                 <span className="fab-channel-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
+                  <FiMapPin size={18} />
                 </span>
                 <span>
                   <strong>{c.title}</strong>
@@ -102,11 +113,11 @@ export default function ContactFab() {
                   id="fab-contact"
                   required
                   placeholder=" "
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  value={formData.contact}
+                  onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
                   className="form-input"
                 />
-                <label htmlFor="fab-contact" className="form-label">Email hoặc số điện thoại</label>
+                <label htmlFor="fab-contact" className="form-label">Email hoặc số điện thoại liên hệ</label>
               </div>
 
               <div className="form-group">
@@ -122,13 +133,32 @@ export default function ContactFab() {
                 <label htmlFor="fab-message" className="form-label">Lời nhắn hoặc câu hỏi</label>
               </div>
 
-              <button type="submit" className="btn btn-gold btn-glowing fab-submit">
-                {sent ? "Đang gửi thông tin..." : "Gửi lời nhắn"}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-gold btn-glowing fab-submit"
+              >
+                {loading ? (
+                  "Đang gửi..."
+                ) : (
+                  <>
+                    <span>Gửi về hộp thư Ban</span>
+                    <FiSend style={{ marginLeft: 6 }} />
+                  </>
+                )}
               </button>
 
               {sent && (
                 <div className="form-success-alert">
-                  ✨ Cảm ơn bạn! Chúng tôi sẽ liên hệ lại sớm nhất.
+                  <FiCheckCircle size={18} style={{ color: "#10b981", flexShrink: 0 }} />
+                  <span>Lời nhắn đã gửi thành công tới <strong>banthanhniensaigon@gmail.com</strong>! Chúng tôi sẽ phản hồi sớm nhất.</span>
+                </div>
+              )}
+
+              {error && (
+                <div className="form-error-alert">
+                  <FiAlertCircle size={18} style={{ color: "#ef4444", flexShrink: 0 }} />
+                  <span>{error}</span>
                 </div>
               )}
             </form>
@@ -136,7 +166,7 @@ export default function ContactFab() {
             <div className="fab-links">
               {links.map((l) => (
                 <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
-                  {l.label} ↗
+                  {l.label} <FiArrowUpRight style={{ display: "inline" }} />
                 </a>
               ))}
             </div>
@@ -151,16 +181,7 @@ export default function ContactFab() {
           aria-expanded={open}
           aria-label={open ? "Đóng bảng kết nối" : "Kết nối với Ban Thanh Niên"}
         >
-          {open ? (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z" />
-            </svg>
-          )}
+          {open ? <FiX size={24} /> : <FiMessageSquare size={24} />}
         </button>
       </div>
     </>

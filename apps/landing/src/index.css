@@ -2668,92 +2668,7 @@ textarea:focus-visible {
 }
 
 /* ---------- Lightbox ---------- */
-.lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  background: rgba(8, 10, 18, 0.92);
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  animation: lightbox-in 0.2s ease;
-}
-@keyframes lightbox-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-.lightbox-figure {
-  max-width: min(1100px, 92vw);
-  max-height: 88vh;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-.lightbox-img {
-  max-width: 100%;
-  max-height: 82vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: var(--radius);
-}
-.media-demo.lightbox-img {
-  width: 70vw;
-  height: 70vh;
-  border-radius: var(--radius);
-}
-.lightbox-caption {
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.82rem;
-}
-.lightbox-close,
-.lightbox-arrow {
-  position: fixed;
-  border: none;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  transition: var(--transition);
-}
-.lightbox-close:hover,
-.lightbox-arrow:hover {
-  background: rgba(255, 255, 255, 0.28);
-}
-.lightbox-close {
-  top: 20px;
-  right: 20px;
-  width: 44px;
-  height: 44px;
-}
-.lightbox-close svg {
-  width: 22px;
-  height: 22px;
-}
-.lightbox-arrow {
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50px;
-  height: 50px;
-}
-.lightbox-arrow svg {
-  width: 26px;
-  height: 26px;
-}
-.lightbox-prev {
-  left: 20px;
-}
-.lightbox-next {
-  right: 20px;
-}
+/* Lightbox styles are declared in section 3 */
 
 /* Modal thông tin tiểu ban (mở từ chip trong Sinh hoạt) */
 .subcomm-modal-overlay {
@@ -2883,11 +2798,848 @@ textarea:focus-visible {
   border-bottom: 2px solid var(--line-strong);
 }
 
-/* Số đếm ảnh trong trang Thư viện (bản 1 folder, không chia album) */
-.gallery-count {
+/* ============================================================
+   CHỦ ĐỀ THƯ VIỆN ĐA NĂNG & CẦU KỲ (Ultra-Luxury Gallery Stage)
+   ============================================================ */
+
+.gallery-header-head {
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gallery-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--amber);
+  background: rgba(240, 193, 75, 0.1);
+  border: 1px solid rgba(240, 193, 75, 0.3);
+  padding: 6px 16px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.gallery-title-main {
+  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.gallery-accent-text {
+  background: linear-gradient(120deg, var(--brand), var(--amber), #ff8a65);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-slide 5s ease-in-out infinite alternate;
+}
+
+/* Dynamic Toolbar Tối Giản (Search + View Modes + Page Sizes) */
+.gallery-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+}
+
+/* Ô tìm kiếm */
+.gallery-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 240px;
+  max-width: 320px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 0.95rem;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.gallery-search-input {
+  width: 100%;
+  padding: 9px 36px 9px 38px;
+  border-radius: 12px;
+  border: 1px solid var(--line-subtle);
+  background: var(--bg-soft);
+  color: var(--ink);
+  font-size: 0.88rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.gallery-search-input:focus {
+  border-color: var(--brand);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--ink-2);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+/* Group Nút đổi Chế độ xem */
+.gallery-view-modes {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-soft);
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid var(--line-subtle);
+  gap: 4px;
+}
+
+.view-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
   color: var(--ink-3);
-  font-size: 0.86rem;
-  margin: 4px 0 14px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-mode-btn:hover {
+  color: var(--ink);
+}
+
+.view-mode-btn.active {
+  background: var(--surface);
+  color: var(--brand-deep);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+}
+
+/* Nút chọn Kích thước trang */
+.gallery-size-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.size-label {
+  font-size: 0.82rem;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.size-pill {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line-subtle);
+  background: var(--bg-soft);
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.size-pill:hover {
+  border-color: var(--brand);
+  color: var(--brand-deep);
+}
+
+.size-pill.active {
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  border-color: var(--brand);
+  font-weight: 700;
+}
+
+/* Thanh thông tin dải số đếm & Mini Pagination */
+.gallery-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.gallery-count-info {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.gallery-count-info strong {
+  color: var(--brand-deep);
+}
+
+.pagination-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+}
+
+.pag-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-soft);
+  color: var(--ink);
+  font-size: 1rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+}
+
+.pag-btn:hover:not(:disabled) {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+
+.pag-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Layout Container chính của Thư viện ảnh */
+.gallery-grid-container {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+/* Chế độ 1: Grid Chuẩn 3D */
+.gallery-grid-container.view-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Chế độ 2: Art Masonry */
+.gallery-grid-container.view-masonry {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.gallery-grid-container.view-masonry .gallery-card-item:nth-child(3n + 1) .card-media-wrapper {
+  aspect-ratio: 4 / 5;
+}
+.gallery-grid-container.view-masonry .gallery-card-item:nth-child(3n + 2) .card-media-wrapper {
+  aspect-ratio: 1 / 1;
+}
+.gallery-grid-container.view-masonry .gallery-card-item:nth-child(3n + 3) .card-media-wrapper {
+  aspect-ratio: 16 / 11;
+}
+
+/* Chế độ 3: Spotlight */
+.gallery-grid-container.view-spotlight {
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+}
+.spotlight-featured {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.spotlight-featured .card-media-wrapper {
+  aspect-ratio: 16 / 10 !important;
+}
+
+/* Thẻ Ô Ảnh (Gallery Card Item) */
+.gallery-card-item {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line-subtle);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+}
+
+.gallery-card-item:hover {
+  transform: translateY(-8px) scale(1.015);
+  border-color: rgba(240, 193, 75, 0.5);
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.16),
+    0 0 20px rgba(240, 193, 75, 0.18);
+}
+
+.card-media-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+
+.card-media-wrapper .media-tile {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+}
+
+.gallery-card-item:hover .media-tile {
+  transform: scale(1.08);
+}
+
+/* Lớp phủ Overlay khi Rê Chuột */
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(15, 23, 42, 0.88) 0%,
+    rgba(15, 23, 42, 0.3) 50%,
+    transparent 100%
+  );
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  transition: opacity 0.35s ease;
+  z-index: 2;
+}
+
+.gallery-card-item:hover .card-overlay {
+  opacity: 1;
+}
+
+.card-zoom-badge {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 6px 14px;
+  transform: translateY(-8px);
+  transition: transform 0.35s ease;
+}
+
+.gallery-card-item:hover .card-zoom-badge {
+  transform: translateY(0);
+}
+
+.card-info-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transform: translateY(8px);
+  transition: transform 0.35s ease;
+}
+
+.gallery-card-item:hover .card-info-bottom {
+  transform: translateY(0);
+}
+
+.card-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--amber);
+  letter-spacing: 0.08em;
+}
+
+.card-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Media Demo Gradient Tile */
+.media-demo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.media-demo-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.media-demo-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  text-align: center;
+  padding: 16px;
+}
+
+.media-demo-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+}
+
+.media-demo-label {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Empty State khi Tìm kiếm không ra */
+.gallery-empty-search {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: 20px;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.gallery-empty-search span {
+  font-size: 2.5rem;
+}
+
+/* Thanh Pagination chính ở Đáy */
+.pagination-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line-subtle);
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--brand);
+  color: #ffffff;
+  border-color: var(--brand);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px var(--brand-glow);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pagination-numbers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-num {
+  min-width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.25s ease;
+}
+
+.pagination-num:hover:not(.active) {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand-deep);
+}
+
+.pagination-num.active {
+  background: linear-gradient(135deg, var(--brand), var(--amber));
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 6px 18px rgba(226, 105, 62, 0.35);
+}
+
+.pagination-ellipsis {
+  color: var(--ink-3);
+  font-weight: 700;
+  padding: 0 4px;
+}
+
+/* ============================================================
+   LIGHTBOX CAO CẤP (Ultra-Luxury Modal)
+   ============================================================ */
+
+/* ============================================================
+   LIGHTBOX CINEMA ART SHOWCASE (Phóng To Toàn Màn Hình Sang Trọng)
+   ============================================================ */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(8, 12, 24, 0.94);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  animation: lightbox-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes lightbox-fade {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Background Ambient Cinema Blur */
+.lightbox-ambient-bg {
+  position: absolute;
+  inset: -10%;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-blur-img {
+  width: 120%;
+  height: 120%;
+  object-fit: cover;
+  filter: blur(80px) brightness(0.28) saturate(1.4);
+  transform: scale(1.15);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ambient-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 90% 90% at 50% 50%,
+    rgba(10, 15, 30, 0.25) 0%,
+    rgba(5, 8, 20, 0.92) 80%
+  );
+}
+
+/* Floating Glass Header Bar */
+.lightbox-header-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 20px 24px 0;
+  z-index: 10;
+}
+
+.lightbox-glass-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  max-width: 1100px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 999px;
+  padding: 10px 24px;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.lightbox-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.lightbox-counter-badge {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #ffd9a0;
+  background: linear-gradient(135deg, rgba(226, 105, 62, 0.3), rgba(240, 193, 75, 0.2));
+  border: 1px solid rgba(240, 193, 75, 0.4);
+  padding: 4px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+.lightbox-title-text {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 500px;
+}
+
+.lightbox-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.lightbox-glass-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 7px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.lightbox-glass-btn:hover {
+  background: var(--brand);
+  border-color: var(--brand);
+  box-shadow: 0 0 20px var(--brand-glow);
+  transform: translateY(-1px);
+}
+
+.lightbox-close-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lightbox-close-circle:hover {
+  background: rgba(226, 105, 62, 0.85);
+  border-color: var(--brand);
+  transform: rotate(90deg) scale(1.08);
+}
+
+/* Lightbox Main Stage */
+.lightbox-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px;
+  position: relative;
+  z-index: 5;
+}
+
+.lightbox-nav-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.lightbox-nav-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+.lightbox-nav-btn:hover {
+  background: var(--brand);
+  border-color: var(--brand);
+  transform: scale(1.15);
+  box-shadow: 0 0 30px var(--brand-glow);
+}
+
+.lightbox-figure-frame {
+  margin: 0;
+  max-width: calc(100% - 160px);
+  max-height: 72vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-image-container {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.8),
+    0 0 50px rgba(0, 0, 0, 0.6);
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-main-img {
+  max-width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
+  display: block;
+}
+
+/* Lightbox Bottom Dock Carousel */
+.lightbox-dock-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 24px 20px;
+  z-index: 10;
+}
+
+.lightbox-glass-dock {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 22px;
+  padding: 10px 18px;
+  max-width: 920px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-thumb-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 2px;
+  scrollbar-width: none;
+}
+.lightbox-thumb-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.lightbox-thumb-card {
+  position: relative;
+  flex: 0 0 78px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+  background: #000;
+}
+
+.lightbox-thumb-card:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.lightbox-thumb-card.active {
+  opacity: 1;
+  border-color: var(--amber);
+  transform: scale(1.12);
+  box-shadow: 0 0 20px rgba(240, 193, 75, 0.6);
+  z-index: 2;
+}
+
+.thumb-active-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px var(--amber);
+  pointer-events: none;
+}
+
+.lightbox-thumb-card .media-tile {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* ============================================================

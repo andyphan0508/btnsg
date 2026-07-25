@@ -14,12 +14,12 @@ export function driveImage(id, width = 1200) {
 
 /* ---------- Dữ liệu demo khi chưa cấu hình ---------- */
 
-const DEMO_COUNT = 12
+const DEMO_COUNT = 36
 
 function demoImages() {
   return Array.from({ length: DEMO_COUNT }, (_, i) => ({
     id: `demo-img-${i}`,
-    name: `Ảnh ${i + 1}`,
+    name: `Khoảnh khắc ${i + 1}`,
     demo: true,
     hue: (i * 37) % 360,
   }))

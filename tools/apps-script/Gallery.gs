@@ -39,40 +39,64 @@ function doGet(e) {
     if (params.debug === '1') {
       return jsonResponse_(debugInfo_());
     }
-    return jsonResponse_(listImages_(params.refresh === '1'));
+    return jsonResponse_(listImages_(params));
   } catch (err) {
     return jsonResponse_({ error: String(err) });
   }
 }
 
-/** Toàn bộ ảnh nằm trực tiếp trong folder, sắp theo tên (ảnh máy ảnh ≈ theo thời gian chụp). */
-function listImages_(skipCache) {
+/** Toàn bộ ảnh nằm trực tiếp trong folder, sắp theo tên. Hỗ trợ phân trang tùy chọn. */
+function listImages_(params) {
+  var skipCache = params.refresh === '1';
+  var page = parseInt(params.page, 10) || 0;
+  var pageSize = parseInt(params.pageSize, 10) || 0;
+
   var cache = CacheService.getScriptCache();
+  var rawData = null;
+
   if (!skipCache) {
     var cached = cache.get('images');
-    if (cached) return JSON.parse(cached);
+    if (cached) rawData = JSON.parse(cached);
   }
 
-  var folder = DriveApp.getFolderById(FOLDER_ID);
-  var files = folder.getFiles();
-  var images = [];
-  while (files.hasNext()) {
-    var file = files.next();
-    if (isImage_(file)) {
-      images.push({ id: file.getId(), name: file.getName() });
+  if (!rawData) {
+    var folder = DriveApp.getFolderById(FOLDER_ID);
+    var files = folder.getFiles();
+    var images = [];
+    while (files.hasNext()) {
+      var file = files.next();
+      if (isImage_(file)) {
+        images.push({ id: file.getId(), name: file.getName() });
+      }
+    }
+    images.sort(function (a, b) {
+      return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+    });
+
+    rawData = { folder: folder.getName(), images: images, total: images.length };
+
+    // Không cache kết quả rỗng — tránh "đóng băng" trạng thái sai khi đang cấu hình.
+    if (images.length > 0) {
+      cachePutSafe_(cache, 'images', JSON.stringify(rawData));
     }
   }
-  images.sort(function (a, b) {
-    return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
-  });
 
-  var result = { folder: folder.getName(), images: images };
-
-  // Không cache kết quả rỗng — tránh "đóng băng" trạng thái sai khi đang cấu hình.
-  if (images.length > 0) {
-    cachePutSafe_(cache, 'images', JSON.stringify(result));
+  // Nếu không truyền page/pageSize → trả về toàn bộ ảnh (tương thích ngược 100%)
+  if (page <= 0 || pageSize <= 0) {
+    return rawData;
   }
-  return result;
+
+  var startIndex = (page - 1) * pageSize;
+  var pagedImages = rawData.images.slice(startIndex, startIndex + pageSize);
+
+  return {
+    folder: rawData.folder,
+    total: rawData.images.length,
+    page: page,
+    pageSize: pageSize,
+    totalPages: Math.ceil(rawData.images.length / pageSize),
+    images: pagedImages
+  };
 }
 
 /** ?debug=1 — xem script đang thấy gì trong folder. */

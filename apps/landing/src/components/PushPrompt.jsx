@@ -77,7 +77,10 @@ export default function PushPrompt() {
         setError(
           result.reason === "denied"
             ? "Bạn đã chặn thông báo. Có thể bật lại trong cài đặt trình duyệt."
-            : "Chưa đăng ký được, vui lòng thử lại sau.",
+            : result.reason === "not-configured"
+              ? "Website chưa bật tính năng thông báo."
+              // Hiện đúng lý do từ máy chủ để còn biết đường sửa
+              : result.reason || "Chưa đăng ký được, vui lòng thử lại sau.",
         );
         if (result.reason === "denied") setTimeout(() => setVisible(false), 3200);
       }

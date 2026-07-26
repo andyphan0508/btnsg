@@ -63,7 +63,7 @@ export default function PushToggle() {
           setPermissionState("denied");
           setMessage("Bạn đã chặn thông báo — hãy bật lại trong cài đặt trình duyệt.");
         } else {
-          setMessage("Chưa bật được, vui lòng thử lại sau.");
+          setMessage(result.reason || "Chưa bật được, vui lòng thử lại sau.");
         }
       }
     } catch {

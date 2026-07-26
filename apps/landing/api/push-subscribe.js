@@ -21,9 +21,23 @@ const send = (res, status, payload) => {
   res.status(status).json(payload);
 };
 
+/**
+ * SUPABASE_URL phải là địa chỉ API của project — dạng https://<ref>.supabase.co,
+ * KHÔNG phải link trang quản trị (https://supabase.com/dashboard/project/...).
+ * Đặt sai thì mọi request sẽ nhận về HTML của trang web thay vì JSON.
+ */
+const checkSupabaseUrl = () => {
+  const url = (process.env.SUPABASE_URL || '').trim();
+  if (!url) return 'Thiếu biến SUPABASE_URL.';
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)\/?$/i.test(url)) {
+    return `SUPABASE_URL không đúng định dạng: "${url}". Phải là https://<project-ref>.supabase.co (lấy ở Project Settings → Data API → Project URL), không phải link trang quản trị.`;
+  }
+  return null;
+};
+
 /** Gọi REST API của Supabase bằng service role (bỏ qua RLS). */
 const supabaseFetch = (path, options = {}) => {
-  const url = process.env.SUPABASE_URL;
+  const url = (process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   return fetch(`${url}/rest/v1/${path}`, {
     ...options,
@@ -36,14 +50,44 @@ const supabaseFetch = (path, options = {}) => {
   });
 };
 
+/** Diễn giải lỗi từ Supabase thành câu người dùng hiểu được. */
+const explainSupabaseError = (status, text) => {
+  if (text.trimStart().startsWith('<')) {
+    return 'Supabase trả về trang HTML thay vì dữ liệu — gần như chắc chắn SUPABASE_URL bị sai (phải là https://<project-ref>.supabase.co).';
+  }
+  if (status === 401 || status === 403) {
+    return 'Supabase từ chối truy cập — kiểm tra SUPABASE_SERVICE_ROLE_KEY (secret key).';
+  }
+  if (/relation .* does not exist|PGRST205/i.test(text)) {
+    return 'Chưa có bảng push_subscriptions — hãy chạy supabase/migrations/0003_push_subscriptions.sql trong SQL Editor.';
+  }
+  if (/PGRST125|Invalid path specified/i.test(text)) {
+    return 'Đường dẫn tới Supabase không hợp lệ — thường do SUPABASE_URL có dấu "/" thừa ở cuối. Hãy để đúng dạng https://<project-ref>.supabase.co rồi Redeploy.';
+  }
+  return `Không lưu được đăng ký: ${text.slice(0, 200)}`;
+};
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     Object.entries(jsonHeaders).forEach(([key, value]) => res.setHeader(key, value));
     return res.status(204).end();
   }
 
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return send(res, 500, { error: 'Server chưa cấu hình SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY.' });
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return send(res, 500, { error: 'Server chưa cấu hình SUPABASE_SERVICE_ROLE_KEY.' });
+  }
+  const urlError = checkSupabaseUrl();
+  if (urlError) return send(res, 500, { error: urlError });
+
+  // ?debug=1 — tự kiểm tra cấu hình mà không ghi gì vào CSDL.
+  if (req.query?.debug === '1') {
+    const probe = await supabaseFetch('push_subscriptions?select=endpoint&limit=1');
+    const text = await probe.text();
+    return send(res, 200, {
+      supabaseUrlHopLe: true,
+      ketNoiBang: probe.ok,
+      chiTiet: probe.ok ? 'Bảng push_subscriptions đọc được.' : explainSupabaseError(probe.status, text),
+    });
   }
 
   try {
@@ -67,7 +111,7 @@ export default async function handler(req, res) {
 
       if (!response.ok) {
         const detail = await response.text();
-        return send(res, 502, { error: `Không lưu được đăng ký: ${detail.slice(0, 200)}` });
+        return send(res, 502, { error: explainSupabaseError(response.status, detail) });
       }
       return send(res, 200, { ok: true });
     }
@@ -76,9 +120,13 @@ export default async function handler(req, res) {
       const { endpoint } = req.body ?? {};
       if (!endpoint) return send(res, 400, { error: 'Thiếu endpoint.' });
 
-      await supabaseFetch(`push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`, {
+      const del = await supabaseFetch(`push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`, {
         method: 'DELETE',
       });
+      if (!del.ok) {
+        const detail = await del.text();
+        return send(res, 502, { error: explainSupabaseError(del.status, detail) });
+      }
       return send(res, 200, { ok: true });
     }
 

@@ -245,7 +245,7 @@ Dashboard (bấm "Gửi")
    | `VAPID_PUBLIC_KEY` | y hệt khoá công khai |
    | `VAPID_PRIVATE_KEY` | khoá bí mật — **chỉ đặt ở đây, không commit** |
    | `VAPID_SUBJECT` | `mailto:banthanhniensaigon@gmail.com` |
-   | `SUPABASE_URL` | URL project Supabase |
+   | `SUPABASE_URL` | **`https://<project-ref>.supabase.co`** — lấy ở *Project Settings → Data API → Project URL*. ⚠️ KHÔNG dùng link trang quản trị `https://supabase.com/dashboard/project/...`, đặt sai thì Supabase trả về trang HTML và việc đăng ký thông báo sẽ thất bại |
    | `SUPABASE_ANON_KEY` | anon key **hoặc** publishable key (`sb_publishable_…`) |
    | `SUPABASE_SERVICE_ROLE_KEY` | secret key (`sb_secret_…`) **hoặc** service_role key — xem bên dưới |
 
@@ -280,6 +280,18 @@ thực tế duy nhất:
 
 Khuyến nghị thực tế: **2–4 thông báo mỗi tuần**. Dashboard hiển thị số thông báo đã gửi trong
 ngày và nhắc nhẹ khi vượt 3 lần/ngày.
+
+### Bấm "Nhận thông báo" mà không được? Tự kiểm tra bằng 1 đường link
+
+Mở `https://<địa-chỉ-landing>/api/push-subscribe?debug=1` trên trình duyệt:
+
+- `{"supabaseUrlHopLe":true,"ketNoiBang":true,...}` → cấu hình đúng, mọi thứ sẵn sàng.
+- Báo **SUPABASE_URL không đúng định dạng** → sửa biến đó trên Vercel rồi **Redeploy**.
+- Báo **chưa có bảng push_subscriptions** → chạy migration `0003` trong SQL Editor.
+- Báo **Supabase từ chối truy cập** → kiểm tra `SUPABASE_SERVICE_ROLE_KEY`.
+
+Lưu ý: chức năng thông báo **không chạy với `npm run dev`** vì thư mục `api/` là serverless
+function chỉ hoạt động trên Vercel. Muốn thử ở máy thì dùng `npx vercel dev`.
 
 Ghi chú quan trọng:
 - **Chỉ chạy trên HTTPS** (hoặc `localhost`). Vercel có HTTPS sẵn.

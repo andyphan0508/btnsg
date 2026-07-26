@@ -67,9 +67,25 @@ export async function subscribeToPush() {
     }),
   })
 
-  if (!response.ok) {
-    const detail = await response.json().catch(() => null)
-    return { ok: false, reason: detail?.error || `HTTP ${response.status}` }
+  // Khi chạy `npm run dev` (Vite), thư mục api/ không hoạt động — máy chủ trả về
+  // index.html kèm status 200. Không kiểm tra thì sẽ báo "thành công" nhầm.
+  const raw = await response.text()
+  let payload = null
+  try {
+    payload = JSON.parse(raw)
+  } catch {
+    return {
+      ok: false,
+      reason:
+        'Máy chủ không trả về dữ liệu hợp lệ. Chức năng thông báo chỉ chạy trên bản đã deploy (Vercel), không chạy với `npm run dev`.',
+    }
+  }
+
+  if (!response.ok || !payload?.ok) {
+    // Đăng ký ở trình duyệt đã tạo nhưng server không lưu được → gỡ ra cho sạch,
+    // tránh trạng thái "máy nghĩ là đã đăng ký" mà thực tế server không biết.
+    await subscription.unsubscribe().catch(() => {})
+    return { ok: false, reason: payload?.error || `HTTP ${response.status}` }
   }
 
   return { ok: true }

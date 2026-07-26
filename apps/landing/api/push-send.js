@@ -32,9 +32,20 @@ const send = (res, status, payload) => {
   res.status(status).json(payload);
 };
 
+/** SUPABASE_URL phải là https://<project-ref>.supabase.co, không phải link trang quản trị. */
+const checkSupabaseUrl = () => {
+  const url = (process.env.SUPABASE_URL || '').trim();
+  if (!url) return 'Thiếu biến SUPABASE_URL.';
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)\/?$/i.test(url)) {
+    return `SUPABASE_URL không đúng định dạng: "${url}". Phải là https://<project-ref>.supabase.co.`;
+  }
+  return null;
+};
+
 const supabaseFetch = (path, options = {}) => {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  return fetch(`${process.env.SUPABASE_URL}/rest/v1/${path}`, {
+  const base = (process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
+  return fetch(`${base}/rest/v1/${path}`, {
     ...options,
     headers: {
       apikey: key,
@@ -85,6 +96,8 @@ export default async function handler(req, res) {
   if (missing.length > 0) {
     return send(res, 500, { error: `Server thiếu biến môi trường: ${missing.join(', ')}` });
   }
+  const urlError = checkSupabaseUrl();
+  if (urlError) return send(res, 500, { error: urlError });
 
   try {
     const auth = await authorize(req);
@@ -102,7 +115,26 @@ export default async function handler(req, res) {
     );
 
     const subsRes = await supabaseFetch('push_subscriptions?select=endpoint,p256dh,auth');
-    const subscriptions = (await subsRes.json().catch(() => [])) || [];
+    const subsText = await subsRes.text();
+    if (!subsRes.ok) {
+      if (/PGRST125|Invalid path specified/i.test(subsText)) {
+        return send(res, 502, {
+          error: 'Đường dẫn tới Supabase không hợp lệ — thường do SUPABASE_URL có dấu "/" thừa ở cuối.',
+        });
+      }
+      if (/PGRST205|does not exist/i.test(subsText)) {
+        return send(res, 502, {
+          error: 'Chưa có bảng push_subscriptions — hãy chạy migration 0003 trong SQL Editor.',
+        });
+      }
+      return send(res, 502, { error: `Không đọc được danh sách thiết bị: ${subsText.slice(0, 200)}` });
+    }
+    let subscriptions = [];
+    try {
+      subscriptions = JSON.parse(subsText) || [];
+    } catch {
+      return send(res, 502, { error: 'Supabase trả về dữ liệu không hợp lệ — kiểm tra SUPABASE_URL.' });
+    }
     if (subscriptions.length === 0) {
       return send(res, 200, { ok: true, sent: 0, failed: 0, note: 'Chưa có thiết bị nào đăng ký.' });
     }

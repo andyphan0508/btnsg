@@ -2,14 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "comment": "Mọi đường dẫn về index.html cho react-router, TRỪ /api/* (serverless function) — nếu không, API push sẽ trả về trang HTML.",
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
     {
-      "comment": "Service worker phải được phục vụ mới nhất và có quyền điều khiển toàn site.",
       "source": "/sw.js",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },

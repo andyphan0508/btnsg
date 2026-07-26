@@ -4681,3 +4681,106 @@ body:has(.hero) {
 }
 /* Hero trang chủ bù lại đúng phần vừa bỏ để nội dung không chui dưới nav */
 body:has(.hero) .hero { padding-top: 64px; }
+
+/* ============================================================
+   Lời mời nhận thông báo đẩy — góc trái dưới, tránh FAB (phải)
+   và thanh điều hướng dưới trên mobile
+   ============================================================ */
+.push-prompt {
+  position: fixed;
+  left: max(20px, env(safe-area-inset-left));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 145;
+  width: min(340px, calc(100vw - 40px));
+  display: flex;
+  gap: 12px;
+  padding: 16px 16px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+  animation: push-in 0.4s var(--ease-out);
+}
+@keyframes push-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.push-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.push-close:hover { background: var(--surface-2); color: var(--ink); }
+.push-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+.push-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.push-body strong { font-size: 0.95rem; color: var(--ink); padding-right: 18px; }
+.push-body p { font-size: 0.82rem; color: var(--ink-2); line-height: 1.55; margin: 0; }
+.push-error { color: var(--brand-deep) !important; }
+.push-actions { display: flex; gap: 8px; margin-top: 10px; }
+.push-accept { padding: 8px 16px; font-size: 0.84rem; }
+.push-later { padding: 8px 12px; font-size: 0.84rem; }
+
+@media (max-width: 768px) {
+  /* Trải ngang hết màn hình → phải nằm TRÊN nút nhắn tin (FAB), không chỉ trên thanh nav:
+     thanh nav (64px) + khoảng hở + chiều cao FAB (52px) + khoảng hở. */
+  .push-prompt {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    bottom: calc(26px + 52px + var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  }
+}
+
+/* Nút bật/tắt nhận thông báo ở chân trang */
+.push-toggle { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.push-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.82);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.push-toggle-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.13); color: #fff; }
+.push-toggle-btn.on {
+  border-color: rgba(226, 105, 62, 0.5);
+  background: rgba(226, 105, 62, 0.18);
+  color: var(--brand-2);
+}
+.push-toggle-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.push-toggle-msg {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 260px;
+  text-align: right;
+  line-height: 1.5;
+}
+@media (max-width: 768px) {
+  .push-toggle { align-items: center; }
+  .push-toggle-msg { text-align: center; max-width: 100%; }
+}

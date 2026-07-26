@@ -4,6 +4,7 @@ import Nav from "./components/Nav.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import Footer from "./components/Footer.jsx";
 import ContactFab from "./components/ContactFab.jsx";
+import PushPrompt from "./components/PushPrompt.jsx";
 import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
 import Theme from "./pages/Theme.jsx";
@@ -42,6 +43,7 @@ export default function App() {
       </Routes>
       <Footer />
       <ContactFab />
+      <PushPrompt />
       <BottomNav />
     </>
   );

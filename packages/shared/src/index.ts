@@ -114,6 +114,9 @@ export type RequestItem = {
 /* ---------- Thu chi ---------- */
 export type ExpenseType = "income" | "expense";
 
+/** Hình thức thanh toán của một giao dịch. */
+export type PaymentMethod = "cash" | "transfer" | "other";
+
 export type Expense = {
   id: string;
   date: string;
@@ -121,6 +124,19 @@ export type Expense = {
   category: string;
   amount: number;
   note?: string;
+  /** Hạng mục con — chi tiết hoá bên trong hạng mục lớn. */
+  subCategory?: string;
+  /** Số phiếu / số chứng từ (VD: PC-2026-001). */
+  receiptNo?: string;
+  paymentMethod?: PaymentMethod;
+  /** Người nộp (khoản thu) hoặc người nhận (khoản chi). */
+  counterparty?: string;
+  /** Người ghi nhận / thủ quỹ chi tiền. */
+  handledBy?: string;
+  /** Thuộc hoạt động - sự kiện nào (VD: Trại hè 2026). */
+  eventName?: string;
+  /** Link ảnh chụp hoá đơn / chứng từ (Drive, ảnh…). */
+  attachmentUrl?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -275,6 +291,23 @@ export const EXPENSE_CATEGORIES = [
   "Cơ sở vật chất",
   "Khác",
 ] as const;
+
+/** Gợi ý hạng mục con cho từng hạng mục lớn (người dùng vẫn gõ tự do được). */
+export const EXPENSE_SUBCATEGORIES: Record<string, string[]> = {
+  "Quỹ ban": ["Dâng hiến hằng tuần", "Đóng góp ban viên", "Ủng hộ từ Hội Thánh", "Lãi ngân hàng"],
+  "Truyền giảng": ["In ấn tờ rơi", "Âm thanh - ánh sáng", "Quà tặng thân hữu", "Trang trí", "Nước uống"],
+  "Công tác xã hội": ["Quà từ thiện", "Chi phí đi lại", "Vật phẩm cứu trợ", "Hỗ trợ hoàn cảnh khó khăn"],
+  "Sinh hoạt - dã ngoại": ["Thuê xe", "Ăn uống", "Thuê địa điểm", "Trò chơi - giải thưởng", "Vé tham quan"],
+  "Thăm viếng": ["Quà thăm viếng", "Xăng xe", "Hoa - trái cây"],
+  "Cơ sở vật chất": ["Nhạc cụ", "Thiết bị âm thanh", "Bàn ghế", "Sửa chữa", "Văn phòng phẩm"],
+  Khác: ["Tạm ứng", "Hoàn ứng", "Phát sinh"],
+};
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  cash: "Tiền mặt",
+  transfer: "Chuyển khoản",
+  other: "Khác",
+};
 
 export const MEMBER_STAGE_LABELS: Record<MemberStage, string> = {
   thieu_nien: "Thiếu niên",
@@ -432,4 +465,171 @@ export const fillTemplate = (
     const value = values[field];
     return value !== undefined && value !== "" ? value : raw;
   });
+};
+
+/* ============================================================
+   Thống kê thu chi & tiện ích cho phiếu chi
+   ============================================================ */
+
+export type FinancePeriod = "day" | "month" | "year";
+
+export type FinanceBucket = {
+  /** Khoá sắp xếp: yyyy-MM-dd | yyyy-MM | yyyy */
+  key: string;
+  /** Nhãn hiển thị tiếng Việt */
+  label: string;
+  income: number;
+  expense: number;
+  balance: number;
+  count: number;
+};
+
+export type FinanceTotals = {
+  income: number;
+  expense: number;
+  balance: number;
+  count: number;
+};
+
+/** Tổng thu, tổng chi, số dư của một tập giao dịch. */
+export const summarizeExpenses = (expenses: Expense[]): FinanceTotals => {
+  let income = 0;
+  let expense = 0;
+  for (const item of expenses) {
+    if (item.type === "income") income += item.amount;
+    else expense += item.amount;
+  }
+  return { income, expense, balance: income - expense, count: expenses.length };
+};
+
+const periodKey = (date: string, period: FinancePeriod): string => {
+  if (period === "year") return date.slice(0, 4);
+  if (period === "month") return date.slice(0, 7);
+  return date.slice(0, 10);
+};
+
+const periodLabel = (key: string, period: FinancePeriod): string => {
+  if (period === "year") return `Năm ${key}`;
+  if (period === "month") {
+    const [year, month] = key.split("-");
+    return `Tháng ${Number(month)}/${year}`;
+  }
+  const [year, month, day] = key.split("-");
+  return `${Number(day)}/${Number(month)}/${year}`;
+};
+
+/**
+ * Gom giao dịch theo ngày / tháng / năm, sắp xếp tăng dần theo thời gian.
+ * `limit` giữ lại N kỳ gần nhất (bỏ qua nếu không truyền).
+ */
+export const groupByPeriod = (
+  expenses: Expense[],
+  period: FinancePeriod,
+  limit?: number,
+): FinanceBucket[] => {
+  const map = new Map<string, FinanceBucket>();
+
+  for (const item of expenses) {
+    if (!item.date) continue;
+    const key = periodKey(item.date, period);
+    let bucket = map.get(key);
+    if (!bucket) {
+      bucket = { key, label: periodLabel(key, period), income: 0, expense: 0, balance: 0, count: 0 };
+      map.set(key, bucket);
+    }
+    if (item.type === "income") bucket.income += item.amount;
+    else bucket.expense += item.amount;
+    bucket.balance = bucket.income - bucket.expense;
+    bucket.count += 1;
+  }
+
+  const buckets = [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
+  return limit && buckets.length > limit ? buckets.slice(-limit) : buckets;
+};
+
+export type CategoryBucket = {
+  category: string;
+  amount: number;
+  count: number;
+  /** Tỷ trọng trên tổng (0–100). */
+  percent: number;
+};
+
+/** Tổng hợp theo hạng mục cho một loại giao dịch (thu hoặc chi). */
+export const summarizeByCategory = (expenses: Expense[], type: ExpenseType): CategoryBucket[] => {
+  const map = new Map<string, { amount: number; count: number }>();
+  let total = 0;
+
+  for (const item of expenses) {
+    if (item.type !== type) continue;
+    const current = map.get(item.category) ?? { amount: 0, count: 0 };
+    current.amount += item.amount;
+    current.count += 1;
+    map.set(item.category, current);
+    total += item.amount;
+  }
+
+  return [...map.entries()]
+    .map(([category, value]) => ({
+      category,
+      amount: value.amount,
+      count: value.count,
+      percent: total > 0 ? (value.amount / total) * 100 : 0,
+    }))
+    .sort((a, b) => b.amount - a.amount);
+};
+
+/* ---------- Đọc số tiền bằng chữ (cho phiếu chi) ---------- */
+
+const ONES = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+
+/** Đọc nhóm 3 chữ số; `full` = true khi còn nhóm lớn hơn phía trước (phải đọc đủ "không trăm"). */
+const readTriple = (value: number, full: boolean): string => {
+  const hundred = Math.floor(value / 100);
+  const ten = Math.floor((value % 100) / 10);
+  const unit = value % 10;
+  const parts: string[] = [];
+
+  if (hundred > 0 || full) parts.push(`${ONES[hundred]} trăm`);
+
+  if (ten > 1) {
+    parts.push(`${ONES[ten]} mươi`);
+    if (unit === 1) parts.push("mốt");
+    else if (unit === 5) parts.push("lăm");
+    else if (unit > 0) parts.push(ONES[unit]);
+  } else if (ten === 1) {
+    parts.push("mười");
+    if (unit === 5) parts.push("lăm");
+    else if (unit > 0) parts.push(ONES[unit]);
+  } else if (unit > 0) {
+    if (hundred > 0 || full) parts.push("lẻ");
+    parts.push(ONES[unit]);
+  }
+
+  return parts.join(" ");
+};
+
+const SCALES = ["", " nghìn", " triệu", " tỷ"];
+
+/** "1.250.000" → "Một triệu hai trăm năm mươi nghìn đồng". */
+export const amountToWords = (amount: number): string => {
+  const rounded = Math.floor(Math.abs(amount));
+  if (rounded === 0) return "Không đồng";
+
+  const triples: number[] = [];
+  let rest = rounded;
+  while (rest > 0) {
+    triples.push(rest % 1000);
+    rest = Math.floor(rest / 1000);
+  }
+
+  const words: string[] = [];
+  for (let i = triples.length - 1; i >= 0; i -= 1) {
+    if (triples[i] === 0) continue;
+    // Nhóm không phải nhóm đầu tiên phải đọc đủ "không trăm ..."
+    words.push(readTriple(triples[i], i !== triples.length - 1) + (SCALES[i] ?? ""));
+  }
+
+  const text = words.join(" ").replace(/\s+/g, " ").trim();
+  return `${text.charAt(0).toUpperCase()}${text.slice(1)} đồng`;
 };

@@ -124,6 +124,13 @@ const expenseMapper = buildMapper<Expense>('expenses', [
   f('category', 'category'),
   f('amount', 'amount'),
   f('note', 'note'),
+  f('subCategory', 'sub_category'),
+  f('receiptNo', 'receipt_no'),
+  f('paymentMethod', 'payment_method'),
+  f('counterparty', 'counterparty'),
+  f('handledBy', 'handled_by'),
+  f('eventName', 'event_name'),
+  f('attachmentUrl', 'attachment_url'),
 ]);
 
 const planMapper = buildMapper<Plan>('plans', [

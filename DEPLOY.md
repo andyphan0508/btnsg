@@ -18,6 +18,9 @@ Khi **không** cấu hình Supabase, dashboard tự chạy **chế độ demo/lo
 
 1. Vào <https://supabase.com> → **New project** (chọn region Singapore cho gần VN).
 2. Mở **SQL Editor** → dán toàn bộ nội dung file [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) → **Run**.
+   Sau đó chạy tiếp [`supabase/migrations/0002_expenses_detail.sql`](supabase/migrations/0002_expenses_detail.sql)
+   (bổ sung các cột chi tiết cho Thu chi: hạng mục con, số chứng từ, hình thức thanh toán,
+   người nộp/nhận, thủ quỹ, hoạt động, link chứng từ). File này chạy lại nhiều lần vẫn an toàn.
    - Script tạo đủ bảng (thành viên, điểm danh, lịch, công việc, đề xuất, thu chi, kế hoạch,
      template email, audit log), bật RLS 2 cấp quyền (Quản trị / BĐH), trigger tự ghi lịch sử
      thay đổi thành viên và seed sẵn 11 thành viên BĐH + 3 template email.
@@ -215,6 +218,79 @@ Ghi chú:
 - Soạn `.md` bằng app ghi chú bất kỳ rồi upload, hoặc dùng tiện ích chỉnh sửa text
   ngay trên Drive; lưu file với **UTF-8** để tiếng Việt hiển thị đúng (mặc định của
   hầu hết editor hiện nay).
+
+---
+
+## Bước 2d — Thông báo đẩy (Web Push)
+
+Khách vào landing sẽ thấy lời mời *“Theo dõi Ban Thanh Niên?”*; ai bấm đồng ý thì từ đó
+nhận được thông báo trên điện thoại/máy tính — kể cả khi **không mở trang web**. Ở dashboard,
+mục **Thông báo đẩy** soạn nội dung và bấm gửi là đẩy ngay tới tất cả thiết bị đó.
+
+```
+Landing (bấm "Nhận thông báo")
+   └─▶ /api/push-subscribe  ──▶ Supabase: bảng push_subscriptions
+Dashboard (bấm "Gửi")
+   └─▶ /api/push-send  ──(VAPID)──▶ Google/Mozilla/Apple  ──▶ thiết bị của các bạn
+```
+
+1. **Chạy migration**: SQL Editor → dán [`supabase/migrations/0003_push_subscriptions.sql`](supabase/migrations/0003_push_subscriptions.sql) → Run.
+2. **Sinh cặp khoá VAPID** (đã sinh sẵn cho bạn ở `apps/landing/.vapid-private-key.txt` — nếu
+   muốn sinh lại: `npx web-push generate-vapid-keys --json`).
+3. **Vercel → project landing → Settings → Environment Variables**, thêm:
+
+   | Biến | Giá trị |
+   |---|---|
+   | `VITE_VAPID_PUBLIC_KEY` | khoá công khai (cũng để trong `apps/landing/.env` khi chạy local) |
+   | `VAPID_PUBLIC_KEY` | y hệt khoá công khai |
+   | `VAPID_PRIVATE_KEY` | khoá bí mật — **chỉ đặt ở đây, không commit** |
+   | `VAPID_SUBJECT` | `mailto:banthanhniensaigon@gmail.com` |
+   | `SUPABASE_URL` | URL project Supabase |
+   | `SUPABASE_ANON_KEY` | anon key **hoặc** publishable key (`sb_publishable_…`) |
+   | `SUPABASE_SERVICE_ROLE_KEY` | secret key (`sb_secret_…`) **hoặc** service_role key — xem bên dưới |
+
+   > **Không thấy `service_role` trong Settings → API?** Supabase đã chuyển sang bộ khoá mới.
+   > Vào **Project Settings → API Keys**, ở đó có 2 tab:
+   > - Tab **API Keys** (mới): bấm **Create new API key** → mục **Secret keys** → khoá dạng
+   >   `sb_secret_…`. **Nên dùng cái này** — khoá `service_role` cũ sẽ bị Supabase gỡ bỏ vào
+   >   **cuối năm 2026**.
+   > - Tab **Legacy API Keys**: chứa `anon` và `service_role` kiểu cũ (phải bấm *Reveal* để hiện).
+   >
+   > Code trong repo dùng được cả hai loại — chỉ cần dán đúng giá trị vào biến môi trường.
+   > Dù dùng loại nào, khoá secret/service_role **chỉ đặt trên Vercel**, tuyệt đối không đưa vào
+   > code hay biến có tiền tố `VITE_` (biến `VITE_*` bị nhúng thẳng vào file JS mà ai cũng tải được).
+
+4. **Vercel → project dashboard**, thêm `VITE_PUSH_API_URL` = địa chỉ landing đã deploy
+   (VD `https://btnsg.vercel.app`).
+5. **Redeploy cả hai project** (biến `VITE_*` được nướng vào lúc build).
+6. Xoá file `apps/landing/.vapid-private-key.txt` sau khi đã dán xong.
+
+### Giới hạn gửi — có bị chặn số lần/ngày không?
+
+**Không.** Web Push qua VAPID **không giới hạn số thông báo mỗi ngày**, không tốn phí, không
+cần tài khoản Firebase. Khác hẳn gửi email qua Gmail (bị chặn ~100 mail/ngày). Những giới hạn
+thực tế duy nhất:
+
+| Nguồn | Giới hạn | Với quy mô Ban Thanh Niên |
+|---|---|---|
+| Google / Mozilla / Apple (dịch vụ push) | Không giới hạn số lần; chỉ chặn khi phát hiện lạm dụng | Thoải mái |
+| Vercel Function (gói Hobby) | ~100.000 lượt gọi/tháng, mỗi lượt tối đa 60 giây | Mỗi lần bấm "Gửi" = 1 lượt gọi |
+| Số thiết bị mỗi lần gửi | Function gửi theo lô 100 thiết bị, tuần tự từng lô | Vài nghìn thiết bị vẫn kịp trong 60 giây |
+| **Người nhận** | Gửi quá dày → các bạn tự tắt thông báo | **Đây mới là giới hạn thật** |
+
+Khuyến nghị thực tế: **2–4 thông báo mỗi tuần**. Dashboard hiển thị số thông báo đã gửi trong
+ngày và nhắc nhẹ khi vượt 3 lần/ngày.
+
+Ghi chú quan trọng:
+- **Chỉ chạy trên HTTPS** (hoặc `localhost`). Vercel có HTTPS sẵn.
+- Người dùng có thể **bật/tắt bất cứ lúc nào** bằng nút ở chân trang landing.
+- **iPhone/iPad**: Safari chỉ cho nhận thông báo khi người dùng đã **“Thêm vào Màn hình chính”**
+  (cài web như một app). Android/Chrome/Edge/Firefox trên máy tính thì nhận bình thường.
+- Ai bấm “Để sau” sẽ được hỏi lại sau 7 ngày; ai bấm “Chặn” thì phải tự bật lại trong cài đặt
+  trình duyệt (đây là quy định của trình duyệt, web không thể hỏi lại).
+- Chỉ tài khoản Supabase **đã được duyệt** mới gửi được — Function xác thực token đăng nhập,
+  không dùng mật khẩu chung nhúng trong dashboard.
+- Thiết bị gỡ cài/hết hạn sẽ tự bị dọn khỏi danh sách sau lần gửi kế tiếp.
 
 ---
 

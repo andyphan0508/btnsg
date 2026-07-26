@@ -6,3 +6,5 @@ apps/api/data/
 .env
 .env.local
 .env.*.local
+
+.vapid-private-key.txt

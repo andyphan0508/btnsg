@@ -159,7 +159,19 @@ const sanitizeExpense: Sanitizer<Expense> = (body, isPartial) => {
     if (amount === undefined || amount <= 0) throw new ValidationError('"amount" phải là số dương');
     fields.amount = amount;
   }
+  if (body.paymentMethod !== undefined) {
+    const method = optionalString(body, 'paymentMethod');
+    fields.paymentMethod = method
+      ? oneOf({ paymentMethod: method }, 'paymentMethod', ['cash', 'transfer', 'other'] as const)
+      : undefined;
+  }
   fields.note = optionalString(body, 'note');
+  fields.subCategory = optionalString(body, 'subCategory');
+  fields.receiptNo = optionalString(body, 'receiptNo');
+  fields.counterparty = optionalString(body, 'counterparty');
+  fields.handledBy = optionalString(body, 'handledBy');
+  fields.eventName = optionalString(body, 'eventName');
+  fields.attachmentUrl = optionalString(body, 'attachmentUrl');
   return fields;
 };
 

@@ -13,6 +13,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/thu-chi': 'Quản lý thu chi',
   '/ke-hoach': 'Kế hoạch',
   '/email-bdh': 'Gửi email Ban Điều Hành',
+  '/dang-bai': 'Đăng bài Tin tức',
+  '/thong-bao-day': 'Thông báo đẩy',
   '/tai-khoan': 'Quản lý tài khoản',
 };
 

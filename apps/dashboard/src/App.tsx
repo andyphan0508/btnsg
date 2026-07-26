@@ -10,6 +10,7 @@ import FinanceScreen from './screens/Finance';
 import LoginScreen from './screens/Login';
 import MembersScreen from './screens/Members';
 import NewsScreen from './screens/News';
+import PushNotifyScreen from './screens/PushNotify';
 import OverviewScreen from './screens/Overview';
 import PlansScreen from './screens/Plans';
 import RequestsScreen from './screens/Requests';
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/ke-hoach" element={<PlansScreen />} />
             <Route path="/email-bdh" element={<EmailScreen />} />
             <Route path="/dang-bai" element={<NewsScreen />} />
+            <Route path="/thong-bao-day" element={<PushNotifyScreen />} />
             <Route element={<RequireAdmin />}>
               <Route path="/tai-khoan" element={<AccountsScreen />} />
             </Route>

@@ -57,7 +57,15 @@ Các chức năng chính (mỗi màn hình là một thư mục trong `apps/dash
 - **Công việc** — bảng Kanban (Cần làm / Đang làm / Hoàn thành), phân công cho thành viên.
 - **Thông báo** — đăng và ghim thông báo lịch nhóm, sự kiện.
 - **Đề xuất / Request** — ghi nhận yêu cầu với trạng thái xử lý, tránh miss thông tin.
-- **Thu chi** — ghi các khoản thu/chi theo hạng mục, lọc theo tháng, tổng hợp số dư.
+- **Thu chi** — sổ quỹ chi tiết: hạng mục + hạng mục con (có gợi ý sẵn), số chứng từ,
+  hình thức thanh toán, người nộp/nhận, thủ quỹ, thuộc hoạt động nào, link ảnh chứng từ;
+  lọc theo loại/hạng mục/tháng và tìm kiếm toàn văn. **Phân tích** thu chi theo ngày/tháng/năm
+  (biểu đồ cột đôi + so sánh kỳ trước + cơ cấu theo hạng mục). **Xuất phiếu thu/phiếu chi**
+  theo mẫu để in và ký (có số tiền bằng chữ, ô ký Trưởng ban / Thủ quỹ / Người lập phiếu /
+  Người nhận tiền) — xem `apps/dashboard/src/utils/voucher.ts`; chọn nhiều giao dịch bằng
+  checkbox rồi **in gộp thành một PDF**, mỗi phiếu một trang. **Xuất sổ quỹ Excel** cho thủ quỹ
+  (`apps/dashboard/src/utils/financeExcel.ts`) gồm 3 sheet: *Sổ quỹ* (đầy đủ cột + số dư luỹ kế
+  + dòng tổng cộng), *Tổng hợp tháng*, *Theo hạng mục*; xuất đúng phần đang lọc.
 - **Kế hoạch** — kế hoạch với checklist hạng mục và thanh tiến độ.
 
 ## Backend & dữ liệu
@@ -115,6 +123,15 @@ folder "Tin tức" trên Drive, chứa 1 file `.md` (frontmatter `title/date/des
 ([News.gs](tools/apps-script/News.gs)), cấu hình `VITE_NEWS_SCRIPT_URL`; bỏ trống thì hiển
 thị dữ liệu mẫu. Xem [DEPLOY.md](DEPLOY.md) Bước 2c.
 
+**Thông báo đẩy (Web Push):** khách vào landing được mời *“Theo dõi Ban Thanh Niên?”*
+(`components/PushPrompt.jsx` — chỉ xin quyền khi người dùng bấm nút, bấm “Để sau” thì 7 ngày
+sau mới hỏi lại). Thiết bị đồng ý được lưu vào Supabase qua Vercel Function
+`apps/landing/api/push-subscribe.js`; service worker `public/sw.js` nhận và hiển thị thông báo,
+bấm vào sẽ mở đúng trang. Dashboard có màn hình **Thông báo đẩy** (`/thong-bao-day`) để soạn
+và gửi tới mọi thiết bị qua `apps/landing/api/push-send.js` — Function xác thực token đăng nhập
+Supabase nên chỉ tài khoản đã duyệt mới gửi được, đồng thời tự dọn thiết bị hết hạn và ghi
+nhật ký vào bảng `push_messages`. Xem [DEPLOY.md](DEPLOY.md) Bước 2d.
+
 ## Triển khai
 
 Xem [DEPLOY.md](DEPLOY.md): hướng dẫn từng bước tạo Supabase + chạy SQL, deploy Google
@@ -122,5 +139,4 @@ Apps Script (gửi email) và deploy 2 project Vercel (landing + dashboard).
 
 ## Việc cần làm tiếp
 
-- Thông báo đẩy về thiết bị thành viên (web push) — chưa ưu tiên.
 - Mục **Hoạt động qua các năm** trên landing: tổng hợp nội dung từ Fanpage Facebook.

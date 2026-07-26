@@ -1,3 +1,4 @@
+import PushToggle from "./PushToggle.jsx";
 export default function Footer() {
   const handleScrollTop = (e) => {
     e.preventDefault();
@@ -17,6 +18,7 @@ export default function Footer() {
           <span className="foot-slogan">"TẤT CẢ VÌ NGƯỜI CHƯA ĐƯỢC CỨU"</span>
         </div>
         <div className="foot-right">
+          <PushToggle />
           <a
             href="#top"
             onClick={handleScrollTop}

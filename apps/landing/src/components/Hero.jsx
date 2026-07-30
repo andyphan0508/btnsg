@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { FiBookOpen, FiArrowRight } from "react-icons/fi";
 import { FaChurch, FaFacebookF, FaFire } from "react-icons/fa6";
 import { site, heroMeta } from "../data/content.js";
@@ -87,14 +88,14 @@ export default function Hero() {
 
           {/* CTA Group */}
           <div className="hero-cta">
-            <a className="btn btn-gold btn-glowing" href="#sinh-hoat">
+            <Link className="btn btn-gold btn-glowing" to="/sinh-hoat">
               <span>Tham gia sinh hoạt</span>
               <FiArrowRight className="arrow-right" />
-            </a>
-            <a className="btn btn-ghost btn-glass" href="#chu-de">
+            </Link>
+            <Link className="btn btn-ghost btn-glass" to="/chu-de">
               <FiBookOpen className="btn-icon" />
               <span>Chủ đề 2026</span>
-            </a>
+            </Link>
             <a
               className="btn btn-glass btn-icon-only"
               href={site.facebook}

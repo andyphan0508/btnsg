@@ -1,6 +1,7 @@
 import type { OverviewStats } from '@btnsg/shared';
 import EmptyState from '../../../ui/EmptyState';
 import { formatDate } from '../../../utils/format';
+import { FiCheckSquare } from 'react-icons/fi';
 
 type OverviewRecentSessionsProps = {
   sessions: OverviewStats['recentSessions'];
@@ -13,7 +14,7 @@ const OverviewRecentSessions = ({ sessions }: OverviewRecentSessionsProps) => {
     return (
       <div className="card">
         <div className="card-title">Điểm danh gần đây</div>
-        <EmptyState icon="✅" title="Chưa có buổi điểm danh nào" hint="Tạo buổi điểm danh đầu tiên ở mục Điểm danh." />
+        <EmptyState icon={<FiCheckSquare />} title="Chưa có buổi điểm danh nào" hint="Tạo buổi điểm danh đầu tiên ở mục Điểm danh." />
       </div>
     );
   }

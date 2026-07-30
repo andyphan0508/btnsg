@@ -32,7 +32,11 @@ const buildMemberPayload = (values: MemberFormValues): Partial<Member> => {
     duties: parseDutyList(values.duties),
     group: values.group || undefined,
     phone: values.phone || undefined,
+    phone2: values.phone2 || undefined,
     email: values.email || undefined,
+    address: values.address || undefined,
+    occupation: values.occupation || undefined,
+    workplace: values.workplace || undefined,
     birthday: values.birthday || undefined,
     joinedAt: values.joinedAt || undefined,
     status: values.status,
@@ -96,7 +100,20 @@ const MembersScreen = () => {
       }
       if (stageFilter !== 'all' && computeStage(member) !== stageFilter) return false;
       if (!keyword) return true;
-      const haystack = `${member.name} ${member.phone ?? ''} ${member.email ?? ''}`.toLowerCase();
+      const haystack = [
+        member.name,
+        member.phone,
+        member.phone2,
+        member.email,
+        member.address,
+        member.occupation,
+        member.workplace,
+        member.boardRole,
+        ...member.duties,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
       return haystack.includes(keyword);
     });
 

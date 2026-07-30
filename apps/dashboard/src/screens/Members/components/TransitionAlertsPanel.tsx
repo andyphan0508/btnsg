@@ -57,14 +57,14 @@ const TransitionAlertsPanel = ({ members }: TransitionAlertsPanelProps) => {
   return (
     <div className="grid-2" style={styles.grid}>
       <AlertList
-        title="⬆️ Chuẩn bị lên Thanh tráng"
+        title="Chuẩn bị lên Thanh tráng"
         hint="Thanh niên đủ 30 tuổi trong năm nay hoặc năm sau."
         alerts={alerts.toThanhTrang}
         emptyText="Chưa có thành viên nào sắp qua 30 tuổi."
         accentBadge="badge-amber"
       />
       <AlertList
-        title="🌱 Thiếu niên chuẩn bị lên Thanh niên"
+        title="Thiếu niên chuẩn bị lên Thanh niên"
         hint="Thiếu niên đủ 18 tuổi trong năm nay hoặc năm sau."
         alerts={alerts.toThanhNien}
         emptyText="Chưa có thiếu niên nào sắp đủ 18 tuổi."

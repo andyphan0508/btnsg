@@ -2,6 +2,7 @@ import type { RequestItem, RequestStatus } from '@btnsg/shared';
 import { REQUEST_STATUS_LABELS } from '@btnsg/shared';
 import EmptyState from '../../../ui/EmptyState';
 import { formatDate } from '../../../utils/format';
+import { FiMessageSquare } from 'react-icons/fi';
 
 type RequestTableProps = {
   requests: RequestItem[];
@@ -23,7 +24,7 @@ const RequestTable = ({ requests, onEdit, onDelete, onSetStatus }: RequestTableP
     return (
       <div className="table-wrap">
         <EmptyState
-          icon="📮"
+          icon={<FiMessageSquare />}
           title="Chưa có request nào"
           hint="Ghi nhận mọi đề xuất, yêu cầu để không bị miss thông tin."
         />
@@ -47,13 +48,13 @@ const RequestTable = ({ requests, onEdit, onDelete, onSetStatus }: RequestTableP
         <tbody>
           {requests.map((item) => (
             <tr key={item.id}>
-              <td>
+              <td data-label="Đề xuất">
                 <span className="cell-strong">{item.title}</span>
                 <div className="cell-muted">{item.content}</div>
               </td>
-              <td>{item.requesterName}</td>
-              <td className="cell-muted">{formatDate(item.createdAt)}</td>
-              <td>
+              <td data-label="Người gửi">{item.requesterName}</td>
+              <td data-label="Ngày gửi" className="cell-muted">{formatDate(item.createdAt)}</td>
+              <td data-label="Trạng thái">
                 <select
                   className="select"
                   style={{ minWidth: 130, padding: '6px 10px' }}
@@ -68,7 +69,7 @@ const RequestTable = ({ requests, onEdit, onDelete, onSetStatus }: RequestTableP
                   <span className={`badge ${STATUS_BADGE[item.status]}`}>{REQUEST_STATUS_LABELS[item.status]}</span>
                 </div>
               </td>
-              <td className="cell-muted">{item.response ?? '—'}</td>
+              <td data-label="Phản hồi" className="cell-muted">{item.response ?? '—'}</td>
               <td>
                 <div className="cell-actions">
                   <button type="button" className="btn btn-outline btn-sm" onClick={() => onEdit(item)}>Sửa</button>

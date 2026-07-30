@@ -1,6 +1,7 @@
 import type { OverviewStats } from '@btnsg/shared';
 import { DAY_OF_WEEK_LABELS } from '@btnsg/shared';
 import EmptyState from '../../../ui/EmptyState';
+import { FiBookmark, FiCalendar } from 'react-icons/fi';
 
 type OverviewSidePanelProps = {
   events: OverviewStats['upcomingEvents'];
@@ -14,7 +15,7 @@ const OverviewSidePanel = ({ events, announcements }: OverviewSidePanelProps) =>
     <div style={styles.column}>
       <div className="card">
         <div className="card-title">Lịch trong tuần</div>
-        {events.length === 0 && <EmptyState icon="📅" title="Chưa có lịch sinh hoạt" />}
+        {events.length === 0 && <EmptyState icon={<FiCalendar />} title="Chưa có lịch sinh hoạt" />}
         <div style={styles.list}>
           {events.map((event) => (
             <div key={event.id} style={styles.eventRow}>
@@ -34,11 +35,11 @@ const OverviewSidePanel = ({ events, announcements }: OverviewSidePanelProps) =>
 
       <div className="card">
         <div className="card-title">Thông báo ghim</div>
-        {announcements.length === 0 && <EmptyState icon="📌" title="Chưa có thông báo ghim" />}
+        {announcements.length === 0 && <EmptyState icon={<FiBookmark />} title="Chưa có thông báo ghim" />}
         <div style={styles.list}>
           {announcements.map((item) => (
             <div key={item.id} style={styles.announcement}>
-              <span className="cell-strong">📌 {item.title}</span>
+              <span className="cell-strong"><FiBookmark /> {item.title}</span>
               <p className="cell-muted" style={styles.announcementBody}>{item.content}</p>
             </div>
           ))}

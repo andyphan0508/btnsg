@@ -16,8 +16,17 @@ export type Member = {
   birthday?: string;
   phone?: string;
   email?: string;
+  /** Số điện thoại phụ / liên hệ khi khẩn cấp. */
+  phone2?: string;
+  /** Địa chỉ nơi ở hiện tại. */
+  address?: string;
+  /** Nghề nghiệp hoặc ngành đang học. */
+  occupation?: string;
+  /** Nơi làm việc / trường đang theo học. */
+  workplace?: string;
   role: MemberRole;
   boardRole?: string;
+  /** Công tác đang đảm nhiệm trong Ban (uỷ viên, hậu cần, ban đàn…). */
   duties: string[];
   group?: string;
   joinedAt?: string;

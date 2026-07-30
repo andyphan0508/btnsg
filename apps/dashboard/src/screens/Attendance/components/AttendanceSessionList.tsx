@@ -1,6 +1,7 @@
 import type { AttendanceSession } from '@btnsg/shared';
 import EmptyState from '../../../ui/EmptyState';
 import { formatDate } from '../../../utils/format';
+import { FiCalendar } from 'react-icons/fi';
 
 type AttendanceSessionListProps = {
   sessions: AttendanceSession[];
@@ -15,7 +16,7 @@ const AttendanceSessionList = ({ sessions, selectedSessionId, onSelect, onDelete
   if (sessions.length === 0) {
     return (
       <div className="card">
-        <EmptyState icon="🗓️" title="Chưa có buổi điểm danh" hint="Tạo buổi mới để bắt đầu điểm danh." />
+        <EmptyState icon={<FiCalendar />} title="Chưa có buổi điểm danh" hint="Tạo buổi mới để bắt đầu điểm danh." />
       </div>
     );
   }

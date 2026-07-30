@@ -23,11 +23,8 @@ export default function ThemeYear() {
             </blockquote>
           </div>
         </div>
-        {/* Decorative corner trims */}
-        <div className="corner-trim trim-tl" />
-        <div className="corner-trim trim-tr" />
-        <div className="corner-trim trim-bl" />
-        <div className="corner-trim trim-br" />
+        {/* Soft background glow halo for rounded panel */}
+        <div className="theme-panel-glow" aria-hidden="true" />
       </Reveal>
       <Reveal as="p" className="theme-note" variant="fade" delay={300}>
         {themeYear.note}

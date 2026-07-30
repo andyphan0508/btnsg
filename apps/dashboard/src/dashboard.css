@@ -93,10 +93,11 @@ button { font-family: var(--font-sans); }
 }
 .shell-content {
   flex: 1;
-  padding: 28px 32px 48px;
-  max-width: 1240px;
+  /* Trải hết bề ngang màn hình, chỉ chừa lề co giãn — màn càng lớn lề càng rộng
+     nhưng bảng biểu vẫn dùng trọn không gian thay vì bị nhốt giữa màn hình 4K. */
+  padding: clamp(20px, 1.6vw, 40px) clamp(16px, 2.2vw, 72px) 64px;
+  max-width: none;
   width: 100%;
-  margin: 0 auto;
   animation: page-in 0.45s var(--ease-out);
 }
 @keyframes page-in {
@@ -949,3 +950,226 @@ a:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible, 
   line-height: 1.6;
 }
 .push-quota-warn { margin-top: 6px; color: #9a7415; }
+
+/* ============================================================
+   Co giãn theo màn hình — thay các lưới cột cứng bằng lưới tự chia
+   ============================================================ */
+
+/* Lưới tự chia cột theo bề rộng còn trống: màn càng rộng càng nhiều cột,
+   màn hẹp tự xuống 1 cột mà không cần khai báo từng mốc breakpoint. */
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
+
+/* Bảng: cho phép giãn hết chiều ngang, chỉ cuộn khi thực sự chật */
+.table-wrap { width: 100%; overflow-x: auto; }
+.data-table { width: 100%; min-width: 0; }
+
+/* Màn hình rất rộng: tăng khoảng cách và cỡ chữ tiêu đề cho cân đối */
+@media (min-width: 1920px) {
+  .shell-content { padding-left: clamp(32px, 4vw, 96px); padding-right: clamp(32px, 4vw, 96px); }
+  .grid-2, .grid-3, .grid-4 { gap: 22px; }
+  .page-head h2 { font-size: 1.7rem; }
+}
+
+/* Icon trong nút / nhãn: căn giữa theo chữ, khoảng cách đều */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.badge { display: inline-flex; align-items: center; gap: 5px; }
+.badge svg { width: 12px; height: 12px; }
+.empty-state-icon svg { width: 34px; height: 34px; color: var(--ink-3); }
+.cell-muted svg, .cell-strong svg { vertical-align: -2px; width: 13px; height: 13px; }
+.check-box svg { width: 12px; height: 12px; }
+.push-quota-warn svg, .fin-legend svg { vertical-align: -2px; }
+
+/* ============================================================
+   Mobile: thay sidebar bằng thanh tab dưới
+   ============================================================ */
+
+:root { --mtab-h: 62px; }
+
+.mobile-tabbar { display: none; }
+.mtab-sheet { display: none; }
+
+.mtab-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  background: rgba(10, 14, 24, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 860px) {
+  /* Sidebar biến mất hoàn toàn, nội dung chiếm trọn bề ngang */
+  .sidebar { display: none; }
+  .shell-main { margin-left: 0; }
+  .shell-content {
+    padding: 18px 14px calc(28px + var(--mtab-h) + env(safe-area-inset-bottom));
+  }
+  .topbar { padding: 12px 14px; }
+  .topbar-date { display: none; }
+
+  .mobile-tabbar {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 170;
+    height: calc(var(--mtab-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(16, 25, 43, 0.96);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .mtab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 0.64rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    text-decoration: none;
+    padding: 0 2px;
+    transition: color 0.2s ease;
+  }
+  .mtab-item.active { color: var(--brand-2); }
+  .mtab-icon { width: 20px; height: 20px; }
+
+  /* Sheet "Thêm" trượt lên */
+  .mtab-sheet {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 175;
+    flex-direction: column;
+    gap: 14px;
+    padding: 10px 16px calc(20px + var(--mtab-h) + env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -18px 50px -12px rgba(0, 0, 0, 0.3);
+    transform: translateY(100%);
+    transition: transform 0.3s var(--ease-out);
+    pointer-events: none;
+    max-height: 82vh;
+    overflow-y: auto;
+  }
+  .mtab-sheet.open { transform: translateY(0); pointer-events: auto; }
+  .mtab-sheet-handle {
+    width: 42px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--line-strong);
+    margin: 2px auto 4px;
+  }
+  .mtab-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .mtab-sheet-title { font-weight: 800; font-size: 0.98rem; }
+  .mtab-sheet-sub { font-size: 0.76rem; color: var(--ink-3); }
+  .mtab-sheet-close {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .mtab-sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 10px;
+  }
+  .mtab-sheet-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 14px 8px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 0.76rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.35;
+  }
+  .mtab-sheet-item svg { width: 20px; height: 20px; }
+  .mtab-sheet-item.active {
+    border-color: var(--brand);
+    background: var(--brand-soft);
+    color: var(--brand-deep);
+  }
+  .mtab-signout { width: 100%; }
+}
+
+/* ============================================================
+   Bảng dữ liệu trên màn hình nhỏ: mỗi dòng thành một thẻ
+   (dùng data-label ở <td> để hiện tên cột bên trái)
+   ============================================================ */
+@media (max-width: 720px) {
+  .data-table thead { display: none; }
+  .data-table,
+  .data-table tbody,
+  .data-table tr,
+  .data-table td { display: block; width: 100%; }
+
+  .data-table tr {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+  }
+  .data-table tbody tr:hover { background: var(--surface); }
+
+  .data-table td {
+    border: none;
+    padding: 5px 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: right;
+  }
+  /* Nhãn cột lấy từ thuộc tính data-label của ô */
+  .data-table td::before {
+    content: attr(data-label);
+    flex: 0 0 40%;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+  }
+  .data-table td:empty { display: none; }
+  .cell-actions { justify-content: flex-end; flex-wrap: wrap; }
+
+  /* Thanh công cụ xếp dọc cho dễ bấm */
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar .input, .toolbar .select { width: 100%; min-width: 0; }
+  .toolbar-spacer { display: none; }
+  .page-head { flex-direction: column; align-items: stretch; }
+  .page-head .btn { width: 100%; }
+  .modal-card { width: calc(100vw - 24px); max-height: 88vh; }
+}

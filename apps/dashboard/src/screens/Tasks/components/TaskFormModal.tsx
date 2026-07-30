@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Member, TaskItem, TaskPriority, TaskStatus } from '@btnsg/shared';
 import { TASK_PRIORITY_LABELS, TASK_STATUS_LABELS } from '@btnsg/shared';
 import Modal from '../../../ui/Modal';
+import { FiCheck } from 'react-icons/fi';
 
 export type TaskFormValues = {
   title: string;
@@ -120,7 +121,7 @@ const TaskFormModal = ({ isOpen, editingTask, members, isSaving, saveError, onCl
                   className={`check-item${isChecked ? ' done' : ''}`}
                   style={isChecked ? { ...styles.assignee, textDecoration: 'none', color: 'var(--brand-deep)' } : styles.assignee}
                 >
-                  <span className="check-box">{isChecked ? '✓' : ''}</span>
+                  <span className="check-box">{isChecked ? <FiCheck /> : null}</span>
                   <input type="checkbox" checked={isChecked} onChange={() => toggleAssignee(member.id)} style={styles.hiddenInput} />
                   {member.name}
                 </label>

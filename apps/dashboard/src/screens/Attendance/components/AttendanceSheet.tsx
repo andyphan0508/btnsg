@@ -2,6 +2,7 @@ import type { AttendanceSession, AttendanceStatus, Member } from '@btnsg/shared'
 import { ATTENDANCE_STATUS_LABELS } from '@btnsg/shared';
 import EmptyState from '../../../ui/EmptyState';
 import { formatDate } from '../../../utils/format';
+import { FiArrowLeft } from 'react-icons/fi';
 
 type AttendanceSheetProps = {
   session: AttendanceSession | null;
@@ -26,7 +27,7 @@ const AttendanceSheet = ({ session, members, isSaving, onSetStatus, onMarkAll, o
   if (!session) {
     return (
       <div className="card">
-        <EmptyState icon="👈" title="Chọn một buổi điểm danh" hint="Hoặc tạo buổi mới để bắt đầu." />
+        <EmptyState icon={<FiArrowLeft />} title="Chọn một buổi điểm danh" hint="Hoặc tạo buổi mới để bắt đầu." />
       </div>
     );
   }

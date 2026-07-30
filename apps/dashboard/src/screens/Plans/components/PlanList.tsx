@@ -2,6 +2,7 @@ import type { Plan } from '@btnsg/shared';
 import { PLAN_STATUS_LABELS } from '@btnsg/shared';
 import EmptyState from '../../../ui/EmptyState';
 import { formatDate } from '../../../utils/format';
+import { FiCalendar, FiCheck, FiTarget } from 'react-icons/fi';
 
 type PlanListProps = {
   plans: Plan[];
@@ -22,7 +23,7 @@ const PlanList = ({ plans, onEdit, onDelete, onToggleItem }: PlanListProps) => {
   if (plans.length === 0) {
     return (
       <div className="card">
-        <EmptyState icon="🎯" title="Chưa có kế hoạch" hint="Lên kế hoạch cho các chương trình của Ban." />
+        <EmptyState icon={<FiTarget />} title="Chưa có kế hoạch" hint="Lên kế hoạch cho các chương trình của Ban." />
       </div>
     );
   }
@@ -45,7 +46,7 @@ const PlanList = ({ plans, onEdit, onDelete, onToggleItem }: PlanListProps) => {
             {plan.goal && <p className="cell-muted" style={styles.goal}>{plan.goal}</p>}
             {(plan.startDate || plan.endDate) && (
               <div className="cell-muted" style={styles.dates}>
-                🗓 {formatDate(plan.startDate)} → {formatDate(plan.endDate)}
+                <FiCalendar /> {formatDate(plan.startDate)} – {formatDate(plan.endDate)}
               </div>
             )}
 
@@ -63,7 +64,7 @@ const PlanList = ({ plans, onEdit, onDelete, onToggleItem }: PlanListProps) => {
                   className={`check-item${item.done ? ' done' : ''}`}
                   onClick={() => onToggleItem(plan, item.id)}
                 >
-                  <span className="check-box">{item.done ? '✓' : ''}</span>
+                  <span className="check-box">{item.done ? <FiCheck /> : null}</span>
                   {item.text}
                 </div>
               ))}

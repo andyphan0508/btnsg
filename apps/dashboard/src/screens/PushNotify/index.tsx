@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import type { IconType } from 'react-icons';
+import { FiAlertTriangle, FiBell, FiCheckCircle, FiFileText, FiImage } from 'react-icons/fi';
 import {
   countSubscribers,
   fetchPushLog,
@@ -10,21 +12,30 @@ import {
 import LoadingState from '../../ui/LoadingState';
 
 /** Mẫu soạn nhanh — bấm là điền sẵn, chỉ cần sửa lại chi tiết. */
-const QUICK_TEMPLATES = [
+const QUICK_TEMPLATES: {
+  icon: IconType;
+  label: string;
+  title: string;
+  body: string;
+  url: string;
+}[] = [
   {
-    label: '🔔 Nhắc buổi nhóm',
+    icon: FiBell,
+    label: 'Nhắc buổi nhóm',
     title: 'Nhắc lịch sinh hoạt',
     body: 'Chúa Nhật này 14:30 có buổi nhóm thờ phượng tại Lầu 2, 161 Đề Thám. Hẹn gặp bạn!',
     url: '/sinh-hoat',
   },
   {
-    label: '📰 Có bài viết mới',
+    icon: FiFileText,
+    label: 'Có bài viết mới',
     title: 'Bài viết mới từ Ban Thanh Niên',
     body: 'Vừa có bài viết mới trên trang Tin tức — mời bạn ghé đọc.',
     url: '/tin-tuc',
   },
   {
-    label: '📸 Ảnh mới',
+    icon: FiImage,
+    label: 'Ảnh mới',
     title: 'Ảnh hoạt động mới',
     body: 'Thư viện ảnh vừa được cập nhật những khoảnh khắc mới nhất của Ban.',
     url: '/thu-vien',
@@ -146,7 +157,7 @@ const PushNotifyScreen = () => {
               <strong>không giới hạn</strong> số lần gửi.
               {sentToday >= DAILY_SOFT_LIMIT && (
                 <div className="push-quota-warn">
-                  ⚠️ Đã gửi khá nhiều trong hôm nay — gửi dày quá dễ khiến các bạn tắt thông báo.
+                  <FiAlertTriangle /> Đã gửi khá nhiều trong hôm nay — gửi dày quá dễ khiến các bạn tắt thông báo.
                 </div>
               )}
             </div>
@@ -162,7 +173,7 @@ const PushNotifyScreen = () => {
                   className="btn btn-outline btn-sm"
                   onClick={() => applyTemplate(template)}
                 >
-                  {template.label}
+                  <template.icon /> {template.label}
                 </button>
               ))}
             </div>
@@ -211,7 +222,7 @@ const PushNotifyScreen = () => {
             {sendError && <div className="form-error">{sendError}</div>}
             {sendResult && (
               <div className="push-success">
-                ✅ Đã gửi tới <strong>{sendResult.sent}</strong>/{sendResult.total} thiết bị
+                <FiCheckCircle /> Đã gửi tới <strong>{sendResult.sent}</strong>/{sendResult.total} thiết bị
                 {sendResult.failed > 0 && ` · ${sendResult.failed} không nhận được`}
                 {sendResult.removed ? ` · đã dọn ${sendResult.removed} thiết bị hết hạn` : ''}
                 {sendResult.note && ` — ${sendResult.note}`}
@@ -224,7 +235,7 @@ const PushNotifyScreen = () => {
               disabled={isSending || !title.trim() || !body.trim()}
               onClick={handleSend}
             >
-              {isSending ? 'Đang gửi…' : `🔔 Gửi tới ${subscriberCount ?? 'tất cả'} thiết bị`}
+              {isSending ? 'Đang gửi…' : <><FiBell /> Gửi tới {subscriberCount ?? 'tất cả'} thiết bị</>}
             </button>
           </div>
         </div>

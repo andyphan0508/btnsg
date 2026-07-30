@@ -86,12 +86,12 @@ const AccountsScreen = () => {
               const isBusy = busyId === profile.id;
               return (
                 <tr key={profile.id}>
-                  <td>
+                  <td data-label="Họ tên">
                     <span className="cell-strong">{profile.fullName}</span>
                     {isSelf && <span className="badge badge-grey" style={{ marginLeft: 6 }}>Bạn</span>}
                   </td>
-                  <td className="cell-muted">{profile.email}</td>
-                  <td>
+                  <td data-label="Email" className="cell-muted">{profile.email}</td>
+                  <td data-label="Vai trò">
                     <select
                       className="select"
                       value={profile.role}
@@ -102,14 +102,14 @@ const AccountsScreen = () => {
                       <option value="bdh">{PROFILE_ROLE_LABELS.bdh}</option>
                     </select>
                   </td>
-                  <td>
+                  <td data-label="Trạng thái">
                     {profile.approved ? (
                       <span className="badge badge-green">Đã duyệt</span>
                     ) : (
                       <span className="badge badge-amber">Chờ duyệt</span>
                     )}
                   </td>
-                  <td className="cell-muted">{formatDate(profile.createdAt)}</td>
+                  <td data-label="Tạo lúc" className="cell-muted">{formatDate(profile.createdAt)}</td>
                   <td>
                     <div className="cell-actions">
                       {!profile.approved ? (

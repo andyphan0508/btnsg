@@ -42,7 +42,9 @@ Cổng API đổi bằng biến môi trường `API_PORT` (mặc định 4000).
 Các chức năng chính (mỗi màn hình là một thư mục trong `apps/dashboard/src/screens/`):
 
 - **Tổng quan** — thống kê thành viên, tỷ lệ tham gia, công việc, request, số dư quỹ.
-- **Thành viên** — tìm kiếm, lọc theo vai trò/trạng thái/nhóm nhỏ/giai đoạn, sắp xếp theo
+- **Thành viên** — hồ sơ đầy đủ: 2 số điện thoại, email, **địa chỉ**, **ngành nghề/ngành học**,
+  **nơi làm việc/trường**, công tác đảm nhiệm, nhóm nhỏ, giai đoạn; tìm kiếm trên toàn bộ các
+  trường này, lọc theo vai trò/trạng thái/nhóm nhỏ/giai đoạn, sắp xếp theo
   tên/nhóm/tuổi/năm tham gia; import từ Excel, xuất Excel; cột tuổi + số năm tham gia;
   bảng cảnh báo *chuẩn bị lên Thanh tráng* (đủ 30 tuổi) và *Thiếu niên lên Thanh niên*
   (đủ 18 tuổi), báo trước 1 năm; lịch sử thay đổi danh sách trực quan.
@@ -77,6 +79,12 @@ và kế hoạch chủ đề năm. Muốn làm lại từ đầu chỉ cần xo�
 REST endpoints: `/api/members`, `/api/member-changes`, `/api/email-templates`, `/api/attendance`,
 `/api/schedule`, `/api/announcements`, `/api/tasks`, `/api/requests`, `/api/expenses`,
 `/api/plans`, `/api/stats/overview`, `/api/health`.
+
+**Giao diện:** toàn bộ icon dùng [react-icons](https://react-icons.github.io/react-icons/) (vector,
+không phụ thuộc bộ emoji của hệ điều hành). Layout trải hết bề ngang màn hình (hợp màn 2K/4K),
+lưới tự chia cột theo không gian còn trống. Trên điện thoại, sidebar được thay bằng **thanh tab
+dưới** (`layout/components/MobileTabBar.tsx`) với 4 mục chính + nút "Thêm" mở sheet chứa phần
+còn lại; bảng dữ liệu tự chuyển thành **thẻ** (mỗi dòng một thẻ, nhãn cột lấy từ `data-label`).
 
 Ở production, dashboard bỏ qua Express và nói chuyện thẳng với Supabase (Postgres + RLS);
 schema nằm ở `supabase/migrations/0001_init.sql` — lịch sử thay đổi thành viên được ghi tự động

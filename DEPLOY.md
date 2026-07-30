@@ -17,11 +17,13 @@ Khi **không** cấu hình Supabase, dashboard tự chạy **chế độ demo/lo
 ## Bước 1 — Tạo project Supabase
 
 1. Vào <https://supabase.com> → **New project** (chọn region Singapore cho gần VN).
-2. Mở **SQL Editor** → dán toàn bộ nội dung file [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) → **Run**.
-   Sau đó chạy tiếp [`supabase/migrations/0002_expenses_detail.sql`](supabase/migrations/0002_expenses_detail.sql)
-   (bổ sung các cột chi tiết cho Thu chi: hạng mục con, số chứng từ, hình thức thanh toán,
-   người nộp/nhận, thủ quỹ, hoạt động, link chứng từ). File này chạy lại nhiều lần vẫn an toàn.
-   - Script tạo đủ bảng (thành viên, điểm danh, lịch, công việc, đề xuất, thu chi, kế hoạch,
+2. Mở **SQL Editor** → chạy lần lượt các file trong `supabase/migrations/`:
+   [`0001_init.sql`](supabase/migrations/0001_init.sql) → [`0002_expenses_detail.sql`](supabase/migrations/0002_expenses_detail.sql)
+   → [`0003_push_subscriptions.sql`](supabase/migrations/0003_push_subscriptions.sql)
+   → [`0004_members_detail.sql`](supabase/migrations/0004_members_detail.sql).
+   Các file 0002–0004 an toàn khi chạy lại nhiều lần: `0002` bổ sung cột chi tiết cho Thu chi,
+   `0003` tạo bảng đăng ký thông báo đẩy, `0004` bổ sung địa chỉ/ngành nghề cho Thành viên.
+   - `0001` tạo đủ bảng (thành viên, điểm danh, lịch, công việc, đề xuất, thu chi, kế hoạch,
      template email, audit log), bật RLS 2 cấp quyền (Quản trị / BĐH), trigger tự ghi lịch sử
      thay đổi thành viên và seed sẵn 11 thành viên BĐH + 3 template email.
 3. Lấy thông tin kết nối: **Project Settings → API**:
@@ -303,6 +305,30 @@ Ghi chú quan trọng:
 - Chỉ tài khoản Supabase **đã được duyệt** mới gửi được — Function xác thực token đăng nhập,
   không dùng mật khẩu chung nhúng trong dashboard.
 - Thiết bị gỡ cài/hết hạn sẽ tự bị dọn khỏi danh sách sau lần gửi kế tiếp.
+
+---
+
+## Hạn mức Vercel Hobby (miễn phí) — bao lâu thì hết?
+
+| Hạn mức Hobby / tháng | Ban dùng khoảng | Tỷ lệ |
+|---|---|---|
+| **100 GB** băng thông | ~0,9 GB | ~1% |
+| **1.000.000** lượt gọi function | < 500 | ~0,05% |
+| **4 giờ** Active CPU | < 3 phút | ~0,1% |
+| **360 GB-giờ** bộ nhớ | không đáng kể | <1% |
+| **100** lần deploy/ngày | vài lần | — |
+
+Mỗi lượt truy cập mới tải khoảng **550 KB** (JS+CSS đã nén + ảnh nền + logo); lượt quay lại
+gần như bằng 0 nhờ cache. **Ảnh thư viện và tin tức lấy từ Google Drive nên không tính vào
+băng thông Vercel** — đây là lý do mức dùng rất thấp.
+
+Để chạm 100 GB cần khoảng **175.000 lượt truy cập mới mỗi tháng**. Lượt gọi function chỉ
+phát sinh khi có người đăng ký nhận thông báo (1 lần/thiết bị) và khi BĐH bấm gửi thông báo.
+
+Hai điều cần lưu ý hơn hạn mức:
+- Gói Hobby dành cho **mục đích cá nhân / phi thương mại** — website của Ban thuộc diện này.
+- Vercel **không cho project Hobby kết nối tới repo thuộc GitHub Organization**. Nếu sau này
+  chuyển repo sang organization của Hội Thánh thì phải dùng gói Pro (hoặc giữ repo cá nhân).
 
 ---
 

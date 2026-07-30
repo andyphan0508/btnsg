@@ -54,6 +54,10 @@ const sanitizeMember: Sanitizer<Member> = (body, isPartial) => {
   }
   fields.birthday = optionalString(body, 'birthday');
   fields.phone = optionalString(body, 'phone');
+  fields.phone2 = optionalString(body, 'phone2');
+  fields.address = optionalString(body, 'address');
+  fields.occupation = optionalString(body, 'occupation');
+  fields.workplace = optionalString(body, 'workplace');
   fields.email = optionalString(body, 'email');
   fields.boardRole = optionalString(body, 'boardRole');
   fields.group = optionalString(body, 'group');
@@ -221,6 +225,10 @@ const MEMBER_AUDIT_FIELDS: (keyof Member)[] = [
   'gender',
   'birthday',
   'phone',
+  'phone2',
+  'address',
+  'occupation',
+  'workplace',
   'email',
   'role',
   'boardRole',

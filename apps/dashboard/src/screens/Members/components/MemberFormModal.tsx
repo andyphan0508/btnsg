@@ -10,7 +10,11 @@ export type MemberFormValues = {
   duties: string;
   group: string;
   phone: string;
+  phone2: string;
   email: string;
+  address: string;
+  occupation: string;
+  workplace: string;
   birthday: string;
   joinedAt: string;
   status: 'active' | 'inactive';
@@ -26,7 +30,11 @@ const EMPTY_FORM: MemberFormValues = {
   duties: '',
   group: '',
   phone: '',
+  phone2: '',
   email: '',
+  address: '',
+  occupation: '',
+  workplace: '',
   birthday: '',
   joinedAt: '',
   status: 'active',
@@ -61,7 +69,11 @@ const MemberFormModal = ({ isOpen, editingMember, isSaving, saveError, onClose, 
       duties: editingMember.duties.join(', '),
       group: editingMember.group ?? '',
       phone: editingMember.phone ?? '',
+      phone2: editingMember.phone2 ?? '',
       email: editingMember.email ?? '',
+      address: editingMember.address ?? '',
+      occupation: editingMember.occupation ?? '',
+      workplace: editingMember.workplace ?? '',
       birthday: editingMember.birthday ?? '',
       joinedAt: editingMember.joinedAt ?? '',
       status: editingMember.status,
@@ -114,7 +126,7 @@ const MemberFormModal = ({ isOpen, editingMember, isSaving, saveError, onClose, 
           />
         </div>
         <div className="field span-2">
-          <label className="field-label">Nhiệm vụ (phân cách bằng dấu phẩy)</label>
+          <label className="field-label">Công tác đảm nhiệm (phân cách bằng dấu phẩy)</label>
           <input
             className="input"
             placeholder="VD: Uỷ viên Truyền giảng, Hậu cần"
@@ -162,6 +174,32 @@ const MemberFormModal = ({ isOpen, editingMember, isSaving, saveError, onClose, 
         <div className="field">
           <label className="field-label">Email</label>
           <input type="email" className="input" value={formValues.email} onChange={(e) => setField('email', e.target.value)} />
+        </div>
+        <div className="field">
+          <label className="field-label">Số điện thoại phụ</label>
+          <input className="input" value={formValues.phone2} onChange={(e) => setField('phone2', e.target.value)} />
+        </div>
+        <div className="field span-2">
+          <label className="field-label">Địa chỉ</label>
+          <input
+            className="input"
+            placeholder="Số nhà, đường, phường, quận"
+            value={formValues.address}
+            onChange={(e) => setField('address', e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label className="field-label">Ngành nghề / ngành học</label>
+          <input
+            className="input"
+            placeholder="VD: Kỹ sư phần mềm, Sinh viên Y khoa"
+            value={formValues.occupation}
+            onChange={(e) => setField('occupation', e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label className="field-label">Nơi làm việc / trường</label>
+          <input className="input" value={formValues.workplace} onChange={(e) => setField('workplace', e.target.value)} />
         </div>
         <div className="field">
           <label className="field-label">Ngày tham gia</label>

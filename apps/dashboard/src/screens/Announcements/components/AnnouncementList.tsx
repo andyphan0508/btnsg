@@ -1,6 +1,7 @@
 import type { Announcement } from '@btnsg/shared';
 import EmptyState from '../../../ui/EmptyState';
 import { formatDate } from '../../../utils/format';
+import { FiBell, FiBookmark } from 'react-icons/fi';
 
 type AnnouncementListProps = {
   announcements: Announcement[];
@@ -15,7 +16,7 @@ const AnnouncementList = ({ announcements, onEdit, onDelete, onTogglePin }: Anno
   if (announcements.length === 0) {
     return (
       <div className="card">
-        <EmptyState icon="🔔" title="Chưa có thông báo" hint="Tạo thông báo để nhắc lịch nhóm, sự kiện…" />
+        <EmptyState icon={<FiBell />} title="Chưa có thông báo" hint="Tạo thông báo để nhắc lịch nhóm, sự kiện…" />
       </div>
     );
   }
@@ -26,7 +27,7 @@ const AnnouncementList = ({ announcements, onEdit, onDelete, onTogglePin }: Anno
         <div className="card card-hover" key={item.id} style={item.pinned ? styles.pinnedCard : undefined}>
           <div style={styles.head}>
             <div style={styles.titleWrap}>
-              {item.pinned && <span className="badge badge-amber">📌 Đã ghim</span>}
+              {item.pinned && <span className="badge badge-amber"><FiBookmark /> Đã ghim</span>}
               <span className="cell-strong" style={styles.title}>{item.title}</span>
             </div>
             <div style={styles.actions}>

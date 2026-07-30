@@ -9,6 +9,7 @@ import ExpenseFormModal, { type ExpenseFormValues } from './components/ExpenseFo
 import ExpenseTable from './components/ExpenseTable';
 import FinanceAnalytics from './components/FinanceAnalytics';
 import FinanceSummary from './components/FinanceSummary';
+import { FiDownload, FiPrinter } from 'react-icons/fi';
 
 const FinanceScreen = () => {
   // 1. State declarations
@@ -236,7 +237,7 @@ const FinanceScreen = () => {
             disabled={isExporting || filteredExpenses.length === 0}
             title="Xuất sổ quỹ (giao dịch + tổng hợp tháng + cơ cấu hạng mục)"
           >
-            {isExporting ? 'Đang xuất…' : '⬇️ Xuất sổ quỹ Excel'}
+            {isExporting ? 'Đang xuất…' : <><FiDownload /> Xuất sổ quỹ Excel</>}
           </button>
           <button type="button" className="btn btn-primary" onClick={handleOpenCreate}>
             + Ghi giao dịch
@@ -284,7 +285,7 @@ const FinanceScreen = () => {
         <div className="bulk-bar">
           <span className="bulk-count">Đã chọn {selectedCount} giao dịch</span>
           <button type="button" className="btn btn-primary btn-sm" onClick={handlePrintSelected}>
-            🧾 Tải {selectedCount} phiếu (PDF gộp)
+            <FiPrinter /> Tải {selectedCount} phiếu (PDF gộp)
           </button>
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => setSelectedIds(new Set())}>
             Bỏ chọn

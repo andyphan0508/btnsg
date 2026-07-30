@@ -2,6 +2,7 @@ import type { ScheduleEvent } from '@btnsg/shared';
 import { DAY_OF_WEEK_LABELS } from '@btnsg/shared';
 import EmptyState from '../../../ui/EmptyState';
 import { formatDate } from '../../../utils/format';
+import { FiCalendar } from 'react-icons/fi';
 
 type ScheduleTableProps = {
   events: ScheduleEvent[];
@@ -13,7 +14,7 @@ const ScheduleTable = ({ events, onEdit, onDelete }: ScheduleTableProps) => {
   if (events.length === 0) {
     return (
       <div className="table-wrap">
-        <EmptyState icon="📅" title="Chưa có lịch sinh hoạt" hint="Thêm buổi sinh hoạt định kỳ hoặc sự kiện." />
+        <EmptyState icon={<FiCalendar />} title="Chưa có lịch sinh hoạt" hint="Thêm buổi sinh hoạt định kỳ hoặc sự kiện." />
       </div>
     );
   }
@@ -33,7 +34,7 @@ const ScheduleTable = ({ events, onEdit, onDelete }: ScheduleTableProps) => {
         <tbody>
           {events.map((event) => (
             <tr key={event.id}>
-              <td>
+              <td data-label="Thời gian">
                 <span className={`badge ${event.isMain ? 'badge-brand' : 'badge-grey'}`}>
                   {event.recurrence === 'weekly' && event.dayOfWeek !== undefined
                     ? `${DAY_OF_WEEK_LABELS[event.dayOfWeek]} hằng tuần`
@@ -41,12 +42,12 @@ const ScheduleTable = ({ events, onEdit, onDelete }: ScheduleTableProps) => {
                 </span>
                 <div className="cell-strong" style={{ marginTop: 4 }}>{event.time}</div>
               </td>
-              <td>
+              <td data-label="Buổi sinh hoạt">
                 <span className="cell-strong">{event.title}</span>
                 {event.isMain && <div className="cell-muted">Buổi nhóm chính</div>}
               </td>
-              <td className="cell-muted">{event.location ?? '—'}</td>
-              <td className="cell-muted">{event.description ?? '—'}</td>
+              <td data-label="Địa điểm" className="cell-muted">{event.location ?? '—'}</td>
+              <td data-label="Ghi chú" className="cell-muted">{event.description ?? '—'}</td>
               <td>
                 <div className="cell-actions">
                   <button type="button" className="btn btn-outline btn-sm" onClick={() => onEdit(event)}>Sửa</button>

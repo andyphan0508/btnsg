@@ -1,3 +1,4 @@
+import { FiClock, FiDownload, FiUpload } from 'react-icons/fi';
 export type MemberSortKey = 'name' | 'group' | 'age' | 'membershipYears' | 'joinedAt';
 
 type MemberFiltersProps = {
@@ -85,16 +86,16 @@ const MemberFilters = ({
       </div>
       <div className="toolbar">
         <button type="button" className={`btn ${historyOpen ? 'btn-primary' : 'btn-ghost'} btn-sm`} onClick={onToggleHistory}>
-          🕘 Lịch sử thay đổi
+          <FiClock /> Lịch sử thay đổi
         </button>
         <div className="toolbar-spacer" />
         <button type="button" className="btn btn-outline btn-sm" onClick={onExportClick}>
-          ⬇️ Xuất Excel
+          <FiDownload /> Xuất Excel
         </button>
         {canEdit && (
           <>
             <button type="button" className="btn btn-outline btn-sm" onClick={onImportClick}>
-              ⬆️ Import Excel
+              <FiUpload /> Import Excel
             </button>
             <button type="button" className="btn btn-primary" onClick={onAddClick}>
               + Thêm thành viên

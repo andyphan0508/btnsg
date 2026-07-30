@@ -6,6 +6,7 @@ import NewsPostForm from './components/NewsPostForm';
 import NewsImagePicker from './components/NewsImagePicker';
 import NewsMarkdownPreview from './components/NewsMarkdownPreview';
 import NewsPostList from './components/NewsPostList';
+import { FiSave, FiSend } from 'react-icons/fi';
 
 const todayIso = (): string => new Date().toISOString().slice(0, 10);
 
@@ -286,7 +287,7 @@ const NewsScreen = () => {
             disabled={isPublishing || isCompressing}
             onClick={submitPost}
           >
-            {isPublishing ? 'Đang xử lý…' : editingPostId ? '💾 Cập nhật bài viết' : '🚀 Đăng bài lên web'}
+            {isPublishing ? 'Đang xử lý…' : editingPostId ? <><FiSave /> Cập nhật bài viết</> : <><FiSend /> Đăng bài lên web</>}
           </button>
         </div>
 

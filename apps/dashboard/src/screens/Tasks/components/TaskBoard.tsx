@@ -1,6 +1,7 @@
 import type { Member, TaskItem, TaskStatus } from '@btnsg/shared';
 import { TASK_PRIORITY_LABELS, TASK_STATUS_LABELS } from '@btnsg/shared';
 import { formatDate } from '../../../utils/format';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 type TaskBoardProps = {
   tasks: TaskItem[];
@@ -32,7 +33,7 @@ const TaskBoard = ({ tasks, members, onEdit, onDelete, onMove }: TaskBoardProps)
             className="btn btn-outline btn-sm"
             onClick={() => onMove(task, COLUMNS[currentIndex - 1])}
           >
-            ← {TASK_STATUS_LABELS[COLUMNS[currentIndex - 1]]}
+            <FiChevronLeft /> {TASK_STATUS_LABELS[COLUMNS[currentIndex - 1]]}
           </button>
         )}
         {currentIndex < COLUMNS.length - 1 && (
@@ -41,7 +42,7 @@ const TaskBoard = ({ tasks, members, onEdit, onDelete, onMove }: TaskBoardProps)
             className="btn btn-outline btn-sm"
             onClick={() => onMove(task, COLUMNS[currentIndex + 1])}
           >
-            {TASK_STATUS_LABELS[COLUMNS[currentIndex + 1]]} →
+            {TASK_STATUS_LABELS[COLUMNS[currentIndex + 1]]} <FiChevronRight />
           </button>
         )}
       </div>

@@ -72,10 +72,10 @@ export default function Schedule() {
         </div>
       </Reveal>
 
-      {/* <SubCommitteeModal
+      <SubCommitteeModal
         committee={activeCommittee}
         onClose={() => setActiveCommittee(null)}
-      /> */}
+      />
     </section>
   );
 }

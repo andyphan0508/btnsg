@@ -8,6 +8,7 @@ import {
 import { emailApi, emailTemplateApi, memberApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
 import TemplateFormModal, { type TemplateFormValues } from './components/TemplateFormModal';
+import { FiAlertTriangle, FiSend } from 'react-icons/fi';
 
 /** Placeholder đặc biệt: tự thay bằng tên từng người nhận khi gửi. */
 const RECIPIENT_NAME_FIELD = 'ten_nguoi_nhan';
@@ -335,7 +336,7 @@ const EmailScreen = () => {
             </div>
             {recipientsWithoutEmail.length > 0 && (
               <div style={styles.warning}>
-                ⚠️ {recipientsWithoutEmail.length} thành viên BĐH chưa có email:{' '}
+                <FiAlertTriangle /> {recipientsWithoutEmail.length} thành viên BĐH chưa có email:{' '}
                 {recipientsWithoutEmail.map((m) => m.name).join(', ')}
               </div>
             )}
@@ -365,7 +366,7 @@ const EmailScreen = () => {
             onClick={sendEmails}
             style={{ width: '100%' }}
           >
-            {isSending ? 'Đang gửi…' : `📨 Gửi cho ${selectedRecipients.length} người trong BĐH`}
+            {isSending ? 'Đang gửi…' : <><FiSend /> Gửi cho {selectedRecipients.length} người trong BĐH</>}
           </button>
         </div>
       </div>

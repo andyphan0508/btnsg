@@ -36,6 +36,10 @@ type FieldKey =
   | 'gender'
   | 'birthday'
   | 'phone'
+  | 'phone2'
+  | 'address'
+  | 'occupation'
+  | 'workplace'
   | 'email'
   | 'role'
   | 'boardRole'
@@ -52,6 +56,10 @@ const HEADER_ALIASES: Record<FieldKey, string[]> = {
   gender: ['gioi tinh', 'gender', 'nam nu'],
   birthday: ['ngay sinh', 'nam sinh', 'sinh nhat', 'birthday', 'dob', 'ngay thang nam sinh'],
   phone: ['sdt', 'so dien thoai', 'dien thoai', 'phone', 'so dt', 'di dong'],
+  phone2: ['sdt 2', 'so dien thoai 2', 'dien thoai phu', 'sdt phu', 'phone 2'],
+  address: ['dia chi', 'noi o', 'address', 'cho o'],
+  occupation: ['nghe nghiep', 'nganh nghe', 'nganh hoc', 'cong viec', 'occupation', 'nghe'],
+  workplace: ['noi lam viec', 'cong ty', 'truong', 'truong hoc', 'workplace', 'don vi'],
   email: ['email', 'thu dien tu', 'mail'],
   role: ['vai tro', 'role', 'phan loai'],
   boardRole: ['chuc vu', 'chuc danh', 'board role'],
@@ -194,6 +202,26 @@ export const parseMembersExcel = async (file: File): Promise<ExcelParseResult> =
           if (phone) draft.phone = phone;
           break;
         }
+        case 'phone2': {
+          const phone2 = String(value ?? '').trim();
+          if (phone2) draft.phone2 = phone2;
+          break;
+        }
+        case 'address': {
+          const address = String(value ?? '').trim();
+          if (address) draft.address = address;
+          break;
+        }
+        case 'occupation': {
+          const occupation = String(value ?? '').trim();
+          if (occupation) draft.occupation = occupation;
+          break;
+        }
+        case 'workplace': {
+          const workplace = String(value ?? '').trim();
+          if (workplace) draft.workplace = workplace;
+          break;
+        }
         case 'email': {
           const email = String(value ?? '').trim();
           if (email) draft.email = email;
@@ -267,7 +295,11 @@ export const exportMembersExcel = async (
       'Nhiệm vụ': member.duties.join(', '),
       'Nhóm nhỏ': member.group ?? '',
       'SĐT': member.phone ?? '',
+      'SĐT phụ': member.phone2 ?? '',
       'Email': member.email ?? '',
+      'Địa chỉ': member.address ?? '',
+      'Ngành nghề': member.occupation ?? '',
+      'Nơi làm việc / trường': member.workplace ?? '',
       'Ngày tham gia': member.joinedAt ?? '',
       'Năm tham gia': computeMembershipYears(member.joinedAt, now) ?? '',
       'Trạng thái': STATUS_LABELS[member.status],
@@ -278,7 +310,8 @@ export const exportMembersExcel = async (
   const worksheet = XLSX.utils.json_to_sheet(data);
   worksheet['!cols'] = [
     { wch: 5 }, { wch: 24 }, { wch: 9 }, { wch: 12 }, { wch: 6 }, { wch: 11 },
-    { wch: 14 }, { wch: 18 }, { wch: 30 }, { wch: 12 }, { wch: 13 }, { wch: 26 },
+    { wch: 14 }, { wch: 18 }, { wch: 30 }, { wch: 12 }, { wch: 13 }, { wch: 13 },
+    { wch: 26 }, { wch: 34 }, { wch: 22 }, { wch: 24 },
     { wch: 13 }, { wch: 12 }, { wch: 14 }, { wch: 30 },
   ];
   const workbook = XLSX.utils.book_new();

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { computeAge, MEMBER_STAGE_LABELS, computeStage } from '@btnsg/shared';
 import Modal from '../../../ui/Modal';
 import { parseMembersExcel, type ExcelParseResult, type ParsedMemberRow } from '../../../utils/excel';
+import { FiUpload } from 'react-icons/fi';
 
 type ImportExcelModalProps = {
   isOpen: boolean;
@@ -77,14 +78,15 @@ const ImportExcelModal = ({ isOpen, isImporting, importError, onClose, onImport 
           onChange={(e) => handleFileChange(e.target.files?.[0])}
         />
         <button type="button" className="btn btn-outline" onClick={() => fileInputRef.current?.click()}>
-          📂 Chọn file Excel
+          <FiUpload /> Chọn file Excel
         </button>
         <span className="cell-muted">{fileName || 'Chưa chọn file (.xlsx, .xls, .csv)'}</span>
       </div>
 
       <div style={styles.note}>
-        File cần dòng tiêu đề với các cột như: <em>Họ tên, Giới tính, Ngày sinh, SĐT, Email, Vai trò, Chức vụ,
-        Nhiệm vụ, Nhóm nhỏ, Ngày tham gia, Trạng thái, Giai đoạn, Ghi chú</em>. Chỉ cột <strong>Họ tên</strong> là bắt buộc —
+        File cần dòng tiêu đề với các cột như: <em>Họ tên, Giới tính, Ngày sinh, SĐT, SĐT phụ, Email,
+        Địa chỉ, Ngành nghề, Nơi làm việc, Vai trò, Chức vụ, Công tác, Nhóm nhỏ, Ngày tham gia,
+        Trạng thái, Giai đoạn, Ghi chú</em>. Chỉ cột <strong>Họ tên</strong> là bắt buộc —
         tên cột không phân biệt hoa thường/dấu.
       </div>
 

@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import type { IconType } from 'react-icons';
 import {
   FiBell,
+  FiBookOpen,
   FiCalendar,
   FiCheckSquare,
   FiClipboard,
@@ -38,6 +39,7 @@ const MORE_TABS: TabItem[] = [
   { to: '/thong-bao', label: 'Thông báo', icon: FiBell },
   { to: '/de-xuat', label: 'Đề xuất / Request', icon: FiMessageSquare },
   { to: '/ke-hoach', label: 'Kế hoạch', icon: FiTarget },
+  { to: '/so-ghi-chep', label: 'Sổ ghi chép', icon: FiBookOpen },
   { to: '/email-bdh', label: 'Email BĐH', icon: FiMail },
   { to: '/dang-bai', label: 'Đăng bài Tin tức', icon: FiFileText },
   { to: '/thong-bao-day', label: 'Thông báo đẩy', icon: FiSend },

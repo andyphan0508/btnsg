@@ -69,6 +69,10 @@ Các chức năng chính (mỗi màn hình là một thư mục trong `apps/dash
   (`apps/dashboard/src/utils/financeExcel.ts`) gồm 3 sheet: *Sổ quỹ* (đầy đủ cột + số dư luỹ kế
   + dòng tổng cộng), *Tổng hợp tháng*, *Theo hạng mục*; xuất đúng phần đang lọc.
 - **Kế hoạch** — kế hoạch với checklist hạng mục và thanh tiến độ.
+- **Sổ ghi chép** — ghi chú cá nhân và lưu trữ bài giảng dạng Markdown, soạn bằng thanh công cụ
+  định dạng nhanh (đậm/nghiêng/tiêu đề/trích dẫn/danh sách/liên kết…) với preview trực tiếp;
+  gắn loại (Ghi chú/Bài giảng), ngày, người chia sẻ, câu gốc Kinh Thánh và thẻ (tags); tìm kiếm
+  toàn văn + lọc theo loại/thẻ để tra cứu và đối chiếu nội dung giữa các bài.
 
 ## Backend & dữ liệu
 
@@ -78,7 +82,7 @@ và kế hoạch chủ đề năm. Muốn làm lại từ đầu chỉ cần xo�
 
 REST endpoints: `/api/members`, `/api/member-changes`, `/api/email-templates`, `/api/attendance`,
 `/api/schedule`, `/api/announcements`, `/api/tasks`, `/api/requests`, `/api/expenses`,
-`/api/plans`, `/api/stats/overview`, `/api/health`.
+`/api/plans`, `/api/notes`, `/api/stats/overview`, `/api/health`.
 
 **Giao diện:** toàn bộ icon dùng [react-icons](https://react-icons.github.io/react-icons/) (vector,
 không phụ thuộc bộ emoji của hệ điều hành). Layout trải hết bề ngang màn hình (hợp màn 2K/4K),

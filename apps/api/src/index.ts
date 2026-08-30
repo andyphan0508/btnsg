@@ -12,6 +12,7 @@ import {
   expensesRouter,
   memberChangesRouter,
   membersRouter,
+  notesRouter,
   plansRouter,
   requestsRouter,
   scheduleRouter,
@@ -42,6 +43,7 @@ app.use("/api/tasks", tasksRouter);
 app.use("/api/requests", requestsRouter);
 app.use("/api/expenses", expensesRouter);
 app.use("/api/plans", plansRouter);
+app.use("/api/notes", notesRouter);
 app.use("/api/stats", statsRouter);
 
 app.use((_req, res) => {

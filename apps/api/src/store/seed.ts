@@ -4,6 +4,7 @@ import {
   emailTemplatesCol,
   expensesCol,
   membersCol,
+  notesCol,
   plansCol,
   requestsCol,
   scheduleCol,
@@ -198,6 +199,20 @@ export const seedDatabase = (): void => {
   ]);
 
   emailTemplatesCol.seedIfEmpty(EMAIL_TEMPLATE_SEED);
+
+  notesCol.seedIfEmpty([
+    {
+      title: "Cách dùng Sổ ghi chép",
+      category: "ghi_chu" as const,
+      date: "2026-01-01",
+      tags: ["Hướng dẫn"],
+      content:
+        "## Sổ ghi chép Ban Thanh Niên\n\n" +
+        "Dùng mục này để lưu **ghi chú cá nhân** hoặc lưu trữ **bài giảng** dưới dạng Markdown.\n\n" +
+        "- Gắn thẻ (tag) và câu Kinh Thánh liên quan để dễ tìm và đối chiếu về sau.\n" +
+        "- Dùng ô tìm kiếm để tra lại nội dung cũ khi chuẩn bị bài mới.",
+    },
+  ]);
 
   // Các collection còn lại khởi đầu rỗng: attendance, tasks, requests, expenses
   void attendanceCol;

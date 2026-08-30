@@ -5,6 +5,7 @@ import type {
   Expense,
   Member,
   MemberChange,
+  Note,
   OverviewStats,
   Plan,
   Profile,
@@ -146,6 +147,16 @@ const planMapper = buildMapper<Plan>('plans', [
   f('items', 'items', []),
 ]);
 
+const noteMapper = buildMapper<Note>('notes', [
+  f('title', 'title'),
+  f('category', 'category'),
+  f('date', 'date'),
+  f('speaker', 'speaker'),
+  f('scripture', 'scripture'),
+  f('tags', 'tags', []),
+  f('content', 'content'),
+]);
+
 const emailTemplateMapper = buildMapper<EmailTemplate>('email_templates', [
   f('name', 'name'),
   f('subject', 'subject'),
@@ -226,6 +237,7 @@ export const supabaseTaskApi = createSupabaseResourceApi<TaskItem>(taskMapper);
 export const supabaseRequestApi = createSupabaseResourceApi<RequestItem>(requestMapper);
 export const supabaseExpenseApi = createSupabaseResourceApi<Expense>(expenseMapper);
 export const supabasePlanApi = createSupabaseResourceApi<Plan>(planMapper);
+export const supabaseNoteApi = createSupabaseResourceApi<Note>(noteMapper);
 export const supabaseEmailTemplateApi = createSupabaseResourceApi<EmailTemplate>(emailTemplateMapper);
 
 export const supabaseMemberChangeApi = {

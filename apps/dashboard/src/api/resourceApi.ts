@@ -5,6 +5,7 @@ import type {
   Expense,
   Member,
   MemberChange,
+  Note,
   OverviewStats,
   Plan,
   Profile,
@@ -21,6 +22,7 @@ import {
   supabaseExpenseApi,
   supabaseMemberApi,
   supabaseMemberChangeApi,
+  supabaseNoteApi,
   supabasePlanApi,
   supabaseProfileApi,
   supabaseRequestApi,
@@ -86,6 +88,7 @@ export const requestApi = isSupabaseConfigured
   : createRestResourceApi<RequestItem>('/api/requests');
 export const expenseApi = isSupabaseConfigured ? supabaseExpenseApi : createRestResourceApi<Expense>('/api/expenses');
 export const planApi = isSupabaseConfigured ? supabasePlanApi : createRestResourceApi<Plan>('/api/plans');
+export const noteApi = isSupabaseConfigured ? supabaseNoteApi : createRestResourceApi<Note>('/api/notes');
 export const emailTemplateApi = isSupabaseConfigured
   ? supabaseEmailTemplateApi
   : createRestResourceApi<EmailTemplate>('/api/email-templates');

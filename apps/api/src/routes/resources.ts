@@ -7,6 +7,7 @@ import type {
   Expense,
   Member,
   MemberFieldChange,
+  Note,
   Plan,
   PlanChecklistItem,
   RequestItem,
@@ -20,6 +21,7 @@ import {
   expensesCol,
   memberChangesCol,
   membersCol,
+  notesCol,
   plansCol,
   requestsCol,
   scheduleCol,
@@ -209,6 +211,21 @@ const sanitizePlan: Sanitizer<Plan> = (body, isPartial) => {
   return fields;
 };
 
+/* ---------- Sổ ghi chép / Bài giảng ---------- */
+const sanitizeNote: Sanitizer<Note> = (body, isPartial) => {
+  const fields: Partial<Note> = {};
+  if (!isPartial || body.title !== undefined) fields.title = requireString(body, 'title');
+  if (!isPartial || body.category !== undefined) {
+    fields.category = oneOf(body, 'category', ['ghi_chu', 'bai_giang'] as const, 'ghi_chu');
+  }
+  if (!isPartial || body.content !== undefined) fields.content = requireString(body, 'content');
+  if (!isPartial || body.tags !== undefined) fields.tags = stringArray(body, 'tags');
+  fields.date = optionalString(body, 'date');
+  fields.speaker = optionalString(body, 'speaker');
+  fields.scripture = optionalString(body, 'scripture');
+  return fields;
+};
+
 /* ---------- Email templates ---------- */
 const sanitizeEmailTemplate: Sanitizer<EmailTemplate> = (body, isPartial) => {
   const fields: Partial<EmailTemplate> = {};
@@ -296,3 +313,4 @@ export const tasksRouter = createCrudRouter(tasksCol, sanitizeTask);
 export const requestsRouter = createCrudRouter(requestsCol, sanitizeRequest);
 export const expensesRouter = createCrudRouter(expensesCol, sanitizeExpense);
 export const plansRouter = createCrudRouter(plansCol, sanitizePlan);
+export const notesRouter = createCrudRouter(notesCol, sanitizeNote);

@@ -5,6 +5,7 @@ import type {
   Expense,
   Member,
   MemberChange,
+  Note,
   Plan,
   RequestItem,
   ScheduleEvent,
@@ -22,3 +23,4 @@ export const tasksCol = new Collection<TaskItem>('tasks');
 export const requestsCol = new Collection<RequestItem>('requests');
 export const expensesCol = new Collection<Expense>('expenses');
 export const plansCol = new Collection<Plan>('plans');
+export const notesCol = new Collection<Note>('notes');

@@ -10,6 +10,7 @@ import FinanceScreen from './screens/Finance';
 import LoginScreen from './screens/Login';
 import MembersScreen from './screens/Members';
 import NewsScreen from './screens/News';
+import NotebookScreen from './screens/Notebook';
 import PushNotifyScreen from './screens/PushNotify';
 import OverviewScreen from './screens/Overview';
 import PlansScreen from './screens/Plans';
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/de-xuat" element={<RequestsScreen />} />
             <Route path="/thu-chi" element={<FinanceScreen />} />
             <Route path="/ke-hoach" element={<PlansScreen />} />
+            <Route path="/so-ghi-chep" element={<NotebookScreen />} />
             <Route path="/email-bdh" element={<EmailScreen />} />
             <Route path="/dang-bai" element={<NewsScreen />} />
             <Route path="/thong-bao-day" element={<PushNotifyScreen />} />

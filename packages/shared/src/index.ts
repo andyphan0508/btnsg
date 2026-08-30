@@ -184,6 +184,31 @@ export type Profile = {
   updatedAt: string;
 };
 
+/* ---------- Sổ ghi chép & Bài giảng ---------- */
+export type NoteCategory = "ghi_chu" | "bai_giang";
+
+export type Note = {
+  id: string;
+  title: string;
+  category: NoteCategory;
+  /** Ngày ghi chú hoặc ngày giảng. */
+  date?: string;
+  /** Người chia sẻ / giảng viên — chủ yếu dùng cho bài giảng. */
+  speaker?: string;
+  /** Câu/đoạn Kinh Thánh liên quan — giúp đối chiếu nội dung giữa các bài. */
+  scripture?: string;
+  tags: string[];
+  /** Nội dung dạng Markdown. */
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const NOTE_CATEGORY_LABELS: Record<NoteCategory, string> = {
+  ghi_chu: "Ghi chú",
+  bai_giang: "Bài giảng",
+};
+
 /* ---------- Template email BĐH ---------- */
 export type EmailTemplate = {
   id: string;

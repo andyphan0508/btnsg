@@ -20,9 +20,11 @@ Khi **không** cấu hình Supabase, dashboard tự chạy **chế độ demo/lo
 2. Mở **SQL Editor** → chạy lần lượt các file trong `supabase/migrations/`:
    [`0001_init.sql`](supabase/migrations/0001_init.sql) → [`0002_expenses_detail.sql`](supabase/migrations/0002_expenses_detail.sql)
    → [`0003_push_subscriptions.sql`](supabase/migrations/0003_push_subscriptions.sql)
-   → [`0004_members_detail.sql`](supabase/migrations/0004_members_detail.sql).
-   Các file 0002–0004 an toàn khi chạy lại nhiều lần: `0002` bổ sung cột chi tiết cho Thu chi,
-   `0003` tạo bảng đăng ký thông báo đẩy, `0004` bổ sung địa chỉ/ngành nghề cho Thành viên.
+   → [`0004_members_detail.sql`](supabase/migrations/0004_members_detail.sql)
+   → [`0005_notes.sql`](supabase/migrations/0005_notes.sql).
+   Các file 0002–0005 an toàn khi chạy lại nhiều lần: `0002` bổ sung cột chi tiết cho Thu chi,
+   `0003` tạo bảng đăng ký thông báo đẩy, `0004` bổ sung địa chỉ/ngành nghề cho Thành viên,
+   `0005` tạo bảng Sổ ghi chép / Bài giảng.
    - `0001` tạo đủ bảng (thành viên, điểm danh, lịch, công việc, đề xuất, thu chi, kế hoạch,
      template email, audit log), bật RLS 2 cấp quyền (Quản trị / BĐH), trigger tự ghi lịch sử
      thay đổi thành viên và seed sẵn 11 thành viên BĐH + 3 template email.

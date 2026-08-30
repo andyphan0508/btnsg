@@ -5,16 +5,11 @@ import {
   hasActiveSubscription,
   isPushConfigured,
   isPushSupported,
+  needsIosHomeScreenInstall,
   registerServiceWorker,
   subscribeToPush,
   unsubscribeFromPush,
 } from "../lib/push.js";
-
-/** iOS chỉ cho nhận thông báo khi web đã được thêm vào Màn hình chính. */
-const isIosSafari = () =>
-  /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-  !window.matchMedia("(display-mode: standalone)").matches &&
-  !window.navigator.standalone;
 
 /**
  * Nút bật/tắt nhận thông báo — đặt ở footer để người đã đăng ký
@@ -48,7 +43,7 @@ export default function PushToggle() {
         setSubscribed(false);
         setMessage("Đã tắt thông báo.");
       } else {
-        if (isIosSafari()) {
+        if (needsIosHomeScreenInstall()) {
           setMessage(
             'Trên iPhone/iPad: bấm nút Chia sẻ → "Thêm vào MH chính", mở web từ biểu tượng đó rồi bật lại.',
           );

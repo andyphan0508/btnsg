@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { FiBell, FiX, FiCheckCircle } from "react-icons/fi";
+import { FiBell, FiX, FiCheckCircle, FiShare } from "react-icons/fi";
 import {
   getPermission,
   hasActiveSubscription,
   isPushConfigured,
   isPushSupported,
+  needsIosHomeScreenInstall,
   subscribeToPush,
 } from "../lib/push.js";
 
@@ -43,11 +44,25 @@ export default function PushPrompt() {
   const [visible, setVisible] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | working | done | error
   const [error, setError] = useState(null);
+  // iOS (Safari/Chrome…) chỉ cho phép Web Push khi trang đã "Thêm vào Màn hình chính" —
+  // trong trình duyệt thường thì bấm "Nhận thông báo" sẽ không có hộp thoại nào hiện ra cả.
+  // Ghi nhớ một lần lúc mount, không đổi trong lúc trang đang mở.
+  const [iosNeedsInstall] = useState(needsIosHomeScreenInstall);
 
   useEffect(() => {
-    if (!isPushConfigured || !isPushSupported()) return undefined;
-    // Đã cho phép / đã chặn / vừa mới bấm "Để sau" → không mời nữa.
-    if (getPermission() !== "default" || isSnoozed()) return undefined;
+    if (!isPushConfigured) return undefined;
+    if (isSnoozed()) return undefined;
+
+    // Trên iOS ngoài Màn hình chính: luôn hiện hướng dẫn cài đặt, kể cả khi trình duyệt
+    // có vẻ hỗ trợ Web Push về mặt kỹ thuật — vì thực tế vẫn không xin quyền được.
+    if (iosNeedsInstall) {
+      const timer = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
+      return () => clearTimeout(timer);
+    }
+
+    if (!isPushSupported()) return undefined;
+    // Đã cho phép / đã chặn → không mời nữa.
+    if (getPermission() !== "default") return undefined;
 
     let cancelled = false;
     hasActiveSubscription().then((active) => {
@@ -62,7 +77,7 @@ export default function PushPrompt() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [iosNeedsInstall]);
 
   const handleAccept = async () => {
     setStatus("working");
@@ -108,7 +123,22 @@ export default function PushPrompt() {
       </div>
 
       <div className="push-body">
-        {status === "done" ? (
+        {iosNeedsInstall ? (
+          <>
+            <strong>Theo dõi Ban Thanh Niên?</strong>
+            <p>
+              Trên iPhone/iPad, hãy <strong>thêm trang này vào Màn hình chính</strong> trước —
+              bấm nút <FiShare size={13} style={{ verticalAlign: "-2px" }} /> <strong>Chia sẻ</strong> ở
+              thanh trình duyệt → chọn <strong>"Thêm vào MH chính"</strong>. Sau đó mở lại web từ
+              biểu tượng vừa thêm để bật thông báo.
+            </p>
+            <div className="push-actions">
+              <button className="btn btn-gold push-accept" onClick={handleDismiss} type="button">
+                Đã hiểu
+              </button>
+            </div>
+          </>
+        ) : status === "done" ? (
           <>
             <strong>Đã bật thông báo 🎉</strong>
             <p>Bạn sẽ nhận được tin mới và nhắc lịch sinh hoạt của Ban.</p>

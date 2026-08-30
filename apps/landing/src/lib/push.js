@@ -13,6 +13,24 @@ export const isPushSupported = () =>
   'PushManager' in window &&
   'Notification' in window
 
+/** iPhone/iPad/iPod — áp dụng cho mọi trình duyệt trên iOS (Safari, Chrome…), vì
+ * tất cả đều dùng chung engine WebKit và chung giới hạn Web Push của Apple. */
+export const isIos = () => {
+  if (typeof navigator === 'undefined') return false
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) return true
+  // Từ iPadOS 13, Safari giả User-Agent giống macOS — phân biệt bằng cảm ứng đa điểm
+  // (máy Mac thật không có màn hình cảm ứng).
+  return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1
+}
+
+/** Web đang chạy ở chế độ đã "Thêm vào Màn hình chính" (PWA standalone). */
+export const isStandalone = () =>
+  typeof window !== 'undefined' &&
+  (window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
+
+/** iOS chỉ cho nhận Web Push khi trang đã được thêm vào Màn hình chính (mọi trình duyệt). */
+export const needsIosHomeScreenInstall = () => isIos() && !isStandalone()
+
 /** 'default' (chưa hỏi) | 'granted' | 'denied' | 'unsupported' */
 export const getPermission = () => {
   if (!isPushSupported()) return 'unsupported'

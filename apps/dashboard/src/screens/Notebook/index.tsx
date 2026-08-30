@@ -5,12 +5,25 @@ import { todayIsoDate } from '../../utils/format';
 import LoadingState from '../../ui/LoadingState';
 import NoteFilters from './components/NoteFilters';
 import NoteList from './components/NoteList';
+import NoteListToolbar, { type Density, type SortOrder } from './components/NoteListToolbar';
 import NoteMarkdownEditor from './components/NoteMarkdownEditor';
 import NoteMetaForm from './components/NoteMetaForm';
+import NotePagination from './components/NotePagination';
 import NotePreview from './components/NotePreview';
 import { FiArrowLeft, FiCheck } from 'react-icons/fi';
 
 type ViewMode = 'list' | 'preview' | 'editor';
+
+const DENSITY_STORAGE_KEY = 'btnsg-notebook-density';
+
+const loadStoredDensity = (): Density => {
+  try {
+    const stored = window.localStorage.getItem(DENSITY_STORAGE_KEY);
+    return stored === 'compact' ? 'compact' : 'comfortable';
+  } catch {
+    return 'comfortable';
+  }
+};
 
 const parseTags = (tagsText: string): string[] => {
   return [...new Set(tagsText.split(',').map((tag) => tag.trim()).filter((tag) => tag !== ''))];
@@ -45,6 +58,12 @@ const NotebookScreen = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<NoteCategory | 'all'>('all');
   const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  // State — sắp xếp, mật độ hiển thị, phân trang
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [density, setDensity] = useState<Density>(loadStoredDensity);
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   // 2. Logic thuần
   const validateNote = (): string | null => {
@@ -88,9 +107,22 @@ const NotebookScreen = () => {
           .join(' \n ')
           .toLowerCase();
         return haystack.includes(keyword);
-      })
-      .sort((a, b) => (b.date ?? b.createdAt).localeCompare(a.date ?? a.createdAt));
+      });
   }, [notes, searchQuery, categoryFilter, activeTag]);
+
+  /** Sắp xếp theo ngày người dùng ghi trong bài (`note.date`) — dùng ngày tạo khi bài chưa có ngày. */
+  const sortedNotes = useMemo(() => {
+    const factor = sortOrder === 'desc' ? -1 : 1;
+    return [...filteredNotes].sort(
+      (a, b) => factor * (a.date ?? a.createdAt).localeCompare(b.date ?? b.createdAt),
+    );
+  }, [filteredNotes, sortOrder]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedNotes.length / pageSize));
+  const pagedNotes = useMemo(
+    () => sortedNotes.slice((page - 1) * pageSize, page * pageSize),
+    [sortedNotes, page, pageSize],
+  );
 
   // 3. API calls
   const loadNotes = async (): Promise<void> => {
@@ -195,6 +227,22 @@ const NotebookScreen = () => {
   useEffect(() => {
     loadNotes();
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, categoryFilter, activeTag, sortOrder, pageSize]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(DENSITY_STORAGE_KEY, density);
+    } catch {
+      // bỏ qua khi trình duyệt chặn localStorage (chế độ riêng tư…)
+    }
+  }, [density]);
 
   // 5. Handlers
   const toggleTag = (tag: string): void => {
@@ -307,13 +355,30 @@ const NotebookScreen = () => {
         {isLoading ? (
           <LoadingState />
         ) : (
-          <NoteList
-            notes={filteredNotes}
-            totalCount={notes.length}
-            deletingNoteId={deletingNoteId}
-            onOpen={openPreview}
-            onDelete={deleteNote}
-          />
+          <>
+            <NoteListToolbar
+              resultCount={sortedNotes.length}
+              sortOrder={sortOrder}
+              density={density}
+              onSortOrderChange={setSortOrder}
+              onDensityChange={setDensity}
+            />
+            <NoteList
+              notes={pagedNotes}
+              totalCount={notes.length}
+              deletingNoteId={deletingNoteId}
+              density={density}
+              onOpen={openPreview}
+              onDelete={deleteNote}
+            />
+            <NotePagination
+              page={page}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          </>
         )}
       </div>
     </div>

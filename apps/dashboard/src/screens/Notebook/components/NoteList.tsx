@@ -2,11 +2,13 @@ import { NOTE_CATEGORY_LABELS, type Note } from '@btnsg/shared';
 import EmptyState from '../../../ui/EmptyState';
 import { formatDate } from '../../../utils/format';
 import { FiBookOpen, FiChevronRight } from 'react-icons/fi';
+import type { Density } from './NoteListToolbar';
 
 type NoteListProps = {
   notes: Note[];
   totalCount: number;
   deletingNoteId: string | null;
+  density: Density;
   onOpen: (note: Note) => void;
   onDelete: (note: Note) => void;
 };
@@ -23,8 +25,9 @@ const previewText = (markdown: string, maxLen = 160): string => {
   return plain.length > maxLen ? `${plain.slice(0, maxLen)}…` : plain;
 };
 
-const NoteList = ({ notes, totalCount, deletingNoteId, onOpen, onDelete }: NoteListProps) => {
-  const styles = createStyles();
+const NoteList = ({ notes, totalCount, deletingNoteId, density, onOpen, onDelete }: NoteListProps) => {
+  const styles = createStyles(density);
+  const isCompact = density === 'compact';
 
   if (totalCount === 0) {
     return (
@@ -48,7 +51,7 @@ const NoteList = ({ notes, totalCount, deletingNoteId, onOpen, onDelete }: NoteL
         <div
           className="card card-hover"
           key={note.id}
-          style={styles.clickableCard}
+          style={styles.card}
           role="button"
           tabIndex={0}
           onClick={() => onOpen(note)}
@@ -85,7 +88,7 @@ const NoteList = ({ notes, totalCount, deletingNoteId, onOpen, onDelete }: NoteL
             {note.scripture ? ` · ${note.scripture}` : ''}
           </div>
 
-          {note.content.trim() && <p style={styles.content}>{previewText(note.content)}</p>}
+          {!isCompact && note.content.trim() && <p style={styles.content}>{previewText(note.content)}</p>}
 
           {note.tags.length > 0 && (
             <div style={styles.tagRow}>
@@ -102,10 +105,11 @@ const NoteList = ({ notes, totalCount, deletingNoteId, onOpen, onDelete }: NoteL
 
 export default NoteList;
 
-const createStyles = () => {
+const createStyles = (density: Density) => {
+  const compact = density === 'compact';
   return {
-    list: { display: 'flex', flexDirection: 'column' as const, gap: 14 },
-    clickableCard: { cursor: 'pointer' },
+    list: { display: 'flex', flexDirection: 'column' as const, gap: compact ? 8 : 14 },
+    card: { cursor: 'pointer', padding: compact ? 14 : 22 },
     head: {
       display: 'flex',
       justifyContent: 'space-between',
@@ -114,11 +118,11 @@ const createStyles = () => {
       flexWrap: 'wrap' as const,
     },
     titleWrap: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const },
-    title: { fontSize: '1.02rem' },
+    title: { fontSize: compact ? '0.92rem' : '1.02rem' },
     actions: { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 },
     chevron: { color: 'var(--ink-3, #98897b)', flexShrink: 0 },
-    meta: { marginTop: 8 },
+    meta: { marginTop: compact ? 4 : 8, fontSize: compact ? '0.78rem' : '0.85rem' },
     content: { marginTop: 10, color: 'var(--ink-2)' },
-    tagRow: { display: 'flex', flexWrap: 'wrap' as const, gap: 6, marginTop: 10 },
+    tagRow: { display: 'flex', flexWrap: 'wrap' as const, gap: 6, marginTop: compact ? 6 : 10 },
   };
 };

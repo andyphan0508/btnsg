@@ -1,4 +1,6 @@
+import { ArrowUpOutlined } from "@ant-design/icons";
 import PushToggle from "./PushToggle.jsx";
+
 export default function Footer() {
   const handleScrollTop = (e) => {
     e.preventDefault();
@@ -12,20 +14,25 @@ export default function Footer() {
           <span className="foot-brand">
             Ban Thanh Niên — Hội Thánh Tin Lành Việt Nam
           </span>
-          <span className="foot-sub">Chi Hội Sài Gòn</span>
+          <span className="foot-sub">Chi Hội Sài Gòn · Từ 1942</span>
         </div>
         <div className="foot-center">
           <span className="foot-slogan">"TẤT CẢ VÌ NGƯỜI CHƯA ĐƯỢC CỨU"</span>
         </div>
-        <div className="foot-right">
+        <div className="foot-right" style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <PushToggle />
           <a
             href="#top"
             onClick={handleScrollTop}
-            className="back-to-top-btn"
+            className="btn-aardvark is-yellow"
             title="Lên đầu trang"
           >
-            Lên đầu trang <span className="arrow-up">↑</span>
+            <span className="btn-text-part" style={{ padding: "8px 16px", fontSize: "0.82rem" }}>
+              Lên đầu trang
+            </span>
+            <span className="btn-icon-part" style={{ padding: "8px 12px", fontSize: "0.82rem" }}>
+              <ArrowUpOutlined />
+            </span>
           </a>
         </div>
       </div>

@@ -1,77 +1,86 @@
-import { useEffect, useRef, useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 
-/** Fade-up-on-scroll wrapper; renders instantly when reduced motion is on. */
+const VARIANTS = {
+  'slide-up': {
+    hidden: { opacity: 0, y: 16 },
+    visible: { opacity: 1, y: 0 },
+  },
+  'slide-down': {
+    hidden: { opacity: 0, y: -16 },
+    visible: { opacity: 1, y: 0 },
+  },
+  'slide-left': {
+    hidden: { opacity: 0, x: 16 },
+    visible: { opacity: 1, x: 0 },
+  },
+  'slide-right': {
+    hidden: { opacity: 0, x: -16 },
+    visible: { opacity: 1, x: 0 },
+  },
+  'scale-up': {
+    hidden: { opacity: 0, scale: 0.96, y: 12 },
+    visible: { opacity: 1, scale: 1, y: 0 },
+  },
+  fade: {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  },
+}
+
+/**
+ * Reveal: Hoạt ảnh hiển thị nhẹ nhàng khi cuộn tới vị trí phần tử.
+ * Tự động hiển thị ngay (không bị ẩn) với độ nhạy cao (amount: 0.01).
+ */
 export default function Reveal({
-  as: Tag = 'div',
+  as: Component = 'div',
   className = '',
   children,
   variant = 'slide-up',
-  delay,
-  duration,
+  delay = 0,
+  duration = 0.45,
+  viewport = { once: true, amount: 0.01 },
+  whileHover,
+  whileTap,
   style,
   ...rest
 }) {
-  const ref = useRef(null)
-  const [shown, setShown] = useState(false)
+  const shouldReduceMotion = useReducedMotion()
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setShown(true)
-      return
-    }
+  const MotionComponent = typeof Component === 'string'
+    ? (motion[Component] || motion.div)
+    : motion.create(Component)
 
-    let io = null
+  const selectedVariant = VARIANTS[variant] || VARIANTS['slide-up']
 
-    const reveal = () => {
-      setShown(true)
-      cleanup()
-    }
-
-    // Fallback for browsers/webviews that throttle IntersectionObserver.
-    const check = () => {
-      if (el.getBoundingClientRect().top < window.innerHeight * 0.98) reveal()
-    }
-
-    const cleanup = () => {
-      io?.disconnect()
-      window.removeEventListener('scroll', check)
-      window.removeEventListener('resize', check)
-    }
-
-    if ('IntersectionObserver' in window) {
-      io = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((en) => en.isIntersecting)) reveal()
-        },
-        { rootMargin: '0px 0px -5% 0px' },
-      )
-      io.observe(el)
-    }
-    window.addEventListener('scroll', check, { passive: true })
-    window.addEventListener('resize', check, { passive: true })
-    check()
-
-    return cleanup
-  }, [])
-
-  const customStyle = {
-    ...style,
-    transitionDelay: delay ? `${delay}ms` : undefined,
-    transitionDuration: duration ? `${duration}ms` : undefined,
+  const transition = {
+    duration: shouldReduceMotion ? 0 : duration,
+    delay: shouldReduceMotion ? 0 : (typeof delay === 'number' ? delay / 1000 : 0),
+    ease: [0.22, 1, 0.36, 1],
   }
 
-  const variantClass = `rv-${variant}`
+  if (shouldReduceMotion) {
+    const Tag = Component
+    return (
+      <Tag className={className} style={style} {...rest}>
+        {children}
+      </Tag>
+    )
+  }
 
   return (
-    <Tag
-      ref={ref}
-      className={`rv ${variantClass}${shown ? ' in' : ''}${className ? ' ' + className : ''}`}
-      style={customStyle}
+    <MotionComponent
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={viewport}
+      variants={selectedVariant}
+      transition={transition}
+      whileHover={whileHover}
+      whileTap={whileTap}
+      style={style}
       {...rest}
     >
       {children}
-    </Tag>
+    </MotionComponent>
   )
 }

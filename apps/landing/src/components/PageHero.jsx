@@ -3,11 +3,18 @@ import { useLocation } from "react-router-dom";
 import { driveImage, loadImages, pickImage } from "../lib/gallery.js";
 
 /**
- * Banner đầu trang: ảnh lấy từ thư viện Drive, phủ gradient tan dần xuống
- * đúng màu nền trang, tiêu đề nổi bật. Ảnh chọn ổn định theo đường dẫn nên
- * mỗi trang có một ảnh riêng, không đổi mỗi lần render.
+ * Banner đầu trang theo phong cách Aardvark Editorial:
+ * Nền kem ấm/vàng nhẹ, tiêu đề đậm nét, tag phân loại nổi bật,
+ * lớp ảnh nền nằm chìm tinh tế phía sau mà không che khuất nội dung.
  */
-export default function PageHero({ eyebrow, title, lead, seed, offset = 0, compact = false }) {
+export default function PageHero({
+  eyebrow,
+  title,
+  lead,
+  seed,
+  offset = 0,
+  compact = false,
+}) {
   const { pathname } = useLocation();
   const key = seed || pathname;
   const [image, setImage] = useState(null);
@@ -25,14 +32,15 @@ export default function PageHero({ eyebrow, title, lead, seed, offset = 0, compa
     };
   }, [key, offset]);
 
-  // Parallax nhẹ: ảnh trôi chậm hơn nội dung khi cuộn.
+  // Parallax nhẹ
   useEffect(() => {
     if (!image) return undefined;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return undefined;
     const el = layerRef.current;
     const onScroll = () => {
-      const y = Math.min(window.scrollY, 600);
-      if (el) el.style.transform = `translate3d(0, ${y * 0.22}px, 0)`;
+      const y = Math.min(window.scrollY, 400);
+      if (el) el.style.transform = `translate3d(0, ${y * 0.15}px, 0)`;
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -43,30 +51,31 @@ export default function PageHero({ eyebrow, title, lead, seed, offset = 0, compa
 
   return (
     <header className={`page-hero${compact ? " compact" : ""}`}>
-      <div className="page-hero-media" aria-hidden="true">
-        <div className="page-hero-layer" ref={layerRef}>
-          {image &&
-            (demo ? (
+      {image && (
+        <div className="page-hero-media" aria-hidden="true">
+          <div className="page-hero-layer" ref={layerRef}>
+            {demo ? (
               <div
                 className="page-hero-img page-hero-demo"
                 style={{
-                  background: `linear-gradient(135deg, hsl(${image.hue} 65% 45%), hsl(${(image.hue + 45) % 360} 70% 35%))`,
+                  background: `linear-gradient(135deg, hsl(${image.hue} 50% 45%), hsl(${(image.hue + 45) % 360} 55% 35%))`,
                 }}
               />
             ) : (
-              <img className="page-hero-img" src={driveImage(image.id, 1920)} alt="" decoding="async" />
-            ))}
+              <img
+                className="page-hero-img"
+                src={driveImage(image.id, 1920)}
+                alt=""
+                decoding="async"
+              />
+            )}
+          </div>
+          <div className="page-hero-veil" />
         </div>
-        {/* Lớp tối phía trên để chữ + thanh nav đọc rõ */}
-        <div className="page-hero-veil" />
-        {/* Nửa dưới mờ dần (blur tăng dần theo mask) */}
-        <div className="page-hero-blur" />
-        {/* Lớp tan dần xuống đúng màu nền trang */}
-        <div className="page-hero-fade" />
-      </div>
+      )}
 
       <div className="page-hero-content wrap">
-        {eyebrow && <p className="page-hero-eyebrow">{eyebrow}</p>}
+        {eyebrow && <span className="page-hero-eyebrow">{eyebrow}</span>}
         <h1 className="page-hero-title">{title}</h1>
         {lead && <p className="page-hero-lead">{lead}</p>}
       </div>

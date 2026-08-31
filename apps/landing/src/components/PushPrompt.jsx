@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { FiBell, FiX, FiCheckCircle, FiShare } from "react-icons/fi";
+import {
+  BellOutlined,
+  CloseOutlined,
+  CheckCircleOutlined,
+  ShareAltOutlined,
+} from "@ant-design/icons";
+import { motion, AnimatePresence } from "motion/react";
 import {
   getPermission,
   hasActiveSubscription,
@@ -10,9 +16,7 @@ import {
 } from "../lib/push.js";
 
 const STORAGE_KEY = "btnsg-push-prompt";
-/** Bấm "Để sau" thì 7 ngày sau mới hỏi lại — không làm phiền người xem. */
 const SNOOZE_DAYS = 7;
-/** Chờ vài giây cho người xem kịp đọc trang rồi mới mời. */
 const SHOW_DELAY_MS = 4000;
 
 const isSnoozed = () => {
@@ -30,38 +34,25 @@ const isSnoozed = () => {
 const snooze = () => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ dismissedAt: Date.now() }));
-  } catch {
-    /* chế độ riêng tư chặn localStorage — bỏ qua, chỉ là ghi nhớ tiện ích */
-  }
+  } catch {}
 };
 
-/**
- * Lời mời nhận thông báo về tin tức & lịch sinh hoạt.
- * Chỉ gọi Notification.requestPermission khi người dùng bấm nút — trình duyệt
- * chặn (và người dùng ghét) việc hỏi ngay lúc vừa vào trang.
- */
 export default function PushPrompt() {
   const [visible, setVisible] = useState(false);
-  const [status, setStatus] = useState("idle"); // idle | working | done | error
+  const [status, setStatus] = useState("idle");
   const [error, setError] = useState(null);
-  // iOS (Safari/Chrome…) chỉ cho phép Web Push khi trang đã "Thêm vào Màn hình chính" —
-  // trong trình duyệt thường thì bấm "Nhận thông báo" sẽ không có hộp thoại nào hiện ra cả.
-  // Ghi nhớ một lần lúc mount, không đổi trong lúc trang đang mở.
   const [iosNeedsInstall] = useState(needsIosHomeScreenInstall);
 
   useEffect(() => {
     if (!isPushConfigured) return undefined;
     if (isSnoozed()) return undefined;
 
-    // Trên iOS ngoài Màn hình chính: luôn hiện hướng dẫn cài đặt, kể cả khi trình duyệt
-    // có vẻ hỗ trợ Web Push về mặt kỹ thuật — vì thực tế vẫn không xin quyền được.
     if (iosNeedsInstall) {
       const timer = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
       return () => clearTimeout(timer);
     }
 
     if (!isPushSupported()) return undefined;
-    // Đã cho phép / đã chặn → không mời nữa.
     if (getPermission() !== "default") return undefined;
 
     let cancelled = false;
@@ -70,7 +61,6 @@ export default function PushPrompt() {
       const timer = setTimeout(() => {
         if (!cancelled) setVisible(true);
       }, SHOW_DELAY_MS);
-      // Dọn timer nếu component bị gỡ trước khi hiện
       return () => clearTimeout(timer);
     });
 
@@ -94,7 +84,6 @@ export default function PushPrompt() {
             ? "Bạn đã chặn thông báo. Có thể bật lại trong cài đặt trình duyệt."
             : result.reason === "not-configured"
               ? "Website chưa bật tính năng thông báo."
-              // Hiện đúng lý do từ máy chủ để còn biết đường sửa
               : result.reason || "Chưa đăng ký được, vui lòng thử lại sau.",
         );
         if (result.reason === "denied") setTimeout(() => setVisible(false), 3200);
@@ -110,63 +99,119 @@ export default function PushPrompt() {
     setVisible(false);
   };
 
-  if (!visible) return null;
-
   return (
-    <div className="push-prompt" role="dialog" aria-label="Nhận thông báo từ Ban Thanh Niên">
-      <button className="push-close" onClick={handleDismiss} type="button" aria-label="Đóng">
-        <FiX size={16} />
-      </button>
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          className="push-prompt"
+          role="dialog"
+          aria-label="Nhận thông báo từ Ban Thanh Niên"
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 30, scale: 0.95 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            position: "fixed",
+            bottom: 24,
+            left: 24,
+            maxWidth: 380,
+            background: "var(--surface)",
+            border: "1px solid var(--line)",
+            borderRadius: "var(--radius-lg)",
+            padding: 20,
+            boxShadow: "var(--shadow-lg)",
+            zIndex: 999,
+          }}
+        >
+          <button
+            onClick={handleDismiss}
+            type="button"
+            aria-label="Đóng"
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              background: "transparent",
+              border: "none",
+              color: "var(--ink-3)",
+              cursor: "pointer",
+            }}
+          >
+            <CloseOutlined style={{ fontSize: 14 }} />
+          </button>
 
-      <div className="push-icon">
-        {status === "done" ? <FiCheckCircle size={20} /> : <FiBell size={20} />}
-      </div>
+          <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: "var(--radius-md)",
+                background: "var(--brand-light)",
+                color: "var(--brand)",
+                display: "grid",
+                placeItems: "center",
+                flexShrink: 0,
+                fontSize: 18,
+              }}
+            >
+              {status === "done" ? <CheckCircleOutlined /> : <BellOutlined />}
+            </div>
 
-      <div className="push-body">
-        {iosNeedsInstall ? (
-          <>
-            <strong>Theo dõi Ban Thanh Niên?</strong>
-            <p>
-              Trên iPhone/iPad, hãy <strong>thêm trang này vào Màn hình chính</strong> trước —
-              bấm nút <FiShare size={13} style={{ verticalAlign: "-2px" }} /> <strong>Chia sẻ</strong> ở
-              thanh trình duyệt → chọn <strong>"Thêm vào MH chính"</strong>. Sau đó mở lại web từ
-              biểu tượng vừa thêm để bật thông báo.
-            </p>
-            <div className="push-actions">
-              <button className="btn btn-gold push-accept" onClick={handleDismiss} type="button">
-                Đã hiểu
-              </button>
+            <div style={{ flex: 1 }}>
+              {iosNeedsInstall ? (
+                <>
+                  <strong style={{ display: "block", fontSize: "0.95rem", color: "var(--ink)", marginBottom: 4 }}>
+                    Theo dõi Ban Thanh Niên?
+                  </strong>
+                  <p style={{ fontSize: "0.84rem", color: "var(--ink-2)", lineHeight: 1.5, marginBottom: 12 }}>
+                    Trên iPhone/iPad, hãy <strong>thêm trang này vào Màn hình chính</strong> trước —
+                    bấm nút <ShareAltOutlined /> <strong>Chia sẻ</strong> → chọn <strong>"Thêm vào MH chính"</strong>.
+                  </p>
+                  <button className="btn btn-gold" onClick={handleDismiss} type="button" style={{ padding: "6px 14px", fontSize: "0.82rem" }}>
+                    Đã hiểu
+                  </button>
+                </>
+              ) : status === "done" ? (
+                <>
+                  <strong style={{ display: "block", fontSize: "0.95rem", color: "var(--ink)", marginBottom: 4 }}>
+                    Đã bật thông báo 🎉
+                  </strong>
+                  <p style={{ fontSize: "0.84rem", color: "var(--ink-2)" }}>Bạn sẽ nhận được tin mới và nhắc lịch sinh hoạt.</p>
+                </>
+              ) : (
+                <>
+                  <strong style={{ display: "block", fontSize: "0.95rem", color: "var(--ink)", marginBottom: 4 }}>
+                    Theo dõi Ban Thanh Niên?
+                  </strong>
+                  <p style={{ fontSize: "0.84rem", color: "var(--ink-2)", lineHeight: 1.5, marginBottom: 12 }}>
+                    Nhận thông báo khi có tin tức mới và nhắc lịch sinh hoạt sắp tới.
+                  </p>
+                  {error && <p style={{ fontSize: "0.8rem", color: "#ef4444", marginBottom: 8 }}>{error}</p>}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      className="btn btn-gold"
+                      onClick={handleAccept}
+                      disabled={status === "working"}
+                      type="button"
+                      style={{ padding: "6px 14px", fontSize: "0.82rem" }}
+                    >
+                      {status === "working" ? "Đang bật…" : "Nhận thông báo"}
+                    </button>
+                    <button
+                      className="btn btn-ghost"
+                      onClick={handleDismiss}
+                      type="button"
+                      style={{ padding: "6px 12px", fontSize: "0.82rem" }}
+                    >
+                      Để sau
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
-          </>
-        ) : status === "done" ? (
-          <>
-            <strong>Đã bật thông báo 🎉</strong>
-            <p>Bạn sẽ nhận được tin mới và nhắc lịch sinh hoạt của Ban.</p>
-          </>
-        ) : (
-          <>
-            <strong>Theo dõi Ban Thanh Niên?</strong>
-            <p>
-              Nhận thông báo khi có tin tức mới và nhắc lịch sinh hoạt sắp tới. Bạn có thể tắt
-              bất cứ lúc nào.
-            </p>
-            {error && <p className="push-error">{error}</p>}
-            <div className="push-actions">
-              <button
-                className="btn btn-gold push-accept"
-                onClick={handleAccept}
-                disabled={status === "working"}
-                type="button"
-              >
-                {status === "working" ? "Đang bật…" : "Nhận thông báo"}
-              </button>
-              <button className="btn btn-ghost push-later" onClick={handleDismiss} type="button">
-                Để sau
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

@@ -1,18 +1,24 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FiSun, FiMoon } from "react-icons/fi";
+import { SunOutlined, MoonOutlined, ArrowRightOutlined } from "@ant-design/icons";
+import { motion, useScroll, useSpring } from "motion/react";
 import { site, nav } from "../data/content.js";
 import logoImg from "../assets/logobtnsg.jpg";
 
 /**
- * Thanh điều hướng trên: đầy đủ các trang ở desktop.
- * Trên mobile chỉ còn thương hiệu + nút đổi giao diện — điều hướng do
- * BottomNav (thanh dưới, logo tròn ở giữa) đảm nhiệm.
+ * Thanh điều hướng Aardvark Editorial:
+ * Nền kem ấm, bo góc pill, nút Split Capsule Button "Tham gia sinh hoạt".
  */
 export default function Nav() {
   const [theme, setTheme] = useState("light");
   const [isScrolled, setIsScrolled] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -31,10 +37,7 @@ export default function Nav() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-      const docHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      setScrollProgress(docHeight > 0 ? window.scrollY / docHeight : 0);
+      setIsScrolled(window.scrollY > 12);
     };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -50,11 +53,9 @@ export default function Nav() {
 
   return (
     <nav className={`nav${isScrolled ? " nav-scrolled" : ""}`}>
-      {/* Scroll progress bar */}
-      <div
-        className="scroll-indicator"
-        style={{ "--scroll-progress": scrollProgress }}
-      />
+      {/* Scroll progress indicator */}
+      <motion.div className="scroll-indicator" style={{ scaleX }} />
+
       <div className="nav-in">
         <Link className="brand" to="/">
           <img src={logoImg} alt="Logo BTNSG" className="brand-logo-img" />
@@ -78,15 +79,24 @@ export default function Nav() {
           ))}
         </div>
 
-        <button
-          onClick={toggleTheme}
-          className="theme-btn"
-          aria-label="Chuyển chế độ sáng/tối"
-          title="Chuyển chế độ sáng/tối"
-          type="button"
-        >
-          {theme === "light" ? <FiMoon size={18} /> : <FiSun size={18} />}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Link to="/sinh-hoat" className="btn-aardvark" style={{ display: "none" }}>
+            <span className="btn-text-part">Sinh hoạt</span>
+            <span className="btn-icon-part">
+              <ArrowRightOutlined />
+            </span>
+          </Link>
+
+          <button
+            onClick={toggleTheme}
+            className="theme-btn"
+            aria-label="Chuyển chế độ sáng/tối"
+            title="Chuyển chế độ sáng/tối"
+            type="button"
+          >
+            {theme === "light" ? <MoonOutlined /> : <SunOutlined />}
+          </button>
+        </div>
       </div>
     </nav>
   );

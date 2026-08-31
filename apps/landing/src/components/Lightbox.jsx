@@ -1,147 +1,190 @@
-import { useEffect, useRef } from 'react'
-import { FiX, FiExternalLink, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import MediaTile from './MediaTile.jsx'
-import { driveImage } from '../lib/gallery.js'
+import { useEffect, useRef } from "react";
+import {
+  CloseOutlined,
+  ExportOutlined,
+  LeftOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
+import { motion, AnimatePresence } from "motion/react";
+import MediaTile from "./MediaTile.jsx";
+import { driveImage } from "../lib/gallery.js";
 
-/** Xem ảnh phóng to toàn màn hình cao cấp với react-icons & thumbnail carousel. */
+/**
+ * Lightbox: Xem ảnh phóng to toàn màn hình với hoạt ảnh Motion và Ant Design icons.
+ */
 export default function Lightbox({ images = [], index, onClose, onNavigate }) {
-  const isOpen = index !== null && index >= 0 && Boolean(images[index])
-  const thumbStripRef = useRef(null)
+  const isOpen = index !== null && index >= 0 && Boolean(images[index]);
+  const thumbStripRef = useRef(null);
 
-  // Cuộn ảnh thumbnail active vào giữa danh sách khi đổi index
   useEffect(() => {
-    if (!isOpen || !thumbStripRef.current) return
-    const activeThumb = thumbStripRef.current.querySelector('.lightbox-thumb-card.active')
+    if (!isOpen || !thumbStripRef.current) return;
+    const activeThumb = thumbStripRef.current.querySelector(
+      ".lightbox-thumb-card.active",
+    );
     if (activeThumb) {
-      activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+      activeThumb.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
     }
-  }, [isOpen, index])
+  }, [isOpen, index]);
 
-  // Điều hướng bằng phím ← → Esc
   useEffect(() => {
-    if (!isOpen) return undefined
+    if (!isOpen) return undefined;
     const onKey = (e) => {
-      if (e.key === 'Escape') onClose()
-      else if (e.key === 'ArrowLeft') onNavigate(index - 1)
-      else if (e.key === 'ArrowRight') onNavigate(index + 1)
-    }
-    document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
+      if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowLeft") onNavigate(index - 1);
+      else if (e.key === "ArrowRight") onNavigate(index + 1);
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, index, onClose, onNavigate])
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, index, onClose, onNavigate]);
 
-  if (!isOpen) return null
-
-  const image = images[index]
-  const isDrive = !image.demo && Boolean(image.id)
-  const cleanTitle = (image.name || '')
-    .replace(/^(Copy of |Sao chép của )/i, '')
-    .replace(/\.[^/.]+$/, '') || `Khoảnh khắc #${index + 1}`
+  const image = images[index];
+  const isDrive = !image?.demo && Boolean(image?.id);
+  const cleanTitle =
+    (image?.name || "")
+      .replace(/^(Copy of |Sao chép của )/i, "")
+      .replace(/\.[^/.]+$/, "") || `Khoảnh khắc #${(index ?? 0) + 1}`;
 
   return (
-    <div className="lightbox" onClick={onClose} role="dialog" aria-modal="true">
-      {/* Ambient Cinema Blur Background */}
-      <div className="lightbox-ambient-bg" aria-hidden="true">
-        <MediaTile image={image} width={400} className="ambient-blur-img" />
-        <div className="ambient-vignette" />
-      </div>
-
-      {/* Floating Header Bar */}
-      <div className="lightbox-header-wrap" onClick={(e) => e.stopPropagation()}>
-        <div className="lightbox-glass-header">
-          <div className="lightbox-title-group">
-            <span className="lightbox-counter-badge">
-              {index + 1} / {images.length}
-            </span>
-            <h3 className="lightbox-title-text">{cleanTitle}</h3>
-          </div>
-
-          <div className="lightbox-header-actions">
-            {isDrive && (
-              <a
-                className="lightbox-glass-btn"
-                href={driveImage(image.id, 1920)}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Mở ảnh gốc trên Google Drive"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="lightbox-backdrop"
+          onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          {/* Header Bar */}
+          <div
+            style={{
+              position: "absolute",
+              top: 24,
+              left: 24,
+              right: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              zIndex: 10,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#fff" }}>
+              <span
+                style={{
+                  background: "rgba(255, 255, 255, 0.15)",
+                  padding: "4px 10px",
+                  borderRadius: "var(--radius-pill)",
+                  fontSize: "0.78rem",
+                  fontWeight: 700,
+                }}
               >
-                <FiExternalLink />
-                <span>Xem ảnh gốc</span>
-              </a>
-            )}
+                {index + 1} / {images.length}
+              </span>
+              <h3 style={{ fontSize: "1.05rem", fontWeight: 600, color: "#fff", margin: 0 }}>
+                {cleanTitle}
+              </h3>
+            </div>
 
-            <button
-              className="lightbox-close-circle"
-              onClick={onClose}
-              aria-label="Đóng màn hình xem ảnh"
-              type="button"
-              title="Đóng (Esc)"
-            >
-              <FiX size={20} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Stage */}
-      <div className="lightbox-stage">
-        <button
-          className="lightbox-nav-btn lightbox-nav-prev"
-          onClick={(e) => {
-            e.stopPropagation()
-            onNavigate(index - 1)
-          }}
-          aria-label="Ảnh trước (Mũi tên trái)"
-          type="button"
-          title="Ảnh trước (←)"
-        >
-          <FiChevronLeft size={28} />
-        </button>
-
-        <figure className="lightbox-figure-frame" onClick={(e) => e.stopPropagation()}>
-          <div className="lightbox-image-container">
-            <MediaTile image={image} width={1920} eager className="lightbox-main-img" />
-          </div>
-        </figure>
-
-        <button
-          className="lightbox-nav-btn lightbox-nav-next"
-          onClick={(e) => {
-            e.stopPropagation()
-            onNavigate(index + 1)
-          }}
-          aria-label="Ảnh kế tiếp (Mũi tên phải)"
-          type="button"
-          title="Ảnh sau (→)"
-        >
-          <FiChevronRight size={28} />
-        </button>
-      </div>
-
-      {/* Bottom Thumbnail Dock */}
-      {images.length > 1 && (
-        <div className="lightbox-dock-wrap" onClick={(e) => e.stopPropagation()}>
-          <div className="lightbox-glass-dock">
-            <div className="lightbox-thumb-strip" ref={thumbStripRef}>
-              {images.map((img, i) => (
-                <button
-                  key={img.id || i}
-                  className={`lightbox-thumb-card ${i === index ? 'active' : ''}`}
-                  onClick={() => onNavigate(i)}
-                  aria-label={`Xem ảnh ${i + 1}`}
-                  type="button"
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {isDrive && (
+                <a
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    color: "#fff",
+                    background: "rgba(255, 255, 255, 0.12)",
+                    padding: "6px 14px",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "0.85rem",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                  }}
+                  href={driveImage(image.id, 1920)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Mở ảnh gốc trên Google Drive"
                 >
-                  <MediaTile image={img} width={200} />
-                  {i === index && <span className="thumb-active-glow" />}
-                </button>
-              ))}
+                  <ExportOutlined />
+                  <span>Ảnh gốc</span>
+                </a>
+              )}
+
+              <button
+                style={{
+                  background: "rgba(255, 255, 255, 0.15)",
+                  border: "none",
+                  color: "#fff",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "var(--radius-md)",
+                  display: "grid",
+                  placeItems: "center",
+                  cursor: "pointer",
+                  fontSize: 16,
+                }}
+                onClick={onClose}
+                aria-label="Đóng"
+                type="button"
+              >
+                <CloseOutlined />
+              </button>
             </div>
           </div>
-        </div>
+
+          {/* Main Stage Image */}
+          <motion.div
+            className="lightbox-dialog"
+            onClick={(e) => e.stopPropagation()}
+            key={image?.id || index}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <MediaTile
+              image={image}
+              width={1920}
+              eager
+              className="lightbox-img"
+            />
+          </motion.div>
+
+          <button
+            className="lightbox-btn lightbox-prev"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(index - 1);
+            }}
+            aria-label="Ảnh trước"
+            type="button"
+          >
+            <LeftOutlined />
+          </button>
+
+          <button
+            className="lightbox-btn lightbox-next"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(index + 1);
+            }}
+            aria-label="Ảnh kế tiếp"
+            type="button"
+          >
+            <RightOutlined />
+          </button>
+        </motion.div>
       )}
-    </div>
-  )
+    </AnimatePresence>
+  );
 }

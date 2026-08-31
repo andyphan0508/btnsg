@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ClockCircleOutlined } from "@ant-design/icons";
 import Reveal from "./Reveal.jsx";
 import SubCommitteeModal from "./SubCommitteeModal.jsx";
 import { schedule, subCommittees } from "../data/content.js";
@@ -22,10 +23,10 @@ export default function Schedule() {
           <Reveal
             className={`s-card-new${s.main ? " main-highlight" : ""}`}
             variant="slide-up"
-            delay={idx * 120}
+            delay={idx * 80}
             key={`${s.day}-${s.time}`}
+            whileHover={{ y: -4, transition: { duration: 0.2 } }}
           >
-            <div className="s-card-glow-bg" />
             <div className="s-header">
               <span className="s-day-badge">{s.day}</span>
               {s.main && (
@@ -37,16 +38,7 @@ export default function Schedule() {
 
             <div className="s-body">
               <div className="s-time-row">
-                <svg
-                  className="s-icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
+                <ClockCircleOutlined />
                 <span className="s-time-text">{s.time}</span>
               </div>
               <h3 className="s-title">{s.what}</h3>
@@ -56,7 +48,7 @@ export default function Schedule() {
         ))}
       </div>
 
-      <Reveal className="sub-comm-wrapper" variant="slide-up" delay={200}>
+      <Reveal className="sub-comm-wrapper" variant="slide-up" delay={150}>
         <p className="sub-comm-title">Các tiểu ban công tác phụ trách:</p>
         <div className="chips-container">
           {subCommittees.map((c) => (

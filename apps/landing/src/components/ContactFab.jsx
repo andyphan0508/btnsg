@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { FiX, FiMessageSquare, FiSend, FiCheckCircle, FiAlertCircle, FiMapPin, FiArrowUpRight } from "react-icons/fi";
-import { FaFacebookF } from "react-icons/fa6";
-import { site, contacts, links } from "../data/content.js";
+import {
+  MessageOutlined,
+  CloseOutlined,
+  SendOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  FacebookFilled,
+  ArrowRightOutlined,
+} from "@ant-design/icons";
+import { motion, AnimatePresence } from "motion/react";
+import { site } from "../data/content.js";
 import { sendContactMessage } from "../lib/contact.js";
 
 /**
@@ -10,7 +18,11 @@ import { sendContactMessage } from "../lib/contact.js";
  */
 export default function ContactFab() {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", contact: "", message: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    contact: "",
+    message: "",
+  });
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
@@ -45,135 +57,174 @@ export default function ContactFab() {
 
   return (
     <>
-      {open && <div className="fab-backdrop" onClick={() => setOpen(false)} />}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fab-backdrop"
+            onClick={() => setOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
+        )}
+      </AnimatePresence>
 
       <div className={`contact-fab${open ? " open" : ""}`}>
         {/* Panel kết nối */}
-        <div className="fab-panel" role="dialog" aria-label="Kết nối với Ban Thanh Niên" aria-hidden={!open}>
-          <div className="fab-panel-head">
-            <div>
-              <div className="fab-panel-title">Kết nối với Ban Thanh Niên</div>
-              <div className="fab-panel-sub">Lời nhắn sẽ được chuyển thẳng về banthanhniensaigon@gmail.com 🧡</div>
-            </div>
-            <button className="fab-close-btn" onClick={() => setOpen(false)} type="button" aria-label="Đóng">
-              <FiX size={20} />
-            </button>
-          </div>
-
-          <div className="fab-panel-body">
-            {/* Kênh liên hệ nhanh */}
-            <a
-              className="fab-channel"
-              href={site.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              className="fab-panel"
+              role="dialog"
+              aria-label="Kết nối với Ban Thanh Niên"
+              aria-hidden={!open}
+              initial={{ opacity: 0, scale: 0.94, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 16 }}
+              transition={{ type: "spring", damping: 26, stiffness: 320 }}
             >
-              <span className="fab-channel-icon">
-                <FaFacebookF size={18} />
-              </span>
-              <span>
-                <strong>Nhắn tin Fanpage</strong>
-                <small>Kênh phản hồi nhanh nhất của Ban</small>
-              </span>
-              <FiArrowUpRight className="fab-channel-arrow" />
-            </a>
-
-            {contacts.map((c) => (
-              <div className="fab-channel fab-channel-static" key={c.title}>
-                <span className="fab-channel-icon">
-                  <FiMapPin size={18} />
-                </span>
-                <span>
-                  <strong>{c.title}</strong>
-                  <small>{c.desc}</small>
-                </span>
-              </div>
-            ))}
-
-            {/* Form gửi lời nhắn */}
-            <form onSubmit={handleSubmit} className="c-form fab-form">
-              <div className="fab-form-title">Gửi lời nhắn / đăng ký tham gia</div>
-
-              <div className="form-group">
-                <input
-                  type="text"
-                  id="fab-name"
-                  required
-                  placeholder=" "
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="form-input"
-                />
-                <label htmlFor="fab-name" className="form-label">Họ và tên của bạn</label>
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="text"
-                  id="fab-contact"
-                  required
-                  placeholder=" "
-                  value={formData.contact}
-                  onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-                  className="form-input"
-                />
-                <label htmlFor="fab-contact" className="form-label">Email hoặc số điện thoại liên hệ</label>
-              </div>
-
-              <div className="form-group">
-                <textarea
-                  id="fab-message"
-                  rows="3"
-                  required
-                  placeholder=" "
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="form-input form-textarea"
-                ></textarea>
-                <label htmlFor="fab-message" className="form-label">Lời nhắn hoặc câu hỏi</label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn btn-gold btn-glowing fab-submit"
-              >
-                {loading ? (
-                  "Đang gửi..."
-                ) : (
-                  <>
-                    <span>Gửi về hộp thư Ban</span>
-                    <FiSend style={{ marginLeft: 6 }} />
-                  </>
-                )}
-              </button>
-
-              {sent && (
-                <div className="form-success-alert">
-                  <FiCheckCircle size={18} style={{ color: "#10b981", flexShrink: 0 }} />
-                  <span>Lời nhắn đã gửi thành công tới <strong>banthanhniensaigon@gmail.com</strong>! Chúng tôi sẽ phản hồi sớm nhất.</span>
+              {/* Header */}
+              <div className="fab-panel-head">
+                <div>
+                  <div className="fab-eyebrow">
+                    <span className="fab-eyebrow-dot" />
+                    <span>Hộp thư kết nối</span>
+                  </div>
+                  <h3 className="fab-panel-title">Ban Thanh Niên</h3>
+                  <p className="fab-panel-sub">
+                    Lời nhắn sẽ chuyển thẳng về <strong>banthanhniensaigon@gmail.com</strong> 🧡
+                  </p>
                 </div>
-              )}
+                <button
+                  className="fab-close-btn"
+                  onClick={() => setOpen(false)}
+                  type="button"
+                  aria-label="Đóng"
+                >
+                  <CloseOutlined />
+                </button>
+              </div>
 
-              {error && (
-                <div className="form-error-alert">
-                  <FiAlertCircle size={18} style={{ color: "#ef4444", flexShrink: 0 }} />
-                  <span>{error}</span>
-                </div>
-              )}
-            </form>
-
-            <div className="fab-links">
-              {links.map((l) => (
-                <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">
-                  {l.label} <FiArrowUpRight style={{ display: "inline" }} />
+              <div className="fab-panel-body">
+                {/* Kênh liên hệ nhanh Facebook */}
+                <a
+                  className="fab-fb-card"
+                  href={site.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="fab-fb-icon-box">
+                    <FacebookFilled />
+                  </div>
+                  <div className="fab-fb-info">
+                    <strong className="fab-fb-title">Nhắn tin Fanpage</strong>
+                    <span className="fab-fb-sub">Kênh phản hồi nhanh nhất</span>
+                  </div>
+                  <div className="fab-fb-arrow">
+                    <ArrowRightOutlined />
+                  </div>
                 </a>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        {/* Nút FAB */}
+                {/* Phân cách hoặc */}
+                <div className="fab-divider">
+                  <span>hoặc gửi lời nhắn tại đây</span>
+                </div>
+
+                {/* Form gửi lời nhắn */}
+                <form onSubmit={handleSubmit} className="fab-form">
+                  <div className="fab-field-group">
+                    <label htmlFor="fab-name" className="fab-field-label">
+                      Họ và tên
+                    </label>
+                    <input
+                      type="text"
+                      id="fab-name"
+                      required
+                      placeholder="Nhập họ và tên..."
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      className="fab-field-input"
+                    />
+                  </div>
+
+                  <div className="fab-field-group">
+                    <label htmlFor="fab-contact" className="fab-field-label">
+                      Email hoặc Số điện thoại
+                    </label>
+                    <input
+                      type="text"
+                      id="fab-contact"
+                      required
+                      placeholder="Email hoặc số điện thoại..."
+                      value={formData.contact}
+                      onChange={(e) =>
+                        setFormData({ ...formData, contact: e.target.value })
+                      }
+                      className="fab-field-input"
+                    />
+                  </div>
+
+                  <div className="fab-field-group">
+                    <label htmlFor="fab-message" className="fab-field-label">
+                      Lời nhắn / Câu hỏi
+                    </label>
+                    <textarea
+                      id="fab-message"
+                      rows="3"
+                      required
+                      placeholder="Nội dung bạn muốn nhắn gửi..."
+                      value={formData.message}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
+                      className="fab-field-input fab-field-textarea"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="fab-submit-btn"
+                  >
+                    <span className="fab-submit-text">
+                      {loading ? "Đang gửi đi…" : "Gửi về hộp thư Ban"}
+                    </span>
+                    <span className="fab-submit-icon">
+                      <SendOutlined />
+                    </span>
+                  </button>
+
+                  {sent && (
+                    <motion.div
+                      className="fab-alert-success"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <CheckCircleOutlined className="fab-alert-icon" />
+                      <span>Đã gửi thành công tới <strong>banthanhniensaigon@gmail.com</strong>! Chúng tôi sẽ phản hồi sớm nhất.</span>
+                    </motion.div>
+                  )}
+
+                  {error && (
+                    <motion.div
+                      className="fab-alert-error"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <ExclamationCircleOutlined className="fab-alert-icon" />
+                      <span>{error}</span>
+                    </motion.div>
+                  )}
+                </form>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Nút FAB chính */}
         <button
           type="button"
           className="fab-btn"
@@ -181,7 +232,16 @@ export default function ContactFab() {
           aria-expanded={open}
           aria-label={open ? "Đóng bảng kết nối" : "Kết nối với Ban Thanh Niên"}
         >
-          {open ? <FiX size={24} /> : <FiMessageSquare size={24} />}
+          <motion.span
+            key={open ? "close" : "open"}
+            initial={{ rotate: -45, opacity: 0, scale: 0.8 }}
+            animate={{ rotate: 0, opacity: 1, scale: 1 }}
+            exit={{ rotate: 45, opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.18 }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            {open ? <CloseOutlined /> : <MessageOutlined />}
+          </motion.span>
         </button>
       </div>
     </>

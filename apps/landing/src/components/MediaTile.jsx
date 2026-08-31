@@ -1,10 +1,10 @@
-import { FiImage } from "react-icons/fi";
+import { PictureOutlined } from "@ant-design/icons";
 import { driveImage } from "../lib/gallery.js";
 
 /**
  * Ô ảnh dùng chung cho slider/gallery/lightbox.
  * - Ảnh thật từ Drive → <img> lazy-load.
- * - Ảnh demo (chưa cấu hình Drive) → khối gradient nghệ thuật với icon React Icons.
+ * - Ảnh demo (chưa cấu hình Drive) → khối gradient nghệ thuật với icon Ant Design.
  */
 export default function MediaTile({
   image,
@@ -17,7 +17,14 @@ export default function MediaTile({
   if (image.demo) {
     const hue = image.hue ?? 24;
     const style = {
-      background: `linear-gradient(135deg, hsl(${hue} 65% 45%), hsl(${(hue + 45) % 360} 70% 30%))`,
+      background: `linear-gradient(135deg, hsl(${hue} 45% 35%), hsl(${(hue + 45) % 360} 50% 25%))`,
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "rgba(255, 255, 255, 0.8)",
+      fontSize: "24px",
     };
     return (
       <div
@@ -25,11 +32,7 @@ export default function MediaTile({
         style={style}
         aria-label={image.name || image.title}
       >
-        <div className="media-demo-pattern" />
-        <div className="media-demo-content">
-          <FiImage className="media-demo-icon" />
-          <span className="media-demo-label">{image.title || image.name}</span>
-        </div>
+        <PictureOutlined />
       </div>
     );
   }
@@ -41,6 +44,7 @@ export default function MediaTile({
       alt={image.title || image.name || "Ảnh hoạt động Ban Thanh Niên"}
       loading={eager ? "eager" : "lazy"}
       decoding="async"
+      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
     />
   );
 }

@@ -1,5 +1,6 @@
-import Reveal from './Reveal.jsx'
-import { themeYear } from '../data/content.js'
+import { CustomerServiceOutlined } from "@ant-design/icons";
+import Reveal from "./Reveal.jsx";
+import { themeYear } from "../data/content.js";
 
 export default function ThemeYear() {
   return (
@@ -11,24 +12,25 @@ export default function ThemeYear() {
             <h2 className="theme-title-glow">{themeYear.title}</h2>
             <div className="theme-divider" />
             <p className="theme-song">
-              <span className="music-note-icon">🎵</span> Bài hát khẩu hiệu: <b>{themeYear.song}</b>
+              <CustomerServiceOutlined style={{ fontSize: 20, color: "var(--color-yellow)" }} />
+              <span>
+                Bài hát khẩu hiệu: <b>{themeYear.song}</b>
+              </span>
             </p>
           </div>
           <div className="theme-right">
             <blockquote className="verse-gold-box">
               <div className="quote-mark-start">“</div>
               <p className="verse-text">{themeYear.verse}</p>
-              <cite className="verse-ref">{themeYear.ref}</cite>
-              <div className="quote-mark-end">”</div>
+              <cite className="verse-ref">— {themeYear.ref}</cite>
+              <div className="quote-mark-end" style={{ textAlign: "right" }}>”</div>
             </blockquote>
           </div>
         </div>
-        {/* Soft background glow halo for rounded panel */}
-        <div className="theme-panel-glow" aria-hidden="true" />
       </Reveal>
-      <Reveal as="p" className="theme-note" variant="fade" delay={300}>
+      <Reveal as="p" className="theme-note" variant="fade" delay={200} style={{ textAlign: "center", marginTop: 24, fontStyle: "italic" }}>
         {themeYear.note}
       </Reveal>
     </section>
-  )
+  );
 }

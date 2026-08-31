@@ -19,7 +19,7 @@ export default function Intro() {
           <p className="prose">
             Ban được hình thành từ những năm đầu khi Hội Thánh mới thành lập, và
             chính thức trở thành một ban ngành trong tổ chức của Hội Thánh vào
-            khoảng <b className="highlight-text">năm 1942–1944</b>, sau Đại Hội
+            khoảng <b style={{ color: "var(--brand)" }}>năm 1942–1944</b>, sau Đại Hội
             Đồng Tổng Liên Hội năm 1942. Ban quy tụ các bạn trẻ cùng nhau thờ
             phượng Chúa, học Lời Chúa, gây dựng đời sống thuộc linh, phục vụ qua
             âm nhạc và chung tay trong công tác truyền giảng, thiện nguyện xã
@@ -33,14 +33,11 @@ export default function Intro() {
           <Reveal
             className="stat-card"
             variant="scale-up"
-            delay={idx * 150}
+            delay={idx * 120}
             key={s.label}
           >
             <div className="stat-card-inner">
-              <div className="stat-circle">
-                <span className="stat-num">{s.num}</span>
-                <div className="stat-circle-ring" />
-              </div>
+              <span className="stat-num">{s.num}</span>
               <div className="stat-lbl">{s.label}</div>
             </div>
           </Reveal>
@@ -60,7 +57,7 @@ export default function Intro() {
               <Reveal
                 className={`timeline-card-wrapper${t.current ? " timeline-active" : ""}`}
                 variant="slide-up"
-                delay={idx * 200}
+                delay={idx * 150}
                 key={t.name}
               >
                 <div className="timeline-node">

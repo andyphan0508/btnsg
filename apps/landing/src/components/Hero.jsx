@@ -1,125 +1,119 @@
-import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { FiBookOpen, FiArrowRight } from "react-icons/fi";
-import { FaChurch, FaFacebookF, FaFire } from "react-icons/fa6";
+import {
+  BankOutlined,
+  ArrowRightOutlined,
+  BookOutlined,
+  FacebookFilled,
+  FireOutlined,
+} from "@ant-design/icons";
+import { motion } from "motion/react";
 import { site, heroMeta } from "../data/content.js";
 import logoImg from "../assets/logobtnsg.jpg";
-import { assets } from "../assets/index.ts";
 
-/**
- * Ảnh nền hero có parallax: lớp ảnh trượt chậm hơn nội dung khi cuộn
- * (tạo chiều sâu) + hiệu ứng ánh sáng dịu.
- */
-function HeroBackdrop() {
-  const layerRef = useRef(null);
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05,
+    },
+  },
+};
 
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-      return undefined;
-
-    const el = layerRef.current;
-    const onScroll = () => {
-      const y = Math.min(window.scrollY, window.innerHeight * 1.5);
-      if (el) el.style.transform = `translate3d(0, ${y * 0.28}px, 0)`;
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, []);
-
-  return (
-    <div className="hero-bg" aria-hidden="true">
-      <div className="hero-bg-layer" ref={layerRef}>
-        <img
-          className="hero-bg-img"
-          src={assets.images.background}
-          alt=""
-          fetchPriority="high"
-          decoding="async"
-        />
-      </div>
-      <div className="hero-bg-veil" />
-      <div className="hero-light-beams" />
-    </div>
-  );
-}
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 export default function Hero() {
   return (
     <header className="hero" id="top">
-      <HeroBackdrop />
-
-      {/* Dynamic floating light ambient orbs */}
-      <div className="hero-orbs" aria-hidden="true">
-        <div className="hero-orb orb-1"></div>
-        <div className="hero-orb orb-2"></div>
-        <div className="hero-orb orb-3"></div>
-      </div>
-
       <div className="hero-in hero-split">
         {/* Left narrative content */}
-        <div className="hero-content">
+        <motion.div
+          className="hero-content"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {/* Church Badge */}
-          <p className="eyebrow hero-church-badge">
-            <FaChurch style={{ marginRight: 6 }} /> {site.church}
-          </p>
+          <motion.p className="eyebrow hero-church-badge" variants={itemVariants}>
+            <BankOutlined style={{ marginRight: 6, fontSize: 15 }} /> {site.church}
+          </motion.p>
 
           {/* Main Title */}
-          <h1 className="hero-title-main">
+          <motion.h1 className="hero-title-main" variants={itemVariants}>
             <span>{site.title}</span>{" "}
             <span className="hero-accent-text" style={{ whiteSpace: "nowrap" }}>
               Sài Gòn
             </span>
-          </h1>
+          </motion.h1>
 
           {/* Tagline */}
-          <p className="hero-tag">
+          <motion.p className="hero-tag" variants={itemVariants}>
             {site.tagline}
-          </p>
+          </motion.p>
+
+          {/* Handwritten Annotation */}
+          <motion.div className="hero-handwritten-note" variants={itemVariants}>
+            ✦ Mái nhà yêu thương &amp; nơi kết nối những câu chuyện đáng nhớ
+          </motion.div>
 
           {/* Sứ mệnh Box */}
-          <div className="hero-mission-box">
-            <FaFire className="hero-mission-icon" />
+          <motion.div className="hero-mission-box" variants={itemVariants}>
+            <FireOutlined className="hero-mission-icon" />
             <span className="hero-mission-title">SỨ MỆNH:</span>
             <span className="hero-mission-text">{site.mission}</span>
-          </div>
+          </motion.div>
 
-          {/* CTA Group */}
-          <div className="hero-cta">
-            <Link className="btn btn-gold btn-glowing" to="/sinh-hoat">
-              <span>Tham gia sinh hoạt</span>
-              <FiArrowRight className="arrow-right" />
+          {/* CTA Group: Aardvark Split Button */}
+          <motion.div className="hero-cta" variants={itemVariants}>
+            <Link className="btn-aardvark" to="/sinh-hoat">
+              <span className="btn-text-part">Tham gia sinh hoạt</span>
+              <span className="btn-icon-part">
+                <ArrowRightOutlined />
+              </span>
             </Link>
-            <Link className="btn btn-ghost btn-glass" to="/chu-de">
-              <FiBookOpen className="btn-icon" />
+
+            <Link className="btn-pill-ghost" to="/chu-de">
+              <BookOutlined style={{ fontSize: 16 }} />
               <span>Chủ đề 2026</span>
             </Link>
+
             <a
-              className="btn btn-glass btn-icon-only"
+              className="btn btn-ghost btn-icon-only"
               href={site.facebook}
               target="_blank"
               rel="noopener noreferrer"
               title="Fanpage Facebook"
               aria-label="Fanpage Facebook"
             >
-              <FaFacebookF size={18} />
+              <FacebookFilled style={{ fontSize: 18, color: "#1877f2" }} />
             </a>
-          </div>
+          </motion.div>
 
           {/* Clean Meta Info */}
-          <div className="hero-meta">
+          <motion.div className="hero-meta" variants={itemVariants}>
             {heroMeta.map((m) => (
               <span className="hero-meta-item" key={m.strong}>
                 {m.pre} <b>{m.strong}</b>
               </span>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        {/* Right Visual Stage — Elegant 3D Glass Medallion */}
-        <div className="hero-visual">
+        {/* Right Visual Stage — Aardvark Tactile Box Card */}
+        <motion.div
+          className="hero-visual"
+          initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+        >
           <div className="logo-card-container">
             <div className="logo-glass-card">
               <img
@@ -128,9 +122,8 @@ export default function Hero() {
                 className="logo-card-img"
               />
             </div>
-            <div className="logo-halo" />
           </div>
-        </div>
+        </motion.div>
 
         {/* Background Watermark Year */}
         <div className="hero-year" aria-hidden="true">

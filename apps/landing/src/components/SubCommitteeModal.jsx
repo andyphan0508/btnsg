@@ -1,64 +1,66 @@
-import { useEffect } from 'react'
+import { useEffect } from "react";
+import { CloseOutlined } from "@ant-design/icons";
+import { motion, AnimatePresence } from "motion/react";
 
 /**
- * Modal thông tin chi tiết tiểu ban, mở khi nhấn vào chip trong Schedule.
- * Ảnh minh hoạ dùng khối gradient demo (giống MediaTile) cho đến khi có ảnh thật.
+ * Modal thông tin chi tiết tiểu ban với hoạt ảnh Motion mượt mà.
  */
 export default function SubCommitteeModal({ committee, onClose }) {
-  const isOpen = Boolean(committee)
+  const isOpen = Boolean(committee);
 
   useEffect(() => {
-    if (!isOpen) return undefined
+    if (!isOpen) return undefined;
     const onKey = (e) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
-
-  const gallery = [0, 1, 2].map((i) => ({
-    hue: (committee.hue + i * 24) % 360,
-  }))
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, onClose]);
 
   return (
-    <div className="subcomm-modal-overlay" onClick={onClose}>
-      <div className="subcomm-modal" onClick={(e) => e.stopPropagation()}>
-        <button
-          className="subcomm-modal-close"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="subcom-modal-backdrop"
           onClick={onClose}
-          aria-label="Đóng"
-          type="button"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+          <motion.div
+            className="subcom-modal-sheet"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.94, opacity: 0, y: 16 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.94, opacity: 0, y: 16 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          >
+            <button
+              className="subcom-modal-close"
+              onClick={onClose}
+              aria-label="Đóng"
+              type="button"
+            >
+              <CloseOutlined />
+            </button>
 
-        <span className="subcomm-modal-icon" aria-hidden="true">
-          {committee.icon}
-        </span>
-        <h3 className="subcomm-modal-title">{committee.title}</h3>
-        <p className="subcomm-modal-desc">{committee.desc}</p>
-
-        <div className="subcomm-modal-gallery">
-          {gallery.map((img, i) => (
-            <div
-              key={i}
-              className="subcomm-modal-img"
-              style={{
-                background: `linear-gradient(135deg, hsl(${img.hue} 70% 55%), hsl(${(img.hue + 40) % 360} 75% 45%))`,
-              }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
+            <div style={{ fontSize: 36, marginBottom: 12 }}>
+              {committee.icon}
+            </div>
+            <h3 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: 8, color: "var(--ink)" }}>
+              {committee.title}
+            </h3>
+            <p style={{ fontSize: "0.95rem", color: "var(--ink-2)", lineHeight: 1.6 }}>
+              {committee.desc}
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }

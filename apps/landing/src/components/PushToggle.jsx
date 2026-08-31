@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FiBell, FiBellOff } from "react-icons/fi";
+import { BellOutlined, BellFilled } from "@ant-design/icons";
 import {
   getPermission,
   hasActiveSubscription,
@@ -13,7 +13,7 @@ import {
 
 /**
  * Nút bật/tắt nhận thông báo — đặt ở footer để người đã đăng ký
- * (hoặc đã lỡ bấm "Để sau") luôn có chỗ thay đổi lựa chọn.
+ * luôn có chỗ thay đổi lựa chọn.
  */
 export default function PushToggle() {
   const [supported, setSupported] = useState(false);
@@ -26,8 +26,6 @@ export default function PushToggle() {
     if (!isPushConfigured || !isPushSupported()) return;
     setSupported(true);
     setPermissionState(getPermission());
-    // Đăng ký lại service worker mỗi lần tải trang cho chắc (idempotent),
-    // phòng trường hợp người dùng đã xoá dữ liệu duyệt web.
     registerServiceWorker().catch(() => {});
     hasActiveSubscription().then(setSubscribed);
   }, []);
@@ -56,7 +54,9 @@ export default function PushToggle() {
           setMessage("Đã bật thông báo 🎉");
         } else if (result.reason === "denied") {
           setPermissionState("denied");
-          setMessage("Bạn đã chặn thông báo — hãy bật lại trong cài đặt trình duyệt.");
+          setMessage(
+            "Bạn đã chặn thông báo — hãy bật lại trong cài đặt trình duyệt.",
+          );
         } else {
           setMessage(result.reason || "Chưa bật được, vui lòng thử lại sau.");
         }
@@ -70,10 +70,10 @@ export default function PushToggle() {
   };
 
   return (
-    <div className="push-toggle">
+    <div className="push-toggle" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
       <button
         type="button"
-        className={`push-toggle-btn${subscribed ? " on" : ""}`}
+        className={`back-to-top-btn${subscribed ? " active" : ""}`}
         onClick={handleToggle}
         disabled={busy || permission === "denied"}
         title={
@@ -84,18 +84,18 @@ export default function PushToggle() {
               : "Bật nhận thông báo tin tức & lịch sinh hoạt"
         }
       >
-        {subscribed ? <FiBell size={15} /> : <FiBellOff size={15} />}
+        {subscribed ? <BellFilled style={{ color: "var(--amber)" }} /> : <BellOutlined />}
         <span>
           {busy
             ? "Đang xử lý…"
             : permission === "denied"
-              ? "Thông báo đang bị chặn"
+              ? "Thông báo bị chặn"
               : subscribed
                 ? "Đang nhận thông báo"
                 : "Nhận thông báo"}
         </span>
       </button>
-      {message && <span className="push-toggle-msg">{message}</span>}
+      {message && <span style={{ fontSize: "0.8rem", color: "var(--amber)" }}>{message}</span>}
     </div>
   );
 }

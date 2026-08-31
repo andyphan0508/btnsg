@@ -1,53 +1,58 @@
 import { Link } from "react-router-dom";
 import {
-  FiArrowRight,
-  FiBookOpen,
-  FiCalendar,
-  FiFileText,
-  FiHeart,
-  FiMapPin,
-  FiUsers,
-} from "react-icons/fi";
+  TeamOutlined,
+  BookOutlined,
+  CalendarOutlined,
+  HeartOutlined,
+  FileTextOutlined,
+  EnvironmentOutlined,
+  ArrowRightOutlined,
+} from "@ant-design/icons";
 import Reveal from "./Reveal.jsx";
 
-/** Cửa ngõ tới từng trang — thay cho việc dồn mọi nội dung vào trang chủ. */
 const CARDS = [
   {
     to: "/gioi-thieu",
-    icon: <FiUsers />,
+    icon: <TeamOutlined />,
     title: "Giới thiệu",
-    desc: "Hành trình từ Ca đoàn 3 đến Ban Thanh Niên hôm nay.",
+    desc: "Hành trình từ Ca đoàn 3 đến Ban Thanh Niên hôm nay hơn 80 năm lịch sử.",
+    theme: "theme-lilac",
   },
   {
     to: "/chu-de",
-    icon: <FiBookOpen />,
+    icon: <BookOutlined />,
     title: "Chủ đề năm",
-    desc: "Câu gốc và định hướng sinh hoạt của cả năm.",
+    desc: "Câu Kinh Thánh gốc và định hướng sinh hoạt trọng tâm của cả năm 2026.",
+    theme: "theme-yellow",
   },
   {
     to: "/sinh-hoat",
-    icon: <FiCalendar />,
+    icon: <CalendarOutlined />,
     title: "Lịch sinh hoạt",
-    desc: "Các buổi nhóm trong tuần — bạn có thể đến bất cứ lúc nào.",
+    desc: "Các buổi nhóm trong tuần — bạn luôn được chào đón bất cứ lúc nào.",
     highlight: "Chúa Nhật 14:30",
+    theme: "theme-green",
   },
   {
     to: "/muc-vu",
-    icon: <FiHeart />,
+    icon: <HeartOutlined />,
     title: "Mục vụ",
-    desc: "Bồi linh, truyền giảng, công tác xã hội, dã ngoại…",
+    desc: "Bồi linh, truyền giảng, công tác xã hội, du lịch dã ngoại và gắn kết.",
+    theme: "theme-plum",
   },
   {
     to: "/tin-tuc",
-    icon: <FiFileText />,
+    icon: <FileTextOutlined />,
     title: "Tin tức",
-    desc: "Hoạt động và thông báo mới nhất của Ban.",
+    desc: "Hoạt động, thông báo và các bài viết mới nhất của Ban Thanh Niên.",
+    theme: "theme-blue",
   },
   {
     to: "/lien-he",
-    icon: <FiMapPin />,
+    icon: <EnvironmentOutlined />,
     title: "Liên hệ",
-    desc: "Địa chỉ nhà thờ, bản đồ và cách kết nối với chúng tôi.",
+    desc: "Địa chỉ nhà thờ, bản đồ hướng dẫn và kênh kết nối trực tiếp.",
+    theme: "theme-orange",
   },
 ];
 
@@ -57,6 +62,7 @@ export default function QuickNav() {
       <Reveal className="sec-head" variant="slide-up">
         <p className="eyebrow">Khám phá</p>
         <h2>Bạn muốn tìm hiểu điều gì?</h2>
+        <p className="lead">Chọn mục bạn quan tâm để khám phá nhịp sống và sinh hoạt cùng chúng tôi.</p>
       </Reveal>
 
       <div className="quicknav-grid">
@@ -64,10 +70,12 @@ export default function QuickNav() {
           <Reveal
             as={Link}
             to={card.to}
-            className="quicknav-card"
+            className={`quicknav-card ${card.theme}`}
             variant="slide-up"
-            delay={(idx % 3) * 80}
+            delay={idx * 60}
             key={card.to}
+            whileHover={{ y: -6, transition: { duration: 0.2 } }}
+            whileTap={{ scale: 0.98 }}
           >
             <span className="quicknav-icon">{card.icon}</span>
             <span className="quicknav-body">
@@ -79,7 +87,9 @@ export default function QuickNav() {
               </span>
               <span className="quicknav-desc">{card.desc}</span>
             </span>
-            <FiArrowRight className="quicknav-arrow" />
+            <span className="quicknav-arrow">
+              <ArrowRightOutlined />
+            </span>
           </Reveal>
         ))}
       </div>

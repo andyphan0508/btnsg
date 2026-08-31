@@ -1,3 +1,10 @@
+import {
+  EnvironmentOutlined,
+  FacebookFilled,
+  GlobalOutlined,
+  YoutubeFilled,
+  ArrowRightOutlined,
+} from "@ant-design/icons";
 import Reveal from "./Reveal.jsx";
 import { contacts, links } from "../data/content.js";
 
@@ -6,6 +13,12 @@ const CHURCH_ADDRESS =
 
 const MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(CHURCH_ADDRESS)}&hl=vi&z=17&output=embed`;
 const MAP_DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(CHURCH_ADDRESS)}`;
+
+function getLinkIcon(label) {
+  if (label.includes("Facebook")) return <FacebookFilled style={{ color: "#1877f2" }} />;
+  if (label.includes("YouTube")) return <YoutubeFilled style={{ color: "#ff0000" }} />;
+  return <GlobalOutlined />;
+}
 
 export default function Contact() {
   return (
@@ -20,61 +33,62 @@ export default function Contact() {
       </Reveal>
 
       <div className="contact-grid">
-        <div className="contact-info-column">
+        <div className="contact-info-column" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {contacts.map((c, idx) => (
             <Reveal
               className="c-card-new"
               variant="slide-right"
-              delay={idx * 150}
+              delay={idx * 100}
               key={c.title}
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
             >
               <div className="c-icon-badge">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="c-svg"
-                >
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
+                <EnvironmentOutlined />
               </div>
               <div className="c-details">
-                <h3>{c.title}</h3>
-                <p>{c.desc}</p>
+                <h3 style={{ fontSize: "1.15rem", fontWeight: 800, marginBottom: 4 }}>{c.title}</h3>
+                <p style={{ fontSize: "0.92rem", color: "var(--ink-2)", lineHeight: 1.55 }}>{c.desc}</p>
               </div>
             </Reveal>
           ))}
 
           <Reveal
-            className="c-card-new c-links-card"
+            className="c-card-new"
             variant="slide-right"
-            delay={300}
+            delay={250}
+            whileHover={{ y: -3, transition: { duration: 0.2 } }}
           >
             <div className="c-icon-badge">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="c-svg"
-              >
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-              </svg>
+              <GlobalOutlined />
             </div>
-            <div className="c-details">
-              <h3>Theo dõi chúng tôi</h3>
-              <ul className="c-links-new">
+            <div className="c-details" style={{ width: "100%" }}>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 800, marginBottom: 12 }}>Theo dõi chúng tôi</h3>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
                 {links.map((l) => (
                   <li key={l.href}>
                     <a
                       href={l.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="c-social-link"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px 16px",
+                        background: "var(--surface-2)",
+                        border: "1.5px solid var(--ink)",
+                        borderRadius: "var(--radius-pill)",
+                        color: "var(--ink)",
+                        fontWeight: 700,
+                        fontSize: "0.9rem",
+                        boxShadow: "0 2px 0 var(--ink)",
+                      }}
                     >
-                      {l.label} <span className="arrow">↗</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        {getLinkIcon(l.label)}
+                        <span>{l.label}</span>
+                      </span>
+                      <ArrowRightOutlined />
                     </a>
                   </li>
                 ))}
@@ -96,16 +110,21 @@ export default function Contact() {
           </div>
           <div className="map-foot">
             <div className="map-foot-info">
-              <strong>Nhà thờ Tin Lành Sài Gòn</strong>
-              <span>155 Trần Hưng Đạo, Phường Cô Giang, Quận 1</span>
+              <strong style={{ fontSize: "1.05rem", fontWeight: 800 }}>Nhà thờ Tin Lành Sài Gòn</strong>
+              <span style={{ fontSize: "0.88rem", color: "var(--ink-2)", display: "block", marginTop: 2 }}>
+                155 Trần Hưng Đạo, Phường Cô Giang, Quận 1
+              </span>
             </div>
             <a
-              className="btn btn-gold map-directions"
+              className="btn-aardvark"
               href={MAP_DIRECTIONS_URL}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Chỉ đường <span className="arrow-right">→</span>
+              <span className="btn-text-part">Chỉ đường</span>
+              <span className="btn-icon-part">
+                <ArrowRightOutlined />
+              </span>
             </a>
           </div>
         </Reveal>

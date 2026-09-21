@@ -1173,3 +1173,30 @@ a:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible, 
   .page-head .btn { width: 100%; }
   .modal-card { width: calc(100vw - 24px); max-height: 88vh; }
 }
+
+/* ---------- Chương trình thờ phượng: trang làm việc ---------- */
+.program-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+.program-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.program-item { display: flex; flex-direction: column; gap: 10px; }
+.program-item-head { display: flex; align-items: center; gap: 8px; }
+.program-item-num { font-weight: 700; min-width: 1.4em; text-align: right; color: var(--ink); opacity: 0.55; }
+.program-item-label { flex: 1; min-width: 0; font-weight: 600; }
+.program-song-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 8px; }
+.program-lookup { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
+.program-lookup.ok { color: var(--green); }
+.program-lookup.error { color: var(--red); }
+.program-lookup.loading svg { animation: spin 1s linear infinite; }
+.program-summary { cursor: pointer; font-size: 0.8rem; margin-bottom: 6px; }
+.program-note { font-size: 0.82rem; }
+.program-add { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.program-aside { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 10px; }
+.program-aside .field { margin: 0; }
+.program-status { display: flex; gap: 6px; flex-wrap: wrap; }
+.program-ok { background: var(--green-soft); color: var(--green); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 0.85rem; }
+.program-hint { font-size: 0.75rem; word-break: break-all; }
+.program-back { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--ink); opacity: 0.7; text-decoration: none; margin-bottom: 4px; }
+.program-back:hover { opacity: 1; }
+@media (max-width: 900px) {
+  .program-workspace { grid-template-columns: 1fr; }
+  .program-aside { position: static; order: -1; }
+}

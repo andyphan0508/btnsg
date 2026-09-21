@@ -9,6 +9,7 @@ import type {
   OverviewStats,
   Plan,
   Profile,
+  Program,
   RequestItem,
   ScheduleEvent,
   TaskItem,
@@ -25,6 +26,7 @@ import {
   supabaseNoteApi,
   supabasePlanApi,
   supabaseProfileApi,
+  supabaseProgramApi,
   supabaseRequestApi,
   supabaseScheduleApi,
   supabaseStatsApi,
@@ -89,6 +91,7 @@ export const requestApi = isSupabaseConfigured
 export const expenseApi = isSupabaseConfigured ? supabaseExpenseApi : createRestResourceApi<Expense>('/api/expenses');
 export const planApi = isSupabaseConfigured ? supabasePlanApi : createRestResourceApi<Plan>('/api/plans');
 export const noteApi = isSupabaseConfigured ? supabaseNoteApi : createRestResourceApi<Note>('/api/notes');
+export const programApi = isSupabaseConfigured ? supabaseProgramApi : createRestResourceApi<Program>('/api/programs');
 export const emailTemplateApi = isSupabaseConfigured
   ? supabaseEmailTemplateApi
   : createRestResourceApi<EmailTemplate>('/api/email-templates');

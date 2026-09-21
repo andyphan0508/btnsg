@@ -21,10 +21,11 @@ Khi **không** cấu hình Supabase, dashboard tự chạy **chế độ demo/lo
    [`0001_init.sql`](supabase/migrations/0001_init.sql) → [`0002_expenses_detail.sql`](supabase/migrations/0002_expenses_detail.sql)
    → [`0003_push_subscriptions.sql`](supabase/migrations/0003_push_subscriptions.sql)
    → [`0004_members_detail.sql`](supabase/migrations/0004_members_detail.sql)
-   → [`0005_notes.sql`](supabase/migrations/0005_notes.sql).
-   Các file 0002–0005 an toàn khi chạy lại nhiều lần: `0002` bổ sung cột chi tiết cho Thu chi,
+   → [`0005_notes.sql`](supabase/migrations/0005_notes.sql)
+   → [`0006_programs.sql`](supabase/migrations/0006_programs.sql).
+   Các file 0002–0006 an toàn khi chạy lại nhiều lần: `0002` bổ sung cột chi tiết cho Thu chi,
    `0003` tạo bảng đăng ký thông báo đẩy, `0004` bổ sung địa chỉ/ngành nghề cho Thành viên,
-   `0005` tạo bảng Sổ ghi chép / Bài giảng.
+   `0005` tạo bảng Sổ ghi chép / Bài giảng, `0006` tạo bảng Chương trình thờ phượng (đồng bộ sang OpenPresenter).
    - `0001` tạo đủ bảng (thành viên, điểm danh, lịch, công việc, đề xuất, thu chi, kế hoạch,
      template email, audit log), bật RLS 2 cấp quyền (Quản trị / BĐH), trigger tự ghi lịch sử
      thay đổi thành viên và seed sẵn 11 thành viên BĐH + 3 template email.
@@ -348,7 +349,21 @@ Tạo **2 project** trên <https://vercel.com> trỏ cùng repo Git này:
 | Environment Variables | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_APPS_SCRIPT_URL`, `VITE_NEWS_SCRIPT_URL` (kèm `?secret=` — đăng bài Tin tức, Bước 2c) |
 
 Vercel tự nhận ra npm workspaces và cài dependency từ gốc repo. File
-`apps/dashboard/vercel.json` đã có sẵn rewrite SPA (`/* → index.html`) cho react-router.
+`apps/dashboard/vercel.json` đã có sẵn rewrite SPA (`/* → index.html`) cho react-router — trừ `/api/*`.
+
+**API cho OpenPresenter:** [`apps/dashboard/api/program.ts`](apps/dashboard/api/program.ts) là Vercel Function,
+tự deploy cùng dashboard, dùng lại `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`.
+Trong OpenPresenter → nút ☁ "Tải chương trình tuần" → dán `https://<domain-dashboard>/api/program`.
+
+| Gọi | Kết quả |
+|---|---|
+| `GET /api/program` | Chương trình **đã công bố** gần nhất từ hôm nay trở đi |
+| `GET /api/program?date=YYYY-MM-DD` | Chương trình đã công bố của đúng ngày đó |
+| 200 | `{ version: 1, program: { id, date, title, updatedAt, items } }` |
+| 400 / 404 / 503 | `{ error }` — thông báo tiếng Việt, OpenPresenter hiển thị nguyên văn |
+| `GET /api/hymn?number=29` | `{ number, title }` — tên bài Thánh Ca, tra trực tiếp từ thanhca.httlvn.org (dashboard dùng để tự điền tên khi nhập số bài) |
+
+Chạy local (`npm run dev:admin`) thì API demo phục vụ cùng hợp đồng ở `http://localhost:5080/api/program`.
 
 ### Project 2: landing (trang giới thiệu công khai)
 

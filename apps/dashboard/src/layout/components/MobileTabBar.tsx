@@ -4,6 +4,7 @@ import type { IconType } from 'react-icons';
 import {
   FiBell,
   FiBookOpen,
+  FiMusic,
   FiCalendar,
   FiCheckSquare,
   FiClipboard,
@@ -36,6 +37,7 @@ const MAIN_TABS: TabItem[] = [
 const MORE_TABS: TabItem[] = [
   { to: '/diem-danh', label: 'Điểm danh', icon: FiCheckSquare },
   { to: '/lich-sinh-hoat', label: 'Lịch sinh hoạt', icon: FiCalendar },
+  { to: '/chuong-trinh', label: 'Chương trình thờ phượng', icon: FiMusic },
   { to: '/thong-bao', label: 'Thông báo', icon: FiBell },
   { to: '/de-xuat', label: 'Đề xuất / Request', icon: FiMessageSquare },
   { to: '/ke-hoach', label: 'Kế hoạch', icon: FiTarget },

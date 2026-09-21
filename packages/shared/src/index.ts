@@ -667,3 +667,110 @@ export const amountToWords = (amount: number): string => {
   const text = words.join(" ").replace(/\s+/g, " ").trim();
   return `${text.charAt(0).toUpperCase()}${text.slice(1)} đồng`;
 };
+
+/* ============================================================
+   Chương trình thờ phượng hằng tuần — đồng bộ sang OpenPresenter.
+   Định dạng item là "hợp đồng" với OpenPresenter (src/renderer/src/helpers/program.ts):
+   đổi ở đây thì đổi cả bên đó.
+   ============================================================ */
+
+export type ProgramItemKind = "text" | "bible" | "song";
+
+export type ProgramSong = {
+  title: string;
+  /** Thánh ca, ví dụ "Thánh Ca" — cùng với `number` để OpenPresenter tìm đúng bài. */
+  book?: string;
+  number?: string;
+  /** Lời bài hát — chỉ cần khi bài chưa có trong thư viện OpenPresenter. */
+  lyrics?: string;
+};
+
+export type ProgramItem = {
+  id: string;
+  kind: ProgramItemKind;
+  /** Tên mục trong chương trình: "Chào mừng", "Câu gốc", "Tôn vinh Chúa"… */
+  label: string;
+  /** kind = text: chữ hiện trên màn hình (trống → hiện label). */
+  text?: string;
+  /** kind = bible: tham chiếu, ví dụ "Giăng 3:16-18". */
+  ref?: string;
+  song?: ProgramSong;
+  /** Ghi chú cho người điều khiển (người hướng dẫn, lưu ý…). */
+  note?: string;
+};
+
+export type Program = {
+  id: string;
+  /** YYYY-MM-DD, mỗi ngày tối đa một chương trình. */
+  date: string;
+  title: string;
+  items: ProgramItem[];
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const PROGRAM_ITEM_KIND_LABELS: Record<ProgramItemKind, string> = {
+  text: "Văn bản",
+  bible: "Kinh Thánh",
+  song: "Bài hát",
+};
+
+const programItemId = () => Math.random().toString(36).slice(2, 10);
+
+export const newProgramItem = (kind: ProgramItemKind, label = ""): ProgramItem => ({
+  id: programItemId(),
+  kind,
+  label,
+  ...(kind === "song" && { song: { title: "", book: "Thánh Ca" } }),
+});
+
+/** Sườn cố định mỗi tuần. */
+export const programTemplateItems = (): ProgramItem[] => [
+  newProgramItem("text", "Chào mừng"),
+  newProgramItem("text", "Cầu nguyện khai lễ"),
+  newProgramItem("bible", "Câu gốc"),
+  newProgramItem("song", "Bài hát khẩu hiệu"),
+  newProgramItem("song", "Tôn vinh Chúa"),
+];
+
+const trimOrUndefined = (value?: string) => value?.trim() || undefined;
+
+/** Bỏ trường rỗng / thừa trước khi lưu — dữ liệu gọn và đúng hợp đồng với OpenPresenter. */
+export const cleanProgramItems = (items: ProgramItem[]): ProgramItem[] =>
+  items.map((item) => {
+    const out: ProgramItem = { id: item.id || programItemId(), kind: item.kind, label: item.label.trim() };
+    if (item.kind === "text" && trimOrUndefined(item.text)) out.text = item.text!.trim();
+    if (item.kind === "bible" && trimOrUndefined(item.ref)) out.ref = item.ref!.trim();
+    if (item.kind === "song") {
+      const song = item.song ?? { title: "" };
+      out.song = { title: song.title.trim() };
+      for (const key of ["book", "number", "lyrics"] as const) {
+        const value = trimOrUndefined(song[key]);
+        if (value) out.song[key] = value;
+      }
+    }
+    if (trimOrUndefined(item.note)) out.note = item.note!.trim();
+    return out;
+  });
+
+/** Bản sao cho tuần mới: id mới, giữ nguyên sườn và nội dung để sửa tiếp. */
+export const copyProgramItems = (items: ProgramItem[]): ProgramItem[] =>
+  cleanProgramItems(items).map((item) => ({ ...item, id: programItemId() }));
+
+/** Chúa Nhật gần nhất tính từ `fromDate` (YYYY-MM-DD, chính ngày đó nếu là Chúa Nhật). */
+export const nextSunday = (fromDate: string): string => {
+  const date = new Date(`${fromDate}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + ((7 - date.getUTCDay()) % 7));
+  return date.toISOString().slice(0, 10);
+};
+
+/** Chúa Nhật sắp tới chưa có trong `takenDates`. */
+export const nextFreeSunday = (takenDates: string[], fromDate: string = todayInVietnam()): string => {
+  const date = new Date(`${nextSunday(fromDate)}T00:00:00Z`);
+  while (takenDates.includes(date.toISOString().slice(0, 10))) date.setUTCDate(date.getUTCDate() + 7);
+  return date.toISOString().slice(0, 10);
+};
+
+/** Hôm nay theo giờ Việt Nam, dạng YYYY-MM-DD. */
+export const todayInVietnam = (): string => new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);

@@ -7,6 +7,7 @@ import type {
   MemberChange,
   Note,
   Plan,
+  Program,
   RequestItem,
   ScheduleEvent,
   TaskItem,
@@ -24,3 +25,4 @@ export const requestsCol = new Collection<RequestItem>('requests');
 export const expensesCol = new Collection<Expense>('expenses');
 export const plansCol = new Collection<Plan>('plans');
 export const notesCol = new Collection<Note>('notes');
+export const programsCol = new Collection<Program>('programs');

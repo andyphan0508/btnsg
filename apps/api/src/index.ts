@@ -18,6 +18,7 @@ import {
   scheduleRouter,
   tasksRouter,
 } from "./routes/resources.js";
+import { hymnRouter, programsRouter, publicProgramRouter } from "./routes/program.js";
 import { statsRouter } from "./routes/stats.js";
 import { seedDatabase } from "./store/seed.js";
 
@@ -44,6 +45,9 @@ app.use("/api/requests", requestsRouter);
 app.use("/api/expenses", expensesRouter);
 app.use("/api/plans", plansRouter);
 app.use("/api/notes", notesRouter);
+app.use("/api/programs", programsRouter);
+app.use("/api/program", publicProgramRouter);
+app.use("/api/hymn", hymnRouter);
 app.use("/api/stats", statsRouter);
 
 app.use((_req, res) => {

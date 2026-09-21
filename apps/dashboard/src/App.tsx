@@ -14,6 +14,8 @@ import NotebookScreen from './screens/Notebook';
 import PushNotifyScreen from './screens/PushNotify';
 import OverviewScreen from './screens/Overview';
 import PlansScreen from './screens/Plans';
+import ProgramEditorScreen from './screens/ProgramEditor';
+import ProgramsScreen from './screens/Programs';
 import RequestsScreen from './screens/Requests';
 import ScheduleScreen from './screens/Schedule';
 import TasksScreen from './screens/Tasks';
@@ -29,6 +31,9 @@ export default function App() {
             <Route path="/thanh-vien" element={<MembersScreen />} />
             <Route path="/diem-danh" element={<AttendanceScreen />} />
             <Route path="/lich-sinh-hoat" element={<ScheduleScreen />} />
+            <Route path="/chuong-trinh" element={<ProgramsScreen />} />
+            <Route path="/chuong-trinh/moi" element={<ProgramEditorScreen />} />
+            <Route path="/chuong-trinh/:id" element={<ProgramEditorScreen />} />
             <Route path="/cong-viec" element={<TasksScreen />} />
             <Route path="/thong-bao" element={<AnnouncementsScreen />} />
             <Route path="/de-xuat" element={<RequestsScreen />} />

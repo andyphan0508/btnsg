@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRightOutlined, CalendarOutlined } from "@ant-design/icons";
 import { driveImage } from "../lib/gallery.js";
 import { formatNewsDate, prefetchPost } from "../lib/news.js";
+import RollText from "./RollText.jsx";
 
 /** Thẻ bài viết mới nhất phong cách Aardvark Monthly Featured Drop. */
 export default function NewsFeaturedCard({ post }) {
@@ -52,7 +53,9 @@ export default function NewsFeaturedCard({ post }) {
           </p>
         )}
         <div className="btn-aardvark" style={{ width: "fit-content" }}>
-          <span className="btn-text-part">Đọc toàn bộ bài viết</span>
+          <span className="btn-text-part">
+            <RollText text="Đọc toàn bộ bài viết" />
+          </span>
           <span className="btn-icon-part">
             <ArrowRightOutlined />
           </span>

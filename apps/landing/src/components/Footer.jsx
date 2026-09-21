@@ -1,5 +1,6 @@
 import { ArrowUpOutlined } from "@ant-design/icons";
 import PushToggle from "./PushToggle.jsx";
+import RollText from "./RollText.jsx";
 
 export default function Footer() {
   const handleScrollTop = (e) => {
@@ -28,7 +29,7 @@ export default function Footer() {
             title="Lên đầu trang"
           >
             <span className="btn-text-part" style={{ padding: "8px 16px", fontSize: "0.82rem" }}>
-              Lên đầu trang
+              <RollText text="Lên đầu trang" />
             </span>
             <span className="btn-icon-part" style={{ padding: "8px 12px", fontSize: "0.82rem" }}>
               <ArrowUpOutlined />

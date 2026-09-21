@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ArrowRightOutlined } from "@ant-design/icons";
 import Reveal from "./Reveal.jsx";
 import MediaTile from "./MediaTile.jsx";
+import RollText from "./RollText.jsx";
 import { loadImages, pickImages } from "../lib/gallery.js";
 
 /**
@@ -54,7 +55,9 @@ export default function PhotoStrip({
           to="/thu-vien"
           className="btn-aardvark is-yellow"
         >
-          <span className="btn-text-part">Xem toàn bộ thư viện</span>
+          <span className="btn-text-part">
+            <RollText text="Xem toàn bộ thư viện" />
+          </span>
           <span className="btn-icon-part">
             <ArrowRightOutlined />
           </span>

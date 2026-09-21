@@ -9,6 +9,7 @@ import {
   ArrowRightOutlined,
 } from "@ant-design/icons";
 import Reveal from "./Reveal.jsx";
+import RollText from "./RollText.jsx";
 
 const CARDS = [
   {
@@ -80,7 +81,7 @@ export default function QuickNav() {
             <span className="quicknav-icon">{card.icon}</span>
             <span className="quicknav-body">
               <span className="quicknav-title">
-                {card.title}
+                <RollText text={card.title} />
                 {card.highlight && (
                   <span className="quicknav-badge">{card.highlight}</span>
                 )}

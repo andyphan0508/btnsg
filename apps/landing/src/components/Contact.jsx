@@ -6,6 +6,7 @@ import {
   ArrowRightOutlined,
 } from "@ant-design/icons";
 import Reveal from "./Reveal.jsx";
+import RollText from "./RollText.jsx";
 import { contacts, links } from "../data/content.js";
 
 const CHURCH_ADDRESS =
@@ -86,7 +87,7 @@ export default function Contact() {
                     >
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
                         {getLinkIcon(l.label)}
-                        <span>{l.label}</span>
+                        <RollText text={l.label} />
                       </span>
                       <ArrowRightOutlined />
                     </a>
@@ -121,7 +122,9 @@ export default function Contact() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span className="btn-text-part">Chỉ đường</span>
+              <span className="btn-text-part">
+                <RollText text="Chỉ đường" />
+              </span>
               <span className="btn-icon-part">
                 <ArrowRightOutlined />
               </span>

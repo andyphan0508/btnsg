@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRightOutlined, CalendarOutlined } from "@ant-design/icons";
 import { driveImage } from "../lib/gallery.js";
 import { formatNewsDate, prefetchPost } from "../lib/news.js";
+import RollText from "./RollText.jsx";
 
 /** Thẻ bài viết trong lưới Tin tức theo phong cách Aardvark Book Drop. */
 export default function NewsCard({ post }) {
@@ -46,7 +47,7 @@ export default function NewsCard({ post }) {
         <h3 className="news-card-title">{post.title}</h3>
         {post.description && <p className="news-card-desc">{post.description}</p>}
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 700, color: "var(--brand)", fontSize: "0.9rem", marginTop: "auto" }}>
-          <span>Đọc bài viết</span>
+          <RollText text="Đọc bài viết" />
           <ArrowRightOutlined />
         </div>
       </div>

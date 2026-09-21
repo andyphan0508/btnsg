@@ -8,6 +8,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import Reveal from "./Reveal.jsx";
 import MediaTile from "./MediaTile.jsx";
+import RollText from "./RollText.jsx";
 import { fetchFeatured } from "../lib/gallery.js";
 
 const AUTO_MS = 6000;
@@ -145,7 +146,9 @@ export default function Slider() {
 
       <Reveal className="slider-cta" variant="slide-up" delay={100}>
         <Link className="btn-aardvark" to="/thu-vien">
-          <span className="btn-text-part">Xem toàn bộ thư viện ảnh</span>
+          <span className="btn-text-part">
+            <RollText text="Xem toàn bộ thư viện ảnh" />
+          </span>
           <span className="btn-icon-part">
             <ArrowRightOutlined />
           </span>

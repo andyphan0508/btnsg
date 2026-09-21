@@ -4,10 +4,10 @@ import { SunOutlined, MoonOutlined, ArrowRightOutlined } from "@ant-design/icons
 import { motion, useScroll, useSpring } from "motion/react";
 import { site, nav } from "../data/content.js";
 import logoImg from "../assets/logobtnsg.jpg";
+import RollText from "./RollText.jsx";
 
 /**
- * Thanh điều hướng Aardvark Editorial:
- * Nền kem ấm, bo góc pill, nút Split Capsule Button "Tham gia sinh hoạt".
+ * Thanh điều hướng Aardvark Editorial với hiệu ứng chạy chữ RollText khi hover.
  */
 export default function Nav() {
   const [theme, setTheme] = useState("light");
@@ -74,19 +74,12 @@ export default function Nav() {
                 `nav-link-item${isActive ? " active" : ""}`
               }
             >
-              {item.label}
+              <RollText text={item.label} />
             </NavLink>
           ))}
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Link to="/sinh-hoat" className="btn-aardvark" style={{ display: "none" }}>
-            <span className="btn-text-part">Sinh hoạt</span>
-            <span className="btn-icon-part">
-              <ArrowRightOutlined />
-            </span>
-          </Link>
-
           <button
             onClick={toggleTheme}
             className="theme-btn"

@@ -161,6 +161,7 @@ const noteMapper = buildMapper<Note>('notes', [
 const programMapper = buildMapper<Program>('programs', [
   f('date', 'date'),
   f('title', 'title'),
+  f('startTime', 'start_time'),
   f('items', 'items', []),
   f('published', 'published', false),
 ]);

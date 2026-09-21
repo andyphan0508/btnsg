@@ -22,10 +22,11 @@ Khi **không** cấu hình Supabase, dashboard tự chạy **chế độ demo/lo
    → [`0003_push_subscriptions.sql`](supabase/migrations/0003_push_subscriptions.sql)
    → [`0004_members_detail.sql`](supabase/migrations/0004_members_detail.sql)
    → [`0005_notes.sql`](supabase/migrations/0005_notes.sql)
-   → [`0006_programs.sql`](supabase/migrations/0006_programs.sql).
-   Các file 0002–0006 an toàn khi chạy lại nhiều lần: `0002` bổ sung cột chi tiết cho Thu chi,
+   → [`0006_programs.sql`](supabase/migrations/0006_programs.sql)
+   → [`0007_program_start_time.sql`](supabase/migrations/0007_program_start_time.sql).
+   Các file 0002–0007 an toàn khi chạy lại nhiều lần: `0002` bổ sung cột chi tiết cho Thu chi,
    `0003` tạo bảng đăng ký thông báo đẩy, `0004` bổ sung địa chỉ/ngành nghề cho Thành viên,
-   `0005` tạo bảng Sổ ghi chép / Bài giảng, `0006` tạo bảng Chương trình thờ phượng (đồng bộ sang OpenPresenter).
+   `0005` tạo bảng Sổ ghi chép / Bài giảng, `0006` tạo bảng Chương trình thờ phượng (đồng bộ sang OpenPresenter), `0007` thêm giờ bắt đầu buổi nhóm.
    - `0001` tạo đủ bảng (thành viên, điểm danh, lịch, công việc, đề xuất, thu chi, kế hoạch,
      template email, audit log), bật RLS 2 cấp quyền (Quản trị / BĐH), trigger tự ghi lịch sử
      thay đổi thành viên và seed sẵn 11 thành viên BĐH + 3 template email.
@@ -361,7 +362,7 @@ Trong OpenPresenter → nút ☁ "Tải chương trình tuần" → dán `https:
 | `GET /api/program?date=YYYY-MM-DD` | Chương trình đã công bố của đúng ngày đó |
 | 200 | `{ version: 1, program: { id, date, title, updatedAt, items } }` |
 | 400 / 404 / 503 | `{ error }` — thông báo tiếng Việt, OpenPresenter hiển thị nguyên văn |
-| `GET /api/hymn?number=29` | `{ number, title }` — tên bài Thánh Ca, tra trực tiếp từ thanhca.httlvn.org (dashboard dùng để tự điền tên khi nhập số bài) |
+| `GET /api/hymn?number=29` | `{ number, title, sections, order }` — bài Thánh Ca tra trực tiếp từ thanhca.httlvn.org: dashboard tự điền tên và cho chọn đoạn / thứ tự hát |
 
 Chạy local (`npm run dev:admin`) thì API demo phục vụ cùng hợp đồng ở `http://localhost:5080/api/program`.
 

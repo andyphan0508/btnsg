@@ -7,9 +7,10 @@ import { formatDate } from '../../../utils/format';
 type ProgramListProps = {
   programs: Program[];
   onEdit: (program: Program) => void;
+  onCopy: (program: Program) => void;
 };
 
-const ProgramList = ({ programs, onEdit }: ProgramListProps) => {
+const ProgramList = ({ programs, onEdit, onCopy }: ProgramListProps) => {
   if (programs.length === 0) {
     return (
       <div className="card">
@@ -33,16 +34,21 @@ const ProgramList = ({ programs, onEdit }: ProgramListProps) => {
             <th>Ngày</th>
             <th>Chương trình</th>
             <th>Trạng thái</th>
+            <th />
           </tr>
         </thead>
         <tbody>
           {programs.map((program) => {
             const songs = program.items.map((item) => item.song?.title).filter(Boolean);
+            const minutes = program.items.reduce((sum, item) => sum + (item.minutes ?? 0), 0);
             return (
               <tr key={program.id} onClick={() => onEdit(program)} style={{ cursor: 'pointer' }}>
                 <td>
                   <div className="cell-strong">{formatDate(program.date)}</div>
                   {program.date === thisSunday && <div className="cell-muted">Chúa Nhật này</div>}
+                  {(program.startTime || minutes > 0) && (
+                    <div className="cell-muted">{[program.startTime, minutes > 0 && `${minutes} phút`].filter(Boolean).join(' · ')}</div>
+                  )}
                 </td>
                 <td>
                   <div className="cell-strong">{program.title || `${program.items.length} mục`}</div>
@@ -53,6 +59,18 @@ const ProgramList = ({ programs, onEdit }: ProgramListProps) => {
                     {program.published ? 'Đã công bố' : 'Bản nháp'}
                   </span>
                   {program.date < today && <span className="badge badge-grey" style={{ marginLeft: 6 }}>Đã qua</span>}
+                </td>
+                <td style={{ textAlign: 'right' }}>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCopy(program);
+                    }}
+                  >
+                    Sao chép
+                  </button>
                 </td>
               </tr>
             );

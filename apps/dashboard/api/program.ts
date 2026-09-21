@@ -1,7 +1,7 @@
 // GET /api/program[?date=YYYY-MM-DD] — chương trình thờ phượng đã công bố, cho OpenPresenter đồng bộ.
 //   có date    → chương trình đúng ngày đó
 //   không date → chương trình gần nhất từ hôm nay (giờ VN) trở đi
-// 200 { version: 1, program: { id, date, title, updatedAt, items } } · 400/404/405/502/503 { error }
+// 200 { version: 1, program: { id, date, title, startTime?, updatedAt, items } } · 400/404/405/502/503 { error }
 // Bản demo/local của cùng hợp đồng: apps/api/src/routes/program.ts.
 
 type Req = { method?: string; query: Record<string, string | string[] | undefined> };
@@ -29,17 +29,20 @@ export default async function handler(req: Req, res: Res) {
 
   // RLS chỉ cho anon đọc bản đã công bố; lọc thêm ở đây cho rõ ràng.
   const filter = date ? `date=eq.${date}` : `date=gte.${todayInVietnam()}&order=date.asc&limit=1`;
-  const response = await fetch(`${url}/rest/v1/programs?select=id,date,title,items,updated_at&published=is.true&${filter}`, {
+  const response = await fetch(`${url}/rest/v1/programs?select=*&published=is.true&${filter}`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   });
   if (!response.ok) return res.status(502).json({ error: `Supabase lỗi ${response.status}` });
 
-  const [row] = (await response.json()) as { id: string; date: string; title: string; items: unknown[]; updated_at: string }[];
+  const [row] = (await response.json()) as { id: string; date: string; title: string; start_time?: string | null; items: unknown[]; updated_at: string }[];
   if (!row) return res.status(404).json({ error: date ? `Chưa có chương trình đã công bố ngày ${date}` : 'Chưa có chương trình sắp tới' });
 
   res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=300');
   return res.status(200).json({
     version: 1,
-    program: { id: row.id, date: row.date, title: row.title, updatedAt: row.updated_at, items: row.items ?? [] },
+    program: {
+      id: row.id, date: row.date, title: row.title, startTime: row.start_time ?? undefined,
+      updatedAt: row.updated_at, items: row.items ?? [],
+    },
   });
 }

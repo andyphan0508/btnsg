@@ -2,10 +2,11 @@ import { Router } from 'express';
 import type { Program, ProgramItem } from '@btnsg/shared';
 import { cleanProgramItems, todayInVietnam } from '@btnsg/shared';
 import { programsCol } from '../store/collections.js';
+import { parseHymnPage } from '../../../dashboard/api/_hymn.js';
 import { createCrudRouter, requireString, ValidationError, type Sanitizer } from './crud.js';
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const KINDS = ['text', 'bible', 'song'];
+const KINDS = ['text', 'bible', 'song', 'sermon'];
 
 const sanitizeProgram: Sanitizer<Program> = (body, isPartial) => {
   const fields: Partial<Program> = {};
@@ -20,6 +21,10 @@ const sanitizeProgram: Sanitizer<Program> = (body, isPartial) => {
     fields.items = cleanProgramItems(items.map((item) => ({ ...item, label: String(item.label ?? '') })));
   }
   if (!isPartial || body.published !== undefined) fields.published = body.published === true;
+  if (!isPartial || body.startTime !== undefined) {
+    const startTime = typeof body.startTime === 'string' ? body.startTime.trim() : '';
+    fields.startTime = /^\d{1,2}:\d{2}$/.test(startTime) ? startTime : undefined;
+  }
   return fields;
 };
 
@@ -38,11 +43,11 @@ publicProgramRouter.get('/', (req, res) => {
   if (!program) {
     return res.status(404).json({ error: date ? `Chưa có chương trình đã công bố ngày ${date}` : 'Chưa có chương trình sắp tới' });
   }
-  const { id, title, items, updatedAt } = program;
-  return res.json({ version: 1, program: { id, date: program.date, title, updatedAt, items } });
+  const { id, title, startTime, items, updatedAt } = program;
+  return res.json({ version: 1, program: { id, date: program.date, title, startTime, updatedAt, items } });
 });
 
-/** Cùng hợp đồng với Vercel Function apps/dashboard/api/hymn.ts — tên bài Thánh Ca theo số. */
+/** Cùng hợp đồng với Vercel Function apps/dashboard/api/hymn.ts (dùng chung bộ đọc _hymn.ts). */
 export const hymnRouter = Router();
 hymnRouter.get('/', async (req, res) => {
   const raw = typeof req.query.number === 'string' ? req.query.number.trim() : '';
@@ -51,14 +56,7 @@ hymnRouter.get('/', async (req, res) => {
   const response = await fetch(`https://thanhca.httlvn.org/thanh-ca-${number}`);
   if (response.status === 404 || response.status === 500) return res.status(404).json({ error: `Không có Thánh Ca ${number}` });
   if (!response.ok) return res.status(502).json({ error: `thanhca.httlvn.org lỗi ${response.status}` });
-  const h1 = (await response.text()).match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1];
-  if (!h1) return res.status(502).json({ error: 'Không đọc được trang Thánh Ca' });
-  const title = h1
-    .replace(/<small[\s\S]*?<\/small>/i, '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&#(\d+);/g, (_, d: string) => String.fromCodePoint(+d))
-    .replace(/&amp;/g, '&')
-    .replace(/\s+/g, ' ')
-    .trim();
-  return res.json({ number, title });
+  const hymn = parseHymnPage(await response.text());
+  if (!hymn) return res.status(502).json({ error: 'Không đọc được trang Thánh Ca' });
+  return res.json({ number, ...hymn });
 });

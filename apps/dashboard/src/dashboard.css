@@ -1176,6 +1176,7 @@ a:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible, 
 
 /* ---------- Chương trình thờ phượng: trang làm việc ---------- */
 .program-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+.program-workspace > * { min-width: 0; }
 .program-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .program-item { display: flex; flex-direction: column; gap: 10px; }
 .program-item-head { display: flex; align-items: center; gap: 8px; }
@@ -1188,7 +1189,6 @@ a:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible, 
 .program-lookup.loading svg { animation: spin 1s linear infinite; }
 .program-summary { cursor: pointer; font-size: 0.8rem; margin-bottom: 6px; }
 .program-note { font-size: 0.82rem; }
-.program-add { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .program-aside { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 10px; }
 .program-aside .field { margin: 0; }
 .program-status { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -1197,6 +1197,65 @@ a:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible, 
 .program-back { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--ink); opacity: 0.7; text-decoration: none; margin-bottom: 4px; }
 .program-back:hover { opacity: 1; }
 @media (max-width: 900px) {
-  .program-workspace { grid-template-columns: 1fr; }
+  .program-workspace { grid-template-columns: minmax(0, 1fr); }
   .program-aside { position: static; order: -1; }
+}
+
+/* ---------- Chương trình: nâng cao ---------- */
+.program-item.dragging { opacity: 0.5; outline: 2px dashed var(--brand); }
+.program-drag { cursor: grab; color: var(--ink); opacity: 0.45; display: inline-flex; padding: 4px; touch-action: none; }
+.program-drag:hover { opacity: 0.9; }
+.program-time { font-variant-numeric: tabular-nums; font-size: 0.78rem; font-weight: 700; color: var(--brand-deep); background: var(--brand-soft); border-radius: 6px; padding: 2px 6px; }
+.program-item-actions { display: flex; gap: 2px; }
+.program-bible-row { display: flex; gap: 10px; align-items: center; }
+.program-bible-row .input { flex: 1; min-width: 0; }
+.program-check { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; white-space: nowrap; cursor: pointer; }
+.program-sermon-row { grid-template-columns: minmax(0, 1fr) minmax(0, 220px); }
+.program-meta-row { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 8px; }
+.program-minutes { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; opacity: 0.85; }
+.program-minutes .input { width: 70px; }
+.program-add { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.program-add-title { font-weight: 700; font-size: 0.85rem; }
+.program-add-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.program-summary-box { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; background: var(--paper); border-radius: var(--radius-sm); padding: 8px 10px; }
+
+.arrangement { border-top: 1px dashed var(--line); padding-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.arrangement-row { display: flex; flex-direction: column; gap: 5px; }
+.arrangement-caption { font-size: 0.75rem; font-weight: 600; opacity: 0.7; display: flex; align-items: center; gap: 8px; }
+.arrangement-chips { display: flex; flex-wrap: wrap; gap: 5px; list-style: none; margin: 0; padding: 0; }
+.arr-chip { display: inline-flex; align-items: center; gap: 2px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px 9px; font-size: 0.78rem; background: var(--surface); color: var(--ink); }
+.arr-source { cursor: pointer; }
+.arr-source:hover { border-color: var(--brand); color: var(--brand-deep); }
+.arrangement-order .arr-chip { padding: 2px 4px; background: var(--blue-soft); border-color: transparent; font-weight: 600; }
+.arrangement-order .arr-chip.arr-chorus { background: var(--brand-soft); }
+.arrangement-order .arr-chip.arr-muted { opacity: 0.65; }
+.arr-chip button { border: 0; background: none; padding: 1px; display: inline-flex; cursor: pointer; color: inherit; opacity: 0.6; }
+.arr-chip button:hover:not(:disabled) { opacity: 1; }
+.arr-chip button:disabled { opacity: 0.2; cursor: default; }
+.arr-reset { border: 0; background: none; color: var(--brand-deep); font-size: 0.75rem; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.arr-preview-toggle { align-self: flex-start; border: 0; background: none; padding: 0; font-size: 0.78rem; color: var(--brand-deep); cursor: pointer; }
+.arr-preview { list-style: none; margin: 0; padding: 8px; background: var(--paper); border-radius: var(--radius-sm); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; max-height: 320px; overflow: auto; }
+.arr-preview b { font-size: 0.75rem; }
+.arr-preview pre { margin: 2px 0 0; font-family: inherit; font-size: 0.78rem; white-space: pre-wrap; line-height: 1.45; }
+
+@media (max-width: 640px) {
+  .program-item-head { flex-wrap: wrap; }
+  .program-item-label { flex-basis: 100%; order: 10; }
+  .program-item-actions { margin-left: auto; }
+  .program-sermon-row, .program-meta-row { grid-template-columns: 1fr; }
+  .program-bible-row { flex-direction: column; align-items: stretch; }
+}
+
+/* In chương trình: chỉ in bảng, ẩn toàn bộ giao diện. */
+.program-print { display: none; }
+@media print {
+  html, body { background: #fff !important; }
+  body * { visibility: hidden; }
+  .program-print, .program-print * { visibility: visible; }
+  .program-print { display: block; position: absolute; inset: 0 auto auto 0; width: 100%; color: #000; font-size: 11pt; }
+  .program-print h1 { font-size: 18pt; margin: 0 0 2pt; }
+  .program-print-sub { margin: 0 0 10pt; }
+  .program-print table { width: 100%; border-collapse: collapse; }
+  .program-print th, .program-print td { border: 1px solid #999; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  .program-print-note { font-size: 9pt; font-style: italic; margin-top: 2pt; }
 }

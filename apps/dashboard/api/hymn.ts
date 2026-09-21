@@ -1,15 +1,11 @@
-// GET /api/hymn?number=29 — tên bài Thánh Ca theo số, đọc trực tiếp từ thanhca.httlvn.org (trang chính thức HTTLVN).
-// 200 { number, title } · 400 / 404 / 502 { error }. Chỉ lấy tên bài; lời bài hát do OpenPresenter tự tải.
-// Bản demo/local của cùng hợp đồng: apps/api/src/routes/program.ts.
+// GET /api/hymn?number=29 — bài Thánh Ca theo số, đọc trực tiếp từ thanhca.httlvn.org (trang chính thức HTTLVN).
+// 200 { number, title, sections: [{ label, text }], order: string[] } · 400 / 404 / 502 { error }
+// Lời chỉ để người soạn chương trình chọn đoạn / thứ tự hát; không lưu lại. OpenPresenter tự tải lời riêng.
+// API demo (apps/api) dùng chung bộ đọc _hymn.ts.
+import { parseHymnPage } from './_hymn';
 
 type Req = { query: Record<string, string | string[] | undefined> };
 type Res = { setHeader: (name: string, value: string) => void; status: (code: number) => Res; json: (body: unknown) => void };
-
-const decode = (s: string) =>
-  s
-    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d))
-    .replace(/&amp;/g, '&')
-    .replace(/&nbsp;/g, ' ');
 
 export default async function handler(req: Req, res: Res) {
   const raw = typeof req.query.number === 'string' ? req.query.number.trim() : '';
@@ -20,10 +16,9 @@ export default async function handler(req: Req, res: Res) {
   if (response.status === 404 || response.status === 500) return res.status(404).json({ error: `Không có Thánh Ca ${number}` });
   if (!response.ok) return res.status(502).json({ error: `thanhca.httlvn.org lỗi ${response.status}` });
 
-  const h1 = (await response.text()).match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1];
-  if (!h1) return res.status(502).json({ error: 'Không đọc được trang Thánh Ca' });
-  const title = decode(h1.replace(/<small[\s\S]*?<\/small>/i, '').replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+  const hymn = parseHymnPage(await response.text());
+  if (!hymn) return res.status(502).json({ error: 'Không đọc được trang Thánh Ca' });
 
   res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
-  return res.status(200).json({ number, title });
+  return res.status(200).json({ number, ...hymn });
 }

@@ -671,10 +671,10 @@ export const amountToWords = (amount: number): string => {
 /* ============================================================
    Chương trình thờ phượng hằng tuần — đồng bộ sang OpenPresenter.
    Định dạng item là "hợp đồng" với OpenPresenter (src/renderer/src/helpers/program.ts):
-   đổi ở đây thì đổi cả bên đó.
+   đổi ở đây thì đổi cả bên đó. Chỉ THÊM trường tuỳ chọn để app cũ vẫn đọc được (API version 1).
    ============================================================ */
 
-export type ProgramItemKind = "text" | "bible" | "song";
+export type ProgramItemKind = "text" | "bible" | "song" | "sermon";
 
 export type ProgramSong = {
   title: string;
@@ -683,6 +683,11 @@ export type ProgramSong = {
   number?: string;
   /** Lời bài hát — chỉ cần khi bài chưa có trong thư viện OpenPresenter. */
   lyrics?: string;
+  /**
+   * Thứ tự hát theo tên đoạn, ví dụ ["Câu 1", "Điệp khúc 1", "Câu 3", "Điệp khúc 1"].
+   * Bỏ trống = thứ tự mặc định của bài. OpenPresenter bỏ qua tên đoạn không có trong bài.
+   */
+  arrangement?: string[];
 };
 
 export type ProgramItem = {
@@ -690,12 +695,20 @@ export type ProgramItem = {
   kind: ProgramItemKind;
   /** Tên mục trong chương trình: "Chào mừng", "Câu gốc", "Tôn vinh Chúa"… */
   label: string;
-  /** kind = text: chữ hiện trên màn hình (trống → hiện label). */
+  /** text: chữ hiện trên màn hình (trống → hiện label). sermon: đề tài bài giảng. */
   text?: string;
-  /** kind = bible: tham chiếu, ví dụ "Giăng 3:16-18". */
+  /** bible / sermon: tham chiếu, ví dụ "Giăng 3:16-18". */
   ref?: string;
+  /** bible / sermon: thêm dòng tiếng Anh (KJV) dưới mỗi câu. */
+  bilingual?: boolean;
+  /** sermon: diễn giả. */
+  speaker?: string;
   song?: ProgramSong;
-  /** Ghi chú cho người điều khiển (người hướng dẫn, lưu ý…). */
+  /** Người phụ trách mục này (hướng dẫn, ban hát, người đọc…). */
+  leader?: string;
+  /** Thời lượng dự kiến (phút) — dùng tính giờ từng mục. */
+  minutes?: number;
+  /** Ghi chú cho người trình chiếu. */
   note?: string;
 };
 
@@ -704,6 +717,8 @@ export type Program = {
   /** YYYY-MM-DD, mỗi ngày tối đa một chương trình. */
   date: string;
   title: string;
+  /** Giờ bắt đầu "HH:MM" — cùng `minutes` của từng mục ra giờ dự kiến. */
+  startTime?: string;
   items: ProgramItem[];
   published: boolean;
   createdAt: string;
@@ -714,24 +729,38 @@ export const PROGRAM_ITEM_KIND_LABELS: Record<ProgramItemKind, string> = {
   text: "Văn bản",
   bible: "Kinh Thánh",
   song: "Bài hát",
+  sermon: "Giảng luận",
 };
 
 const programItemId = () => Math.random().toString(36).slice(2, 10);
 
-export const newProgramItem = (kind: ProgramItemKind, label = ""): ProgramItem => ({
+export const newProgramItem = (kind: ProgramItemKind, label = "", minutes?: number): ProgramItem => ({
   id: programItemId(),
   kind,
   label,
+  ...(minutes && { minutes }),
   ...(kind === "song" && { song: { title: "", book: "Thánh Ca" } }),
 });
 
+/** Các mục hay có trong một buổi nhóm — bấm một lần là thêm, kèm thời lượng gợi ý. */
+export const PROGRAM_ITEM_PRESETS: { kind: ProgramItemKind; label: string; minutes: number }[] = [
+  { kind: "song", label: "Tôn vinh Chúa", minutes: 5 },
+  { kind: "text", label: "Cầu nguyện", minutes: 3 },
+  { kind: "bible", label: "Đọc Kinh Thánh", minutes: 3 },
+  { kind: "text", label: "Thông báo", minutes: 5 },
+  { kind: "text", label: "Dâng hiến", minutes: 5 },
+  { kind: "sermon", label: "Giảng luận", minutes: 30 },
+  { kind: "song", label: "Bài hát đáp ứng", minutes: 4 },
+  { kind: "text", label: "Chúc phước", minutes: 2 },
+];
+
 /** Sườn cố định mỗi tuần. */
 export const programTemplateItems = (): ProgramItem[] => [
-  newProgramItem("text", "Chào mừng"),
-  newProgramItem("text", "Cầu nguyện khai lễ"),
-  newProgramItem("bible", "Câu gốc"),
-  newProgramItem("song", "Bài hát khẩu hiệu"),
-  newProgramItem("song", "Tôn vinh Chúa"),
+  newProgramItem("text", "Chào mừng", 2),
+  newProgramItem("text", "Cầu nguyện khai lễ", 3),
+  newProgramItem("bible", "Câu gốc", 2),
+  newProgramItem("song", "Bài hát khẩu hiệu", 4),
+  newProgramItem("song", "Tôn vinh Chúa", 5),
 ];
 
 const trimOrUndefined = (value?: string) => value?.trim() || undefined;
@@ -740,8 +769,14 @@ const trimOrUndefined = (value?: string) => value?.trim() || undefined;
 export const cleanProgramItems = (items: ProgramItem[]): ProgramItem[] =>
   items.map((item) => {
     const out: ProgramItem = { id: item.id || programItemId(), kind: item.kind, label: item.label.trim() };
-    if (item.kind === "text" && trimOrUndefined(item.text)) out.text = item.text!.trim();
-    if (item.kind === "bible" && trimOrUndefined(item.ref)) out.ref = item.ref!.trim();
+    const text = trimOrUndefined(item.text);
+    const ref = trimOrUndefined(item.ref);
+    if ((item.kind === "text" || item.kind === "sermon") && text) out.text = text;
+    if (item.kind === "bible" || item.kind === "sermon") {
+      if (ref) out.ref = ref;
+      if (item.bilingual) out.bilingual = true;
+    }
+    if (item.kind === "sermon" && trimOrUndefined(item.speaker)) out.speaker = item.speaker!.trim();
     if (item.kind === "song") {
       const song = item.song ?? { title: "" };
       out.song = { title: song.title.trim() };
@@ -749,7 +784,11 @@ export const cleanProgramItems = (items: ProgramItem[]): ProgramItem[] =>
         const value = trimOrUndefined(song[key]);
         if (value) out.song[key] = value;
       }
+      const arrangement = (song.arrangement ?? []).map((l) => l.trim()).filter(Boolean);
+      if (arrangement.length) out.song.arrangement = arrangement;
     }
+    if (trimOrUndefined(item.leader)) out.leader = item.leader!.trim();
+    if (item.minutes && item.minutes > 0) out.minutes = Math.round(item.minutes);
     if (trimOrUndefined(item.note)) out.note = item.note!.trim();
     return out;
   });
@@ -757,6 +796,45 @@ export const cleanProgramItems = (items: ProgramItem[]): ProgramItem[] =>
 /** Bản sao cho tuần mới: id mới, giữ nguyên sườn và nội dung để sửa tiếp. */
 export const copyProgramItems = (items: ProgramItem[]): ProgramItem[] =>
   cleanProgramItems(items).map((item) => ({ ...item, id: programItemId() }));
+
+export const duplicateProgramItem = (item: ProgramItem): ProgramItem => ({
+  ...structuredClone(item),
+  id: programItemId(),
+});
+
+/** Giờ bắt đầu dự kiến của từng mục ("HH:MM"), và giờ kết thúc. Không có startTime → null. */
+export const programTimeline = (startTime: string | undefined, items: ProgramItem[]) => {
+  const match = startTime?.match(/^(\d{1,2}):(\d{2})$/);
+  const totalMinutes = items.reduce((sum, item) => sum + (item.minutes ?? 0), 0);
+  if (!match) return { starts: items.map(() => null as string | null), end: null as string | null, totalMinutes };
+  const fmt = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+  let clock = Number(match[1]) * 60 + Number(match[2]);
+  const starts = items.map((item) => {
+    const at = fmt(clock);
+    clock += item.minutes ?? 0;
+    return at as string | null;
+  });
+  return { starts, end: fmt(clock) as string | null, totalMinutes };
+};
+
+/**
+ * Đoạn của lời dán tay — cùng quy tắc với OpenPresenter (helpers/program.ts → lyricsMarkdown):
+ * có tiêu đề [Tên đoạn] thì theo tiêu đề, không thì mỗi đoạn cách dòng trống là "Verse n".
+ */
+export const pastedLyricsSections = (lyrics: string): { label: string; text: string }[] => {
+  const body = lyrics.trim();
+  if (!body) return [];
+  if (!/^\[[^\]]+\]\s*$/m.test(body)) {
+    return body.split(/\n\s*\n/).map((text, i) => ({ label: `Verse ${i + 1}`, text: text.trim() }));
+  }
+  const sections: { label: string; text: string }[] = [];
+  for (const line of body.split("\n")) {
+    const header = line.trim().match(/^\[([^\]]+)\]$/);
+    if (header) sections.push({ label: header[1].trim(), text: "" });
+    else if (sections.length) sections[sections.length - 1].text += `${line}\n`;
+  }
+  return sections.map((s) => ({ ...s, text: s.text.trim() })).filter((s) => s.text);
+};
 
 /** Chúa Nhật gần nhất tính từ `fromDate` (YYYY-MM-DD, chính ngày đó nếu là Chúa Nhật). */
 export const nextSunday = (fromDate: string): string => {

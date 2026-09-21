@@ -64,7 +64,11 @@ const ProgramsScreen = () => {
       {isLoadingPrograms && programList.length === 0 ? (
         <LoadingState />
       ) : (
-        <ProgramList programs={sortedPrograms} onEdit={(program) => navigate(`/chuong-trinh/${program.id}`)} />
+        <ProgramList
+          programs={sortedPrograms}
+          onEdit={(program) => navigate(`/chuong-trinh/${program.id}`)}
+          onCopy={(program) => navigate(`/chuong-trinh/moi?copy=${program.id}`)}
+        />
       )}
     </div>
   );

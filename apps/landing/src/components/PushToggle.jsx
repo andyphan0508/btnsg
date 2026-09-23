@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BellOutlined, BellFilled } from "@ant-design/icons";
+import { PiBell, PiBellRinging } from "react-icons/pi";
 import {
   getPermission,
   hasActiveSubscription,
@@ -51,12 +51,10 @@ export default function PushToggle() {
         const result = await subscribeToPush();
         if (result.ok) {
           setSubscribed(true);
-          setMessage("Đã bật thông báo 🎉");
+          setMessage("Đã bật thông báo.");
         } else if (result.reason === "denied") {
           setPermissionState("denied");
-          setMessage(
-            "Bạn đã chặn thông báo — hãy bật lại trong cài đặt trình duyệt.",
-          );
+          setMessage("Bạn đã chặn thông báo — hãy bật lại trong cài đặt trình duyệt.");
         } else {
           setMessage(result.reason || "Chưa bật được, vui lòng thử lại sau.");
         }
@@ -70,10 +68,10 @@ export default function PushToggle() {
   };
 
   return (
-    <div className="push-toggle" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+    <div className="push-toggle">
       <button
         type="button"
-        className={`back-to-top-btn${subscribed ? " active" : ""}`}
+        className={`chip${subscribed ? " is-active" : ""}`}
         onClick={handleToggle}
         disabled={busy || permission === "denied"}
         title={
@@ -84,7 +82,7 @@ export default function PushToggle() {
               : "Bật nhận thông báo tin tức & lịch sinh hoạt"
         }
       >
-        {subscribed ? <BellFilled style={{ color: "var(--amber)" }} /> : <BellOutlined />}
+        {subscribed ? <PiBellRinging aria-hidden="true" /> : <PiBell aria-hidden="true" />}
         <span>
           {busy
             ? "Đang xử lý…"
@@ -95,7 +93,7 @@ export default function PushToggle() {
                 : "Nhận thông báo"}
         </span>
       </button>
-      {message && <span style={{ fontSize: "0.8rem", color: "var(--amber)" }}>{message}</span>}
+      {message && <span className="push-toggle-msg">{message}</span>}
     </div>
   );
 }

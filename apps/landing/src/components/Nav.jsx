@@ -1,96 +1,77 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { SunOutlined, MoonOutlined, ArrowRightOutlined } from "@ant-design/icons";
-import { motion, useScroll, useSpring } from "motion/react";
+import { motion, useMotionValueEvent, useScroll, useSpring } from "motion/react";
+import { PiArrowRight, PiMoon, PiSun } from "react-icons/pi";
 import { site, nav } from "../data/content.js";
+import { useTheme } from "../lib/theme.js";
 import logoImg from "../assets/logobtnsg.jpg";
 import RollText from "./RollText.jsx";
 
 /**
- * Thanh điều hướng Aardvark Editorial với hiệu ứng chạy chữ RollText khi hover.
+ * Thanh điều hướng dạng viên kính nổi: nền kính đặc dần khi cuộn, ẩn khi cuộn xuống,
+ * hiện lại khi cuộn lên. Mục đang xem có "viên sáng" trượt theo (layoutId).
  */
 export default function Nav() {
-  const [theme, setTheme] = useState("light");
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [theme, toggleTheme] = useTheme();
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const { scrollY, scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
 
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
+  useMotionValueEvent(scrollY, "change", (y) => {
+    setScrolled(y > 24);
+    setHidden(y > 320 && y > (scrollY.getPrevious() ?? 0));
   });
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute("data-theme", savedTheme);
-    } else {
-      const systemDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      const initialTheme = systemDark ? "dark" : "light";
-      setTheme(initialTheme);
-      document.documentElement.setAttribute("data-theme", initialTheme);
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 12);
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const toggleTheme = () => {
-    const nextTheme = theme === "light" ? "dark" : "light";
-    setTheme(nextTheme);
-    localStorage.setItem("theme", nextTheme);
-    document.documentElement.setAttribute("data-theme", nextTheme);
-  };
-
   return (
-    <nav className={`nav${isScrolled ? " nav-scrolled" : ""}`}>
-      {/* Scroll progress indicator */}
-      <motion.div className="scroll-indicator" style={{ scaleX }} />
-
-      <div className="nav-in">
-        <Link className="brand" to="/">
-          <img src={logoImg} alt="Logo BTNSG" className="brand-logo-img" />
-          <span className="brand-text">
+    <header className={`nav${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}`}>
+      <motion.div className="nav-progress" style={{ scaleX: progress }} />
+      <nav className="nav-pill glass" aria-label="Điều hướng chính">
+        <Link className="nav-brand" to="/" aria-label="Ban Thanh Niên Sài Gòn — Trang chủ">
+          <img src={logoImg} alt="" />
+          <span>
             {site.brand}
-            <span className="brand-city">&nbsp;{site.brandCity}</span>
+            <em>{site.brandCity}</em>
           </span>
         </Link>
 
-        <div className="nav-links">
+        <ul className="nav-links">
           {nav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `nav-link-item${isActive ? " active" : ""}`
-              }
-            >
-              <RollText text={item.label} />
-            </NavLink>
+            <li key={item.to}>
+              <NavLink to={item.to} className="nav-link">
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-active"
+                        className="nav-link-active"
+                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      />
+                    )}
+                    <RollText text={item.label} />
+                  </>
+                )}
+              </NavLink>
+            </li>
           ))}
-        </div>
+        </ul>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="nav-actions">
           <button
+            type="button"
+            className="icon-btn"
             onClick={toggleTheme}
-            className="theme-btn"
             aria-label="Chuyển chế độ sáng/tối"
             title="Chuyển chế độ sáng/tối"
-            type="button"
           >
-            {theme === "light" ? <MoonOutlined /> : <SunOutlined />}
+            {theme === "light" ? <PiMoon /> : <PiSun />}
           </button>
+          <Link className="btn btn-sun btn-sm nav-cta" to="/sinh-hoat">
+            <RollText text="Tham gia" />
+            <PiArrowRight aria-hidden="true" />
+          </Link>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }

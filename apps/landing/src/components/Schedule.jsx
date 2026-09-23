@@ -1,73 +1,109 @@
-import { useState } from "react";
-import { ClockCircleOutlined } from "@ant-design/icons";
-import Reveal from "./Reveal.jsx";
-import SubCommitteeModal from "./SubCommitteeModal.jsx";
-import { schedule, subCommittees } from "../data/content.js";
+import { useRef } from "react";
+import {
+  PiChurch,
+  PiBookOpenText,
+  PiHandshake,
+  PiHandsPraying,
+  PiMusicNotes,
+} from "react-icons/pi";
+import { gsap, useGSAP, prefersReducedMotion } from "../lib/scroll.js";
+import { schedule } from "../data/content.js";
 
+const ICONS = {
+  church: PiChurch,
+  book: PiBookOpenText,
+  visit: PiHandshake,
+  pray: PiHandsPraying,
+  music: PiMusicNotes,
+};
+
+/**
+ * Lịch tuần dạng chồng thẻ 3D: mỗi thẻ kính dính (sticky) ở đỉnh, thẻ sau trượt lên phủ thẻ trước;
+ * thẻ phía dưới thu nhỏ, ngả ra sau và tối dần như một cỗ bài có chiều sâu.
+ */
 export default function Schedule() {
-  const [activeCommittee, setActiveCommittee] = useState(null);
+  const root = useRef(null);
+
+  useGSAP(
+    () => {
+      if (prefersReducedMotion) return;
+      const cards = gsap.utils.toArray(".stack-card");
+      const last = cards[cards.length - 1];
+
+      cards.slice(0, -1).forEach((card, i) => {
+        const depth = cards.length - 1 - i;
+        gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: cards[i + 1],
+              start: "top bottom",
+              endTrigger: last,
+              // Kết thúc khi thẻ cuối chạm vị trí dính của nó.
+              end: () => `top ${parseFloat(getComputedStyle(last).top)}px`,
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          })
+          .to(
+            card,
+            {
+              scale: 1 - depth * 0.045,
+              rotationX: -9,
+              transformPerspective: 1400,
+              transformOrigin: "50% 0%",
+              ease: "none",
+            },
+            0,
+          )
+          .to(card.querySelector(".stack-dim"), { opacity: 0.62, ease: "none" }, 0);
+      });
+    },
+    { scope: root },
+  );
 
   return (
-    <section className="section" id="sinh-hoat">
-      <Reveal className="sec-head" variant="slide-up">
-        <p className="eyebrow">Lịch sinh hoạt hằng tuần</p>
-        <h2>Một tuần cùng Ban Thanh Niên</h2>
-        <p className="lead">
-          Bạn mới đến lần đầu? Hãy bắt đầu với giờ nhóm thờ phượng chiều Chúa
-          Nhật — luôn có các ban viên chào đón bạn.
-        </p>
-      </Reveal>
+    <section className="section" ref={root}>
+      <div className="wrap">
+        <header className="sec-head">
+          <h2>
+            Nhịp sinh hoạt <em>mỗi tuần</em>
+          </h2>
+          <p className="lead">
+            Lần đầu đến? Hãy bắt đầu với buổi thờ phượng chiều Chúa Nhật — luôn có người chào
+            đón bạn.
+          </p>
+        </header>
 
-      <div className="sched-grid">
-        {schedule.map((s, idx) => (
-          <Reveal
-            className={`s-card-new${s.main ? " main-highlight" : ""}`}
-            variant="slide-up"
-            delay={idx * 80}
-            key={`${s.day}-${s.time}`}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-          >
-            <div className="s-header">
-              <span className="s-day-badge">{s.day}</span>
-              {s.main && (
-                <span className="s-live-pulse">
-                  <span className="pulse-dot" /> Nhóm chính
-                </span>
-              )}
-            </div>
-
-            <div className="s-body">
-              <div className="s-time-row">
-                <ClockCircleOutlined />
-                <span className="s-time-text">{s.time}</span>
-              </div>
-              <h3 className="s-title">{s.what}</h3>
-              <p className="s-desc">{s.note}</p>
-            </div>
-          </Reveal>
-        ))}
-      </div>
-
-      <Reveal className="sub-comm-wrapper" variant="slide-up" delay={150}>
-        <p className="sub-comm-title">Các tiểu ban công tác phụ trách:</p>
-        <div className="chips-container">
-          {subCommittees.map((c) => (
-            <button
-              type="button"
-              className="chip-badge"
-              key={c.id}
-              onClick={() => setActiveCommittee(c)}
-            >
-              <span aria-hidden="true">{c.icon}</span> {c.title}
-            </button>
-          ))}
+        <div className="stack">
+          {schedule.map((s, i) => {
+            const Icon = ICONS[s.icon];
+            return (
+              <article
+                className={`stack-card glass tone-${s.tone}${s.main ? " is-main" : ""}`}
+                style={{ "--i": i }}
+                key={`${s.day}-${s.time}`}
+              >
+                <span className="stack-glow" aria-hidden="true" />
+                <div className="stack-when">
+                  <span className="stack-day">{s.day}</span>
+                  <span className="stack-time">{s.time}</span>
+                </div>
+                <div className="stack-what">
+                  {s.main && (
+                    <span className="live-chip">
+                      <span className="live-dot" /> Nhóm chính
+                    </span>
+                  )}
+                  <h3>{s.what}</h3>
+                  <p>{s.note}</p>
+                </div>
+                <Icon className="stack-icon" aria-hidden="true" />
+                <span className="stack-dim" aria-hidden="true" />
+              </article>
+            );
+          })}
         </div>
-      </Reveal>
-
-      <SubCommitteeModal
-        committee={activeCommittee}
-        onClose={() => setActiveCommittee(null)}
-      />
+      </div>
     </section>
   );
 }

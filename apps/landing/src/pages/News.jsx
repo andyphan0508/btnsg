@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import Reveal from '../components/Reveal.jsx'
 import PageHero from '../components/PageHero.jsx'
 import NewsCard from '../components/NewsCard.jsx'
 import NewsFeaturedCard from '../components/NewsFeaturedCard.jsx'
@@ -32,45 +31,38 @@ export default function News() {
   }, [])
 
   const [featuredPost, ...otherPosts] = posts
+  const ready = !isLoadingPosts && !postsError
 
   return (
     <>
       <PageHero
-        eyebrow="Tin tức"
         title="Tin tức & bài viết"
         lead="Tin tức, thông báo và bài viết về các hoạt động của Ban Thanh Niên HTTL Sài Gòn."
       />
-      <main className="wrap gallery-page page-view">
+      <main className="section section-tight">
+        <div className="wrap">
+          {!isNewsConfigured && (
+            <div className="notice glass">
+              Đang xem dữ liệu mẫu — cấu hình <code>VITE_NEWS_SCRIPT_URL</code> (Google Apps Script
+              đọc folder Tin tức trên Google Drive) để hiển thị bài viết thật. Xem hướng dẫn trong{' '}
+              <code>DEPLOY.md</code>.
+            </div>
+          )}
 
-      {!isNewsConfigured && (
-        <div className="gallery-note">
-          Đang xem dữ liệu mẫu — cấu hình <code>VITE_NEWS_SCRIPT_URL</code> (Google Apps Script đọc
-          folder Tin tức trên Google Drive) để hiển thị bài viết thật. Xem hướng dẫn trong{' '}
-          <code>DEPLOY.md</code>.
+          {isLoadingPosts && <div className="status">Đang tải tin tức…</div>}
+          {postsError && <div className="status is-error">{postsError}</div>}
+          {ready && posts.length === 0 && <div className="status">Chưa có bài viết nào.</div>}
+
+          {ready && featuredPost && <NewsFeaturedCard post={featuredPost} />}
+
+          {ready && otherPosts.length > 0 && (
+            <div className="news-grid">
+              {otherPosts.map((post, i) => (
+                <NewsCard key={post.id} post={post} index={i} />
+              ))}
+            </div>
+          )}
         </div>
-      )}
-
-      {isLoadingPosts && <div className="gallery-status">Đang tải tin tức…</div>}
-      {postsError && <div className="gallery-status gallery-error">{postsError}</div>}
-      {!isLoadingPosts && !postsError && posts.length === 0 && (
-        <div className="gallery-status">Chưa có bài viết nào.</div>
-      )}
-
-      {!isLoadingPosts && !postsError && featuredPost && (
-        <Reveal variant="slide-up">
-          <NewsFeaturedCard post={featuredPost} />
-        </Reveal>
-      )}
-
-      {!isLoadingPosts && !postsError && otherPosts.length > 0 && (
-        <Reveal variant="slide-up">
-          <div className="news-grid">
-            {otherPosts.map((post) => (
-              <NewsCard key={post.id} post={post} />
-            ))}
-          </div>
-        </Reveal>
-      )}
       </main>
     </>
   )

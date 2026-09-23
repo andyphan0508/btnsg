@@ -1,41 +1,38 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  HomeOutlined,
-  CalendarOutlined,
-  FileTextOutlined,
-  PictureOutlined,
-  RightOutlined,
-  SunOutlined,
-  MoonOutlined,
-  CloseOutlined,
-  FacebookFilled,
-} from "@ant-design/icons";
+  PiHouse,
+  PiCalendarDots,
+  PiNewspaper,
+  PiImages,
+  PiCaretRight,
+  PiSun,
+  PiMoon,
+  PiX,
+  PiFacebookLogo,
+} from "react-icons/pi";
 import { motion, AnimatePresence } from "motion/react";
 import { bottomNav, sheetNav, site } from "../data/content.js";
+import { useTheme } from "../lib/theme.js";
+import { useScrollLock } from "../lib/scroll.js";
 import logoImg from "../assets/logobtnsg.jpg";
 
 const ICONS = {
-  home: HomeOutlined,
-  calendar: CalendarOutlined,
-  news: FileTextOutlined,
-  image: PictureOutlined,
+  home: PiHouse,
+  calendar: PiCalendarDots,
+  news: PiNewspaper,
+  image: PiImages,
 };
 
 /**
- * Thanh điều hướng dưới cho mobile:
- * 2 mục trái + logo BTN tròn nổi ở giữa + 2 mục phải.
- * Bấm logo mở Bottom Sheet với hoạt ảnh Motion AnimatePresence mượt mà.
+ * Dock kính cho mobile: 2 mục trái + logo tròn nổi ở giữa + 2 mục phải.
+ * Bấm logo mở bottom sheet kính với các trang còn lại.
  */
 export default function BottomNav() {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [theme, setTheme] = useState("light");
+  const [theme, toggleTheme] = useTheme();
   const location = useLocation();
-
-  useEffect(() => {
-    const current = document.documentElement.getAttribute("data-theme");
-    if (current) setTheme(current);
-  }, [sheetOpen]);
+  useScrollLock(sheetOpen);
 
   useEffect(() => {
     setSheetOpen(false);
@@ -47,25 +44,11 @@ export default function BottomNav() {
       if (e.key === "Escape") setSheetOpen(false);
     };
     document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
+    return () => document.removeEventListener("keydown", onKey);
   }, [sheetOpen]);
 
-  const toggleTheme = () => {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
-    localStorage.setItem("theme", next);
-    document.documentElement.setAttribute("data-theme", next);
-  };
-
-  const left = bottomNav.slice(0, 2);
-  const right = bottomNav.slice(2);
-
   const renderItem = (item) => {
-    const Icon = ICONS[item.icon] ?? HomeOutlined;
+    const Icon = ICONS[item.icon] ?? PiHouse;
     return (
       <NavLink
         key={item.to}
@@ -74,7 +57,7 @@ export default function BottomNav() {
         className={({ isActive }) => `bnav-item${isActive ? " active" : ""}`}
       >
         <Icon className="bnav-icon" />
-        <span className="bnav-label">{item.label}</span>
+        <span>{item.label}</span>
       </NavLink>
     );
   };
@@ -97,72 +80,65 @@ export default function BottomNav() {
       <AnimatePresence>
         {sheetOpen && (
           <motion.div
-            className="bnav-sheet open"
+            className="bnav-sheet glass is-solid"
             role="dialog"
+            aria-modal="true"
             aria-label="Menu Ban Thanh Niên"
-            aria-hidden={!sheetOpen}
-            initial={{ y: "100%" }}
+            data-lenis-prevent
+            initial={{ y: "110%" }}
             animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 280 }}
+            exit={{ y: "110%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
           >
-            <div className="bnav-sheet-handle" />
+            <div className="bnav-handle" />
             <div className="bnav-sheet-head">
-              <div className="bnav-sheet-brand">
-                <img src={logoImg} alt="" className="bnav-sheet-logo" />
+              <div className="bnav-brand">
+                <img src={logoImg} alt="" />
                 <div>
-                  <div className="bnav-sheet-title">
+                  <strong>
                     {site.brand} {site.brandCity}
-                  </div>
-                  <div className="bnav-sheet-sub">
-                    HTTL Việt Nam · Chi Hội Sài Gòn
-                  </div>
+                  </strong>
+                  <small>HTTL Việt Nam · Chi Hội Sài Gòn</small>
                 </div>
               </div>
               <button
                 type="button"
-                className="bnav-sheet-close"
+                className="icon-btn"
                 onClick={() => setSheetOpen(false)}
                 aria-label="Đóng menu"
               >
-                <CloseOutlined />
+                <PiX />
               </button>
             </div>
 
-            <div className="bnav-sheet-list">
+            <div className="bnav-links">
               {sheetNav.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className={({ isActive }) =>
-                    `bnav-sheet-link${isActive ? " active" : ""}`
-                  }
+                  className={({ isActive }) => `bnav-link${isActive ? " active" : ""}`}
                 >
                   <span>
                     <strong>{item.label}</strong>
                     <small>{item.desc}</small>
                   </span>
-                  <RightOutlined style={{ fontSize: 12 }} />
+                  <PiCaretRight aria-hidden="true" />
                 </NavLink>
               ))}
             </div>
 
             <div className="bnav-sheet-foot">
-              <button
-                type="button"
-                className="bnav-sheet-action"
-                onClick={toggleTheme}
-              >
-                {theme === "light" ? <MoonOutlined /> : <SunOutlined />}
+              <button type="button" className="bnav-action" onClick={toggleTheme}>
+                {theme === "light" ? <PiMoon /> : <PiSun />}
                 <span>{theme === "light" ? "Chế độ tối" : "Chế độ sáng"}</span>
               </button>
               <a
-                className="bnav-sheet-action"
+                className="bnav-action"
                 href={site.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <FacebookFilled style={{ color: "#1877f2" }} />
+                <PiFacebookLogo />
                 <span>Fanpage</span>
               </a>
             </div>
@@ -170,20 +146,20 @@ export default function BottomNav() {
         )}
       </AnimatePresence>
 
-      <nav className="bottom-nav" aria-label="Điều hướng chính">
-        <div className="bnav-side">{left.map(renderItem)}</div>
+      <nav className="bottom-nav glass is-solid" aria-label="Điều hướng nhanh">
+        <div className="bnav-side">{bottomNav.slice(0, 2).map(renderItem)}</div>
 
         <button
           type="button"
-          className={`bnav-logo-btn${sheetOpen ? " open" : ""}`}
+          className={`bnav-logo${sheetOpen ? " is-open" : ""}`}
           onClick={() => setSheetOpen((o) => !o)}
           aria-expanded={sheetOpen}
           aria-label={sheetOpen ? "Đóng menu" : "Mở menu Ban Thanh Niên"}
         >
-          <img src={logoImg} alt="" className="bnav-logo-img" />
+          <img src={logoImg} alt="" />
         </button>
 
-        <div className="bnav-side">{right.map(renderItem)}</div>
+        <div className="bnav-side">{bottomNav.slice(2).map(renderItem)}</div>
       </nav>
     </>
   );

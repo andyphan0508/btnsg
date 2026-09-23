@@ -1,47 +1,91 @@
-import { ArrowUpOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import {
+  PiArrowUp,
+  PiArrowUpRight,
+  PiChatCircleDots,
+  PiFacebookLogo,
+  PiGlobe,
+  PiYoutubeLogo,
+} from "react-icons/pi";
 import PushToggle from "./PushToggle.jsx";
 import RollText from "./RollText.jsx";
+import { site, nav, links, church } from "../data/content.js";
+import { openContactPanel } from "../lib/contact.js";
+import { scrollToTop } from "../lib/scroll.js";
+import logoImg from "../assets/logobtnsg.jpg";
+
+const LINK_ICONS = { facebook: PiFacebookLogo, youtube: PiYoutubeLogo, web: PiGlobe };
 
 export default function Footer() {
-  const handleScrollTop = (e) => {
-    e.preventDefault();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   return (
     <footer className="footer">
-      <div className="foot-in">
-        <div className="foot-left">
-          <span className="foot-brand">
-            Ban Thanh Niên — Hội Thánh Tin Lành Việt Nam
-          </span>
-          <span className="foot-sub">Chi Hội Sài Gòn · Từ 1942</span>
+      <div className="wrap footer-grid">
+        <div className="footer-brand">
+          <img src={logoImg} alt="" className="footer-logo" />
+          <p>
+            Ban Thanh Niên — Hội Thánh Tin Lành Việt Nam, Chi Hội Sài Gòn. Đồng hành cùng người
+            trẻ thành phố từ năm 1942.
+          </p>
+          <p className="footer-mission">{site.mission}</p>
         </div>
-        <div className="foot-center">
-          <span className="foot-slogan">"TẤT CẢ VÌ NGƯỜI CHƯA ĐƯỢC CỨU"</span>
+
+        <nav className="footer-col" aria-label="Khám phá">
+          <h3>Khám phá</h3>
+          <ul>
+            {nav.map((item) => (
+              <li key={item.to}>
+                <Link to={item.to}>
+                  <RollText text={item.label} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="footer-col">
+          <h3>Kết nối</h3>
+          <ul>
+            {links.map((l) => {
+              const Icon = LINK_ICONS[l.icon];
+              return (
+                <li key={l.href}>
+                  <a href={l.href} target="_blank" rel="noopener noreferrer" aria-label={l.label}>
+                    <Icon aria-hidden="true" />
+                    <RollText text={l.short} />
+                    <PiArrowUpRight className="footer-ext" aria-hidden="true" />
+                  </a>
+                </li>
+              );
+            })}
+            <li>
+              <button type="button" onClick={openContactPanel}>
+                <PiChatCircleDots aria-hidden="true" />
+                <RollText text="Nhắn tin cho Ban" />
+              </button>
+            </li>
+          </ul>
         </div>
-        <div className="foot-right" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+
+        <div className="footer-col">
+          <h3>Ghé thăm</h3>
+          <p className="footer-visit">
+            <strong>Chúa Nhật · 14:30</strong>
+            {church.room}
+          </p>
           <PushToggle />
-          <a
-            href="#top"
-            onClick={handleScrollTop}
-            className="btn-aardvark is-yellow"
-            title="Lên đầu trang"
-          >
-            <span className="btn-text-part" style={{ padding: "8px 16px", fontSize: "0.82rem" }}>
-              <RollText text="Lên đầu trang" />
-            </span>
-            <span className="btn-icon-part" style={{ padding: "8px 12px", fontSize: "0.82rem" }}>
-              <ArrowUpOutlined />
-            </span>
-          </a>
         </div>
       </div>
-      <div className="foot-bottom">
-        <p>
-          © {new Date().getFullYear()} Ban Thanh Niên HTTL Sài Gòn. Toàn bộ bản
-          quyền được bảo lưu.
-        </p>
+
+      <div className="footer-mark-wrap" aria-hidden="true">
+        <span className="footer-mark sfx-stand">Ban Thanh Niên</span>
+      </div>
+
+      <div className="wrap footer-bottom">
+        <p>© {new Date().getFullYear()} Ban Thanh Niên HTTL Sài Gòn.</p>
+        <button type="button" className="btn btn-glass btn-sm" onClick={() => scrollToTop({ smooth: true })}>
+          <RollText text="Lên đầu trang" />
+          <PiArrowUp aria-hidden="true" />
+        </button>
       </div>
     </footer>
   );

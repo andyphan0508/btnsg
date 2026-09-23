@@ -6,13 +6,12 @@ export default function Theme() {
   return (
     <>
       <PageHero
-        eyebrow="Định hướng cả năm"
         title="Chủ đề năm"
         lead="Mỗi năm, Ban Thanh Niên chọn một chủ đề gắn với câu Kinh Thánh gốc và một bài hát khẩu hiệu."
       />
-      <main className="wrap page-view">
+      <main>
         <ThemeYear />
-        <PhotoStrip title="Sống chủ đề năm cùng nhau" count={4} />
+        <PhotoStrip title="Sống chủ đề năm cùng nhau" />
       </main>
     </>
   );

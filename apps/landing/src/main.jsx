@@ -1,7 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import './lib/scroll.js'
 import App from './App.jsx'
+import 'lenis/dist/lenis.css'
 import './fonts.css'
 import './index.css'
 

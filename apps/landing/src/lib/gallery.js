@@ -15,13 +15,15 @@ export function driveImage(id, width = 1200) {
 /* ---------- Dữ liệu demo khi chưa cấu hình ---------- */
 
 const DEMO_COUNT = 36
+// Tông nắng/chàm theo bảng màu của giao diện, để dữ liệu mẫu vẫn hài hoà.
+const DEMO_HUES = [22, 250, 34, 330, 14, 268, 42, 205]
 
 function demoImages() {
   return Array.from({ length: DEMO_COUNT }, (_, i) => ({
     id: `demo-img-${i}`,
     name: `Khoảnh khắc ${i + 1}`,
     demo: true,
-    hue: (i * 37) % 360,
+    hue: DEMO_HUES[i % DEMO_HUES.length],
   }))
 }
 

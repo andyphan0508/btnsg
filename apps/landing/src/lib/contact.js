@@ -4,6 +4,10 @@ const CONTACT_URL = import.meta.env.VITE_CONTACT_SCRIPT_URL || ''
 
 export const isContactConfigured = Boolean(CONTACT_URL)
 
+/** Nút "Nhắn tin cho Ban" ở bất kỳ đâu → mở panel kết nối của ContactFab. */
+export const CONTACT_OPEN_EVENT = 'contact:open'
+export const openContactPanel = () => window.dispatchEvent(new Event(CONTACT_OPEN_EVENT))
+
 /**
  * Gửi lời nhắn / đăng ký tham gia tới email Ban Thanh Niên
  * @param {{ name: string, contact: string, message: string }} payload

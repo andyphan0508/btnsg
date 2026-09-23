@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  BellOutlined,
-  CloseOutlined,
-  CheckCircleOutlined,
-  ShareAltOutlined,
-} from "@ant-design/icons";
+import { PiBellRinging, PiCheckCircle, PiExport, PiX } from "react-icons/pi";
 import { motion, AnimatePresence } from "motion/react";
 import {
   getPermission,
@@ -56,16 +51,17 @@ export default function PushPrompt() {
     if (getPermission() !== "default") return undefined;
 
     let cancelled = false;
+    let timer;
     hasActiveSubscription().then((active) => {
       if (active || cancelled) return;
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         if (!cancelled) setVisible(true);
       }, SHOW_DELAY_MS);
-      return () => clearTimeout(timer);
     });
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [iosNeedsInstall]);
 
@@ -103,112 +99,62 @@ export default function PushPrompt() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="push-prompt"
+          className="push-prompt glass is-solid"
           role="dialog"
           aria-label="Nhận thông báo từ Ban Thanh Niên"
           initial={{ opacity: 0, y: 30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 30, scale: 0.95 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            position: "fixed",
-            bottom: 24,
-            left: 24,
-            maxWidth: 380,
-            background: "var(--surface)",
-            border: "1px solid var(--line)",
-            borderRadius: "var(--radius-lg)",
-            padding: 20,
-            boxShadow: "var(--shadow-lg)",
-            zIndex: 999,
-          }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
-          <button
-            onClick={handleDismiss}
-            type="button"
-            aria-label="Đóng"
-            style={{
-              position: "absolute",
-              top: 12,
-              right: 12,
-              background: "transparent",
-              border: "none",
-              color: "var(--ink-3)",
-              cursor: "pointer",
-            }}
-          >
-            <CloseOutlined style={{ fontSize: 14 }} />
+          <button onClick={handleDismiss} type="button" aria-label="Đóng" className="push-close">
+            <PiX />
           </button>
 
-          <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: "var(--radius-md)",
-                background: "var(--brand-light)",
-                color: "var(--brand)",
-                display: "grid",
-                placeItems: "center",
-                flexShrink: 0,
-                fontSize: 18,
-              }}
-            >
-              {status === "done" ? <CheckCircleOutlined /> : <BellOutlined />}
-            </div>
+          <span className="icon-tile">{status === "done" ? <PiCheckCircle /> : <PiBellRinging />}</span>
 
-            <div style={{ flex: 1 }}>
-              {iosNeedsInstall ? (
-                <>
-                  <strong style={{ display: "block", fontSize: "0.95rem", color: "var(--ink)", marginBottom: 4 }}>
-                    Theo dõi Ban Thanh Niên?
-                  </strong>
-                  <p style={{ fontSize: "0.84rem", color: "var(--ink-2)", lineHeight: 1.5, marginBottom: 12 }}>
-                    Trên iPhone/iPad, hãy <strong>thêm trang này vào Màn hình chính</strong> trước —
-                    bấm nút <ShareAltOutlined /> <strong>Chia sẻ</strong> → chọn <strong>"Thêm vào MH chính"</strong>.
-                  </p>
-                  <button className="btn btn-gold" onClick={handleDismiss} type="button" style={{ padding: "6px 14px", fontSize: "0.82rem" }}>
+          <div>
+            {iosNeedsInstall ? (
+              <>
+                <strong className="push-title">Theo dõi Ban Thanh Niên?</strong>
+                <p className="push-text">
+                  Trên iPhone/iPad, hãy <strong>thêm trang này vào Màn hình chính</strong> trước — bấm
+                  nút <PiExport aria-hidden="true" /> <strong>Chia sẻ</strong> → chọn{" "}
+                  <strong>"Thêm vào MH chính"</strong>.
+                </p>
+                <div className="push-actions">
+                  <button className="btn btn-sun btn-sm" onClick={handleDismiss} type="button">
                     Đã hiểu
                   </button>
-                </>
-              ) : status === "done" ? (
-                <>
-                  <strong style={{ display: "block", fontSize: "0.95rem", color: "var(--ink)", marginBottom: 4 }}>
-                    Đã bật thông báo 🎉
-                  </strong>
-                  <p style={{ fontSize: "0.84rem", color: "var(--ink-2)" }}>Bạn sẽ nhận được tin mới và nhắc lịch sinh hoạt.</p>
-                </>
-              ) : (
-                <>
-                  <strong style={{ display: "block", fontSize: "0.95rem", color: "var(--ink)", marginBottom: 4 }}>
-                    Theo dõi Ban Thanh Niên?
-                  </strong>
-                  <p style={{ fontSize: "0.84rem", color: "var(--ink-2)", lineHeight: 1.5, marginBottom: 12 }}>
-                    Nhận thông báo khi có tin tức mới và nhắc lịch sinh hoạt sắp tới.
-                  </p>
-                  {error && <p style={{ fontSize: "0.8rem", color: "#ef4444", marginBottom: 8 }}>{error}</p>}
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button
-                      className="btn btn-gold"
-                      onClick={handleAccept}
-                      disabled={status === "working"}
-                      type="button"
-                      style={{ padding: "6px 14px", fontSize: "0.82rem" }}
-                    >
-                      {status === "working" ? "Đang bật…" : "Nhận thông báo"}
-                    </button>
-                    <button
-                      className="btn btn-ghost"
-                      onClick={handleDismiss}
-                      type="button"
-                      style={{ padding: "6px 12px", fontSize: "0.82rem" }}
-                    >
-                      Để sau
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            ) : status === "done" ? (
+              <>
+                <strong className="push-title">Đã bật thông báo</strong>
+                <p className="push-text">Bạn sẽ nhận được tin mới và nhắc lịch sinh hoạt.</p>
+              </>
+            ) : (
+              <>
+                <strong className="push-title">Theo dõi Ban Thanh Niên?</strong>
+                <p className="push-text">
+                  Nhận thông báo khi có tin tức mới và nhắc lịch sinh hoạt sắp tới.
+                </p>
+                {error && <p className="push-error">{error}</p>}
+                <div className="push-actions">
+                  <button
+                    className="btn btn-sun btn-sm"
+                    onClick={handleAccept}
+                    disabled={status === "working"}
+                    type="button"
+                  >
+                    {status === "working" ? "Đang bật…" : "Nhận thông báo"}
+                  </button>
+                  <button className="btn btn-glass btn-sm" onClick={handleDismiss} type="button">
+                    Để sau
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
       )}

@@ -1,103 +1,92 @@
+import { useEffect, useState } from "react";
 import {
-  CrownOutlined,
-  FireOutlined,
-  HeartOutlined,
-  CompassOutlined,
-  ReadOutlined,
-  TeamOutlined,
-  CheckOutlined,
-} from "@ant-design/icons";
-import Reveal from "./Reveal.jsx";
-import { ministries, duties, partners } from "../data/content.js";
+  PiFlame,
+  PiMegaphone,
+  PiHandHeart,
+  PiCompass,
+  PiGraduationCap,
+  PiUsersThree,
+} from "react-icons/pi";
+import MediaTile from "./MediaTile.jsx";
+import { ministries } from "../data/content.js";
+import { loadImages, pickImages } from "../lib/gallery.js";
 
-function getMinistryIcon(title) {
-  switch (title) {
-    case "Bồi linh":
-      return <CrownOutlined />;
-    case "Truyền giảng":
-      return <FireOutlined />;
-    case "Công tác xã hội":
-      return <HeartOutlined />;
-    case "Du lịch – dã ngoại":
-      return <CompassOutlined />;
-    case "Huấn luyện":
-      return <ReadOutlined />;
-    case "Họp bạn Thanh Niên":
-      return <TeamOutlined />;
-    default:
-      return <HeartOutlined />;
-  }
-}
+export const MINISTRY_ICONS = {
+  flame: PiFlame,
+  megaphone: PiMegaphone,
+  heart: PiHandHeart,
+  compass: PiCompass,
+  training: PiGraduationCap,
+  friends: PiUsersThree,
+};
 
+/**
+ * Accordion ngang: sáu lát ảnh dọc, lát được chọn nở rộng ra để lộ nội dung trên tấm kính mờ.
+ * Di chuột / bấm / focus bàn phím đều mở được; màn hình hẹp chuyển thành accordion dọc.
+ */
 export default function Ministries() {
+  const [active, setActive] = useState(0);
+  const [images, setImages] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+    loadImages()
+      .then((all) => alive && setImages(pickImages(all, "muc-vu-accordion", ministries.length)))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   return (
-    <section className="section" id="muc-vu">
-      <Reveal className="sec-head" variant="slide-up">
-        <p className="eyebrow">Mục vụ &amp; hoạt động thường niên</p>
-        <h2>Được gây dựng để đi ra phục vụ</h2>
-        <p className="lead">Các mảng công tác và sinh hoạt giúp thanh niên trưởng thành trong đức tin và gắn kết tình thân.</p>
-      </Reveal>
-
-      <div className="grid3-new">
-        {ministries.map((m, idx) => (
-          <Reveal
-            className="m-card-new"
-            variant="slide-up"
-            delay={idx * 70}
-            key={m.title}
-            whileHover={{ y: -6, transition: { duration: 0.2 } }}
-          >
-            <div className="m-card-header">
-              <div className="m-icon-box">{getMinistryIcon(m.title)}</div>
-              <span className="m-kind-badge">{m.kind}</span>
-            </div>
-            <h3 className="m-card-title">{m.title}</h3>
-            <p className="m-card-desc">{m.desc}</p>
-          </Reveal>
-        ))}
-      </div>
-
-      <div className="duties-wrapper" style={{ marginTop: 64 }}>
-        <Reveal className="sec-head" variant="slide-up">
-          <p className="eyebrow">Công tác trọng tâm</p>
-          <h2>Quản lý các cơ sở &amp; dịch vụ</h2>
-        </Reveal>
-
-        <div className="duty-grid">
-          {duties.map((d, idx) => (
-            <Reveal
-              className="duty-card-new"
-              variant="scale-up"
-              delay={idx * 100}
-              key={d.title}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            >
-              <div className="duty-icon-indicator">
-                <CheckOutlined />
-              </div>
-              <div className="duty-info">
-                <h3 style={{ fontSize: "1.15rem", fontWeight: 800, marginBottom: 6 }}>{d.title}</h3>
-                <p style={{ fontSize: "0.9rem", color: "var(--ink-2)", lineHeight: 1.55 }}>{d.desc}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-
-      <Reveal className="partners-section" variant="slide-up" delay={150}>
-        <div className="partners-card">
-          <p style={{ fontSize: "0.8rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-3)", marginBottom: 16 }}>
-            Cộng tác phục vụ cùng các ban ngành Hội Thánh
+    <section className="section">
+      <div className="wrap">
+        <header className="sec-head">
+          <h2>
+            Được gây dựng để <em>đi ra</em>
+          </h2>
+          <p className="lead">
+            Sáu mảng mục vụ giúp người trẻ trưởng thành trong đức tin, gắn kết tình thân và mang
+            Tin Lành đến cho thành phố.
           </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {partners.map((p) => (
-              <span className="partner-chip" key={p}>
-                {p}
-              </span>
-            ))}
-          </div>
+        </header>
+
+        <div className="acc">
+          {ministries.map((m, i) => {
+            const Icon = MINISTRY_ICONS[m.icon];
+            const open = active === i;
+            return (
+              <article
+                key={m.title}
+                className={`acc-item sfx-rise${open ? " is-open" : ""}`}
+                style={{ "--i": i }}
+                onMouseEnter={() => setActive(i)}
+                onClick={() => setActive(i)}
+              >
+                <div className="acc-media">
+                  {images[i] && <MediaTile image={images[i]} width={900} />}
+                </div>
+                <button
+                  type="button"
+                  className="acc-trigger"
+                  aria-expanded={open}
+                  onFocus={() => setActive(i)}
+                >
+                  <span className="acc-icon">
+                    <Icon />
+                  </span>
+                  <span className="acc-label">{m.title}</span>
+                </button>
+                <div className="acc-body" aria-hidden={!open}>
+                  <span className="acc-kind">{m.kind}</span>
+                  <h3>{m.title}</h3>
+                  <p>{m.desc}</p>
+                </div>
+              </article>
+            );
+          })}
         </div>
-      </Reveal>
+      </div>
     </section>
   );
 }

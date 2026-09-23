@@ -1,30 +1,24 @@
-/**
- * MarqueeStrip: Dải băng chạy chữ liên tục (Ticker Tape) phong cách Aardvark Book Club.
- * Tự động chạy chữ mượt mà, khi hover chuột vào có thể tạm dừng hoặc chạy tốc độ khác.
- */
-export default function MarqueeStrip() {
-  const ITEMS = [
-    "Ban Thanh Niên HTTL Sài Gòn",
-    "Từ năm 1942",
-    "Thờ phượng Chúa Nhật 14:30",
-    "Tất cả vì người chưa được cứu",
-    "155 Trần Hưng Đạo, Q.1",
-    "Kết nối & Trưởng thành đức tin",
-    "Môn đồ Chúa Cứu Thế"
-  ];
+import { PiSparkleFill } from "react-icons/pi";
 
+/**
+ * Băng chữ chạy vô tận. Mỗi hàng là một dải: hàng lẻ bằng kính, hàng chẵn màu nắng chạy ngược,
+ * hai dải bắt chéo nhau. Nội dung lặp 4 lần để vòng lặp -50% không bao giờ hở mép màn hình.
+ */
+export default function MarqueeStrip({ rows }) {
   return (
-    <div className="marquee-strip" aria-hidden="true">
-      <div className="marquee-track">
-        {ITEMS.concat(ITEMS)
-          .concat(ITEMS)
-          .map((item, idx) => (
-            <span className="marquee-item" key={`${item}-${idx}`}>
-              <span>{item}</span>
-              <span className="marquee-dot" />
-            </span>
-          ))}
-      </div>
+    <div className={`marquee${rows.length === 1 ? " is-single" : ""}`} aria-hidden="true">
+      {rows.map((items, r) => (
+        <div className={`marquee-tape ${r % 2 ? "is-sun" : "is-glass"}`} key={r}>
+          <div className={`marquee-track${r % 2 ? " is-reverse" : ""}`}>
+            {[...items, ...items, ...items, ...items].map((item, i) => (
+              <span className="marquee-item" key={i}>
+                {item}
+                <PiSparkleFill className="marquee-star" />
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

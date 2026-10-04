@@ -3924,3 +3924,51 @@ a.chip:hover {
   font-weight: 700;
   pointer-events: none;
 }
+
+/* ---------- Tải mượt: ảnh hiện dần, khung chờ "thở" nhẹ, trang mới hiện dần ----------
+   Chỉ hoạt ảnh opacity (GPU tự xử lý, không vẽ lại) để máy yếu vẫn mượt khi nhiều ảnh cùng tải.
+   main.jsx gắn data-loaded cho mọi <img> khi tải xong. */
+
+img.media-tile:not([data-loaded]),
+.hero-frame > img:not([data-loaded]),
+.frame-empty,
+.ring-placeholder {
+  background: linear-gradient(135deg, rgb(255 154 61 / 0.16), rgb(108 111 247 / 0.14));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  img.media-tile:not([data-loaded]),
+  .hero-frame > img:not([data-loaded]),
+  .frame-empty,
+  .ring-placeholder {
+    animation: media-wait 1.6s ease-in-out infinite;
+  }
+
+  img.media-tile[data-loaded],
+  .hero-frame > img[data-loaded] {
+    animation: media-in 0.7s var(--ease-soft) backwards;
+  }
+
+  /* Chỉ opacity, không transform: transform trên .page sẽ phá position: fixed/sticky bên trong. */
+  .page {
+    animation: page-in 0.5s var(--ease-soft) backwards;
+  }
+}
+
+@keyframes media-wait {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes media-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}

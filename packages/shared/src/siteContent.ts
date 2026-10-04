@@ -688,6 +688,7 @@ export const toSiteImageUrl = (input: unknown, width = 1600): string => {
   const driveId =
     value.match(/drive\.google\.com\/(?:file\/d\/|.*[?&]id=)([\w-]{20,})/)?.[1] ??
     (/^[\w-]{25,}$/.test(value) ? value : null);
-  if (driveId) return `https://drive.google.com/thumbnail?id=${driveId}&sz=w${width}`;
+  // Máy chủ ảnh lh3 trực tiếp (không qua redirect của drive.google.com/thumbnail), -rw = WebP.
+  if (driveId) return `https://lh3.googleusercontent.com/d/${driveId}=w${width}-rw`;
   return /^https:\/\//i.test(value) ? value : '';
 };

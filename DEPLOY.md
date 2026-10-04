@@ -364,8 +364,10 @@ gần như bằng 0 nhờ cache. **Ảnh thư viện và tin tức lấy từ Go
 băng thông Vercel** — đây là lý do mức dùng rất thấp.
 
 Để chạm 100 GB cần khoảng **270.000 lượt truy cập mới mỗi tháng**. Lượt gọi function phát sinh khi có
-người đăng ký nhận thông báo (1 lần/thiết bị), khi BĐH bấm gửi thông báo, và `/api/site-content`
-(CDN cache 60 giây nên tối đa vài chục nghìn lượt/tháng kể cả khi rất đông người xem).
+người đăng ký nhận thông báo (1 lần/thiết bị), khi BĐH bấm gửi thông báo, `/api/site-content` và
+`/api/feed` (proxy Apps Script cho thư viện ảnh / tin tức). Cả hai được CDN cache (nội dung 60 giây, ảnh 5 phút,
+tin tức 1 phút) nên tối đa vài chục nghìn lượt/tháng kể cả khi rất đông người xem — Apps Script cũng bớt bị gọi
+(trước đây mỗi lượt xem gọi một lần, mất 1,3–2,6 giây).
 
 Hai điều cần lưu ý hơn hạn mức:
 - Gói Hobby dành cho **mục đích cá nhân / phi thương mại** — website của Ban thuộc diện này.

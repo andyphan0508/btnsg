@@ -28,7 +28,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ content: Object.fromEntries(rows.map((row) => [row.key, row.value])) });
   } catch (error) {
     // Lỗi cũng cache ngắn để một sự cố Supabase không biến mỗi lượt xem thành một lần gọi.
-    res.setHeader('Cache-Control', 'public, s-maxage=10');
+    res.setHeader('Cache-Control', 'public, s-maxage=30');
     return res.status(502).json({ error: String(error?.message || error) });
   }
 }

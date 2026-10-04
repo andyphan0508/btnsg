@@ -8,8 +8,8 @@ import { mergeSiteContent, toSiteImageUrl } from "@btnsg/shared";
 import groupPhoto from "../assets/background.webp";
 
 const CACHE_KEY = "btnsg-site-content";
-/** Chờ API tối đa bấy nhiêu ms trước khi vẽ bằng bản cache / mặc định. */
-const WAIT_MS = 2500;
+/** Lượt đầu (chưa có bản lưu trên máy): chờ API tối đa bấy nhiêu ms rồi vẽ bằng mặc định. */
+const FIRST_VISIT_WAIT_MS = 1500;
 
 /** Nội dung đang hiển thị — component đọc trực tiếp `content.<mục>.<ô>` khi render. */
 export const content = mergeSiteContent({});
@@ -53,15 +53,29 @@ export function useSiteContent() {
   return content;
 }
 
+/** Bản mới đến sau khi trang đã vẽ → cập nhật nếu khác (không đè bản nháp đang xem trước). */
+const applyIfChanged = (fresh, shown) => {
+  if (fresh && !isPreview && JSON.stringify(fresh) !== JSON.stringify(shown)) applySiteContent(fresh);
+};
+
 export async function loadSiteContent() {
   const request = (window.__siteContent ?? Promise.resolve(null)).then((payload) => {
     if (payload?.content) writeCache(payload.content);
     return payload?.content ?? null;
   });
-  const timeout = new Promise((resolve) => setTimeout(() => resolve(null), WAIT_MS));
+
+  // Lượt quay lại: vẽ ngay bằng bản đã lưu, không chờ mạng; bản mới (nếu vừa sửa) cập nhật ngầm.
+  const cached = readCache();
+  if (cached) {
+    applySiteContent(cached);
+    request.then((fresh) => applyIfChanged(fresh, cached));
+    return;
+  }
+
+  const timeout = new Promise((resolve) => setTimeout(() => resolve(null), FIRST_VISIT_WAIT_MS));
   const fresh = await Promise.race([request, timeout]);
-  const saved = fresh ?? readCache();
-  if (saved) applySiteContent(saved);
+  if (fresh) applySiteContent(fresh);
+  else request.then((late) => applyIfChanged(late, null));
 }
 
 /* ---------- Xem trước trực tiếp trong khung iframe của dashboard ---------- */

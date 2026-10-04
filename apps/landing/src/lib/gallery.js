@@ -3,13 +3,20 @@
 // Chưa cấu hình VITE_GALLERY_SCRIPT_URL → dùng dữ liệu demo (gradient, không cần mạng).
 
 const GALLERY_URL = import.meta.env.VITE_GALLERY_SCRIPT_URL || ''
+// Production đi qua proxy có cache CDN (api/feed.js); chạy dev không có /api nên gọi thẳng Apps Script.
+const GALLERY_FEED = import.meta.env.DEV ? GALLERY_URL : '/api/feed?src=gallery'
+const CACHE_KEY = 'btnsg-gallery'
 
 export const isGalleryConfigured = Boolean(GALLERY_URL)
 
-/** Link ảnh Drive theo bề rộng mong muốn (px). */
+/**
+ * Link ảnh Drive theo bề rộng mong muốn (px), dạng WebP.
+ * Gọi thẳng máy chủ ảnh của Google (lh3) — link drive.google.com/thumbnail cũng chuyển hướng về đây
+ * nhưng tốn thêm ~1 giây mỗi ảnh; hậu tố -rw trả WebP nhẹ hơn JPEG ~30%.
+ */
 export function driveImage(id, width = 1200) {
   if (!id) return ''
-  return `https://drive.google.com/thumbnail?id=${id}&sz=w${width}`
+  return `https://lh3.googleusercontent.com/d/${id}=w${width}-rw`
 }
 
 /* ---------- Dữ liệu demo khi chưa cấu hình ---------- */
@@ -46,11 +53,33 @@ async function fetchJson(url) {
   return data
 }
 
-/** Toàn bộ ảnh của thư viện. */
+function readCache() {
+  try {
+    const images = JSON.parse(localStorage.getItem(CACHE_KEY))
+    return Array.isArray(images) && images.length > 0 ? images : null
+  } catch {
+    return null
+  }
+}
+
+function writeCache(images) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(images))
+  } catch {
+    // localStorage đầy/bị chặn → chỉ mất tối ưu lần sau.
+  }
+}
+
+/** Toàn bộ ảnh của thư viện (bản mới nhất từ máy chủ). */
 export async function fetchImages() {
   if (!isGalleryConfigured) return demoImages()
-  const data = await fetchJson(GALLERY_URL)
-  return Array.isArray(data.images) ? data.images : []
+  // index.html đã bắt đầu tải danh sách từ lúc mở trang — dùng luôn kết quả đó (chỉ một lần).
+  const early = window.__galleryFeed
+  window.__galleryFeed = null
+  const data = (early && (await early)) || (await fetchJson(GALLERY_FEED))
+  const images = Array.isArray(data.images) ? data.images : []
+  if (images.length > 0) writeCache(images)
+  return images
 }
 
 /** Ảnh nổi bật cho slider trang chủ: vài ảnh rải đều trong thư viện. */
@@ -72,9 +101,13 @@ let imagesPromise = null
  */
 export function loadImages() {
   if (!imagesPromise) {
-    imagesPromise = fetchImages().catch((err) => {
-      imagesPromise = null // cho phép thử lại ở lần sau
-      throw err
+    // Lượt quay lại: vẽ ngay bằng danh sách đã lưu, bản mới tải ngầm cho lần sau
+    // (không thay ảnh đang hiển thị giữa chừng).
+    const cached = isGalleryConfigured ? readCache() : null
+    const fresh = fetchImages()
+    imagesPromise = cached ? Promise.resolve(cached) : fresh
+    fresh.catch(() => {
+      if (!cached) imagesPromise = null // cho phép thử lại ở lần sau
     })
   }
   return imagesPromise

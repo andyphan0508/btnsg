@@ -3,6 +3,8 @@
 // Chưa cấu hình VITE_NEWS_SCRIPT_URL → dùng dữ liệu demo (không cần mạng).
 
 const NEWS_URL = import.meta.env.VITE_NEWS_SCRIPT_URL || ''
+// Production đi qua proxy có cache CDN (api/feed.js); chạy dev không có /api nên gọi thẳng Apps Script.
+const NEWS_FEED = import.meta.env.DEV ? NEWS_URL : '/api/feed?src=news'
 
 export const isNewsConfigured = Boolean(NEWS_URL)
 
@@ -126,7 +128,7 @@ async function fetchJson(url) {
 /** Danh sách bài viết (metadata, đã sắp mới → cũ từ phía script). */
 export async function fetchPosts() {
   if (!isNewsConfigured) return DEMO_POSTS
-  const data = await fetchJson(NEWS_URL)
+  const data = await fetchJson(NEWS_FEED)
   const posts = Array.isArray(data.posts) ? data.posts : []
   if (posts.length > 0) writeNewsCache('list', posts)
   return posts
@@ -136,8 +138,8 @@ export async function fetchPosts() {
 export async function fetchPost(postId) {
   if (!postId) return null
   if (!isNewsConfigured) return demoPost(postId)
-  const separator = NEWS_URL.includes('?') ? '&' : '?'
-  const post = await fetchJson(`${NEWS_URL}${separator}post=${encodeURIComponent(postId)}`)
+  const separator = NEWS_FEED.includes('?') ? '&' : '?'
+  const post = await fetchJson(`${NEWS_FEED}${separator}post=${encodeURIComponent(postId)}`)
   if (post && post.id) writeNewsCache(`post:${post.id}`, post)
   return post
 }

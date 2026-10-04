@@ -45,6 +45,16 @@ const routeMetaPages = () => ({
         .replace(/(<meta property="og:url" content=")[^"]*/, `$1${url}`)
       this.emitFile({ type: 'asset', fileName: `${route}.html`, source })
     }
+
+    // Trang chủ: tải ảnh Hero (phần tử lớn nhất màn hình đầu) song song với JS thay vì chờ JS chạy.
+    // Admin đổi ảnh Hero trong dashboard thì bản preload này thành thừa (~170KB) — vẫn đúng, chỉ tốn hơn.
+    const heroImage = Object.keys(bundle).find((name) => /^assets\/background-[\w-]+\.webp$/.test(name))
+    if (heroImage) {
+      bundle['index.html'].source = html.replace(
+        '</title>',
+        `</title>\n    <link rel="preload" as="image" href="/${heroImage}" fetchpriority="high" />`,
+      )
+    }
   },
 })
 

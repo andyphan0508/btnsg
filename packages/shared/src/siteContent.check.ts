@@ -26,8 +26,8 @@ assert.deepEqual(merged.links, SITE_SECTIONS.find((s) => s.key === 'links')!.def
 assert.deepEqual(merged.stats, []);
 
 const id = '1AbCdEfGhIjKlMnOpQrStUvWxYz012345';
-assert.equal(toSiteImageUrl(`https://drive.google.com/file/d/${id}/view?usp=sharing`, 800), `https://drive.google.com/thumbnail?id=${id}&sz=w800`);
-assert.equal(toSiteImageUrl(id, 800), `https://drive.google.com/thumbnail?id=${id}&sz=w800`);
+assert.equal(toSiteImageUrl(`https://drive.google.com/file/d/${id}/view?usp=sharing`, 800), `https://lh3.googleusercontent.com/d/${id}=w800-rw`);
+assert.equal(toSiteImageUrl(id, 800), `https://lh3.googleusercontent.com/d/${id}=w800-rw`);
 assert.equal(toSiteImageUrl('https://example.com/a.jpg'), 'https://example.com/a.jpg');
 assert.equal(toSiteImageUrl('javascript:alert(1)'), '');
 assert.equal(toSiteImageUrl('http://insecure.example/a.jpg'), '');

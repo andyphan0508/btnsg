@@ -11,7 +11,7 @@ import {
 import PageHero from "../components/PageHero.jsx";
 import MediaTile from "../components/MediaTile.jsx";
 import Lightbox from "../components/Lightbox.jsx";
-import { fetchImages, isGalleryConfigured } from "../lib/gallery.js";
+import { isGalleryConfigured, loadImages } from "../lib/gallery.js";
 import { content } from "../lib/siteContent.js";
 
 const PAGE_SIZES = [12, 24, 48, 0];
@@ -32,7 +32,7 @@ export default function Gallery() {
 
   useEffect(() => {
     let alive = true;
-    fetchImages()
+    loadImages()
       .then((data) => {
         if (alive) setImages(data);
       })

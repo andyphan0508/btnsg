@@ -1,21 +1,8 @@
 import { useRef } from "react";
-import {
-  PiChurch,
-  PiBookOpenText,
-  PiHandshake,
-  PiHandsPraying,
-  PiMusicNotes,
-} from "react-icons/pi";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/scroll.js";
-import { schedule } from "../data/content.js";
-
-const ICONS = {
-  church: PiChurch,
-  book: PiBookOpenText,
-  visit: PiHandshake,
-  pray: PiHandsPraying,
-  music: PiMusicNotes,
-};
+import { iconFor } from "../lib/icons.js";
+import { content } from "../lib/siteContent.js";
+import { Rich } from "../lib/rich.jsx";
 
 /**
  * Lịch tuần dạng chồng thẻ 3D: mỗi thẻ kính dính (sticky) ở đỉnh, thẻ sau trượt lên phủ thẻ trước;
@@ -23,6 +10,7 @@ const ICONS = {
  */
 export default function Schedule() {
   const root = useRef(null);
+  const { home, schedule } = content;
 
   useGSAP(
     () => {
@@ -66,22 +54,19 @@ export default function Schedule() {
       <div className="wrap">
         <header className="sec-head">
           <h2>
-            Nhịp sinh hoạt <em>mỗi tuần</em>
+            <Rich text={home.scheduleTitle} />
           </h2>
-          <p className="lead">
-            Lần đầu đến? Hãy bắt đầu với buổi thờ phượng chiều Chúa Nhật — luôn có người chào
-            đón bạn.
-          </p>
+          <p className="lead">{home.scheduleLead}</p>
         </header>
 
         <div className="stack">
           {schedule.map((s, i) => {
-            const Icon = ICONS[s.icon];
+            const Icon = iconFor(s.icon);
             return (
               <article
                 className={`stack-card glass tone-${s.tone}${s.main ? " is-main" : ""}`}
                 style={{ "--i": i }}
-                key={`${s.day}-${s.time}`}
+                key={i}
               >
                 <span className="stack-glow" aria-hidden="true" />
                 <div className="stack-when">

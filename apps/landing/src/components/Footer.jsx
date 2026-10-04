@@ -1,32 +1,24 @@
 import { Link } from "react-router-dom";
-import {
-  PiArrowUp,
-  PiArrowUpRight,
-  PiChatCircleDots,
-  PiFacebookLogo,
-  PiGlobe,
-  PiYoutubeLogo,
-} from "react-icons/pi";
+import { PiArrowUp, PiArrowUpRight, PiChatCircleDots } from "react-icons/pi";
 import PushToggle from "./PushToggle.jsx";
 import RollText from "./RollText.jsx";
-import { site, nav, links, church } from "../data/content.js";
+import { nav } from "../lib/nav.js";
+import { iconFor } from "../lib/icons.js";
+import { content } from "../lib/siteContent.js";
 import { openContactPanel } from "../lib/contact.js";
 import { scrollToTop } from "../lib/scroll.js";
-import logoImg from "../assets/logobtnsg.jpg";
-
-const LINK_ICONS = { facebook: PiFacebookLogo, youtube: PiYoutubeLogo, web: PiGlobe };
+import logoImg from "../assets/logobtnsg.webp";
 
 export default function Footer() {
+  const { general, links, church } = content;
+
   return (
     <footer className="footer">
       <div className="wrap footer-grid">
         <div className="footer-brand">
           <img src={logoImg} alt="" className="footer-logo" />
-          <p>
-            Ban Thanh Niên — Hội Thánh Tin Lành Việt Nam, Chi Hội Sài Gòn. Đồng hành cùng người
-            trẻ thành phố từ năm 1942.
-          </p>
-          <p className="footer-mission">{site.mission}</p>
+          <p>{general.footerAbout}</p>
+          <p className="footer-mission">{general.mission}</p>
         </div>
 
         <nav className="footer-col" aria-label="Khám phá">
@@ -45,10 +37,10 @@ export default function Footer() {
         <div className="footer-col">
           <h3>Kết nối</h3>
           <ul>
-            {links.map((l) => {
-              const Icon = LINK_ICONS[l.icon];
+            {links.map((l, i) => {
+              const Icon = iconFor(l.icon);
               return (
-                <li key={l.href}>
+                <li key={i}>
                   <a href={l.href} target="_blank" rel="noopener noreferrer" aria-label={l.label}>
                     <Icon aria-hidden="true" />
                     <RollText text={l.short} />
@@ -69,7 +61,7 @@ export default function Footer() {
         <div className="footer-col">
           <h3>Ghé thăm</h3>
           <p className="footer-visit">
-            <strong>Chúa Nhật · 14:30</strong>
+            <strong>{general.meeting}</strong>
             {church.room}
           </p>
           <PushToggle />
@@ -77,11 +69,13 @@ export default function Footer() {
       </div>
 
       <div className="footer-mark-wrap" aria-hidden="true">
-        <span className="footer-mark sfx-stand">Ban Thanh Niên</span>
+        <span className="footer-mark sfx-stand">{general.brand}</span>
       </div>
 
       <div className="wrap footer-bottom">
-        <p>© {new Date().getFullYear()} Ban Thanh Niên HTTL Sài Gòn.</p>
+        <p>
+          © {new Date().getFullYear()} {general.brand} {general.brandCity}.
+        </p>
         <button type="button" className="btn btn-glass btn-sm" onClick={() => scrollToTop({ smooth: true })}>
           <RollText text="Lên đầu trang" />
           <PiArrowUp aria-hidden="true" />

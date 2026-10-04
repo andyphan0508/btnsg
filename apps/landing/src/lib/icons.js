@@ -1,0 +1,52 @@
+import {
+  PiBookOpenText,
+  PiBooks,
+  PiBuildings,
+  PiCalendarDots,
+  PiChurch,
+  PiCompass,
+  PiEnvelopeSimple,
+  PiFacebookLogo,
+  PiFlame,
+  PiGlobe,
+  PiGraduationCap,
+  PiHandHeart,
+  PiHandsPraying,
+  PiHandshake,
+  PiInstagramLogo,
+  PiMegaphone,
+  PiMusicNotes,
+  PiPhone,
+  PiSparkle,
+  PiTiktokLogo,
+  PiUsersThree,
+  PiYoutubeLogo,
+} from "react-icons/pi";
+
+/** Key icon chọn trong dashboard (SITE_ICON_OPTIONS ở @btnsg/shared) → icon hiển thị. */
+const ICONS = {
+  church: PiChurch,
+  book: PiBookOpenText,
+  books: PiBooks,
+  pray: PiHandsPraying,
+  music: PiMusicNotes,
+  visit: PiHandshake,
+  flame: PiFlame,
+  megaphone: PiMegaphone,
+  heart: PiHandHeart,
+  compass: PiCompass,
+  training: PiGraduationCap,
+  friends: PiUsersThree,
+  home: PiBuildings,
+  calendar: PiCalendarDots,
+  facebook: PiFacebookLogo,
+  youtube: PiYoutubeLogo,
+  instagram: PiInstagramLogo,
+  tiktok: PiTiktokLogo,
+  web: PiGlobe,
+  email: PiEnvelopeSimple,
+  phone: PiPhone,
+};
+
+/** Key lạ (dữ liệu cũ / gõ sai) vẫn ra một icon thay vì làm vỡ trang. */
+export const iconFor = (key) => ICONS[key] ?? PiSparkle;

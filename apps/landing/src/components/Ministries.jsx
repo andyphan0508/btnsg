@@ -1,24 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-  PiFlame,
-  PiMegaphone,
-  PiHandHeart,
-  PiCompass,
-  PiGraduationCap,
-  PiUsersThree,
-} from "react-icons/pi";
 import MediaTile from "./MediaTile.jsx";
-import { ministries } from "../data/content.js";
+import { iconFor } from "../lib/icons.js";
+import { content } from "../lib/siteContent.js";
+import { Rich } from "../lib/rich.jsx";
 import { loadImages, pickImages } from "../lib/gallery.js";
-
-export const MINISTRY_ICONS = {
-  flame: PiFlame,
-  megaphone: PiMegaphone,
-  heart: PiHandHeart,
-  compass: PiCompass,
-  training: PiGraduationCap,
-  friends: PiUsersThree,
-};
 
 /**
  * Accordion ngang: sáu lát ảnh dọc, lát được chọn nở rộng ra để lộ nội dung trên tấm kính mờ.
@@ -27,6 +12,7 @@ export const MINISTRY_ICONS = {
 export default function Ministries() {
   const [active, setActive] = useState(0);
   const [images, setImages] = useState([]);
+  const { home, ministries } = content;
 
   useEffect(() => {
     let alive = true;
@@ -43,21 +29,18 @@ export default function Ministries() {
       <div className="wrap">
         <header className="sec-head">
           <h2>
-            Được gây dựng để <em>đi ra</em>
+            <Rich text={home.ministriesTitle} />
           </h2>
-          <p className="lead">
-            Sáu mảng mục vụ giúp người trẻ trưởng thành trong đức tin, gắn kết tình thân và mang
-            Tin Lành đến cho thành phố.
-          </p>
+          <p className="lead">{home.ministriesLead}</p>
         </header>
 
         <div className="acc">
           {ministries.map((m, i) => {
-            const Icon = MINISTRY_ICONS[m.icon];
+            const Icon = iconFor(m.icon);
             const open = active === i;
             return (
               <article
-                key={m.title}
+                key={i}
                 className={`acc-item sfx-rise${open ? " is-open" : ""}`}
                 style={{ "--i": i }}
                 onMouseEnter={() => setActive(i)}

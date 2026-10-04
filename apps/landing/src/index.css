@@ -3907,3 +3907,20 @@ a.chip:hover {
     min-height: 100svh;
   }
 }
+
+/* ---------- Nhãn khi landing mở trong khung xem trước của dashboard ---------- */
+
+.preview-badge {
+  position: fixed;
+  top: 0.75rem;
+  left: 50%;
+  z-index: 200;
+  transform: translateX(-50%);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: #ff8a2a;
+  color: #1a0d03;
+  font-size: 0.78rem;
+  font-weight: 700;
+  pointer-events: none;
+}

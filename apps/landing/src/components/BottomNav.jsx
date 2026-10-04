@@ -12,10 +12,11 @@ import {
   PiFacebookLogo,
 } from "react-icons/pi";
 import { motion, AnimatePresence } from "motion/react";
-import { bottomNav, sheetNav, site } from "../data/content.js";
+import { bottomNav, sheetNav } from "../lib/nav.js";
+import { content } from "../lib/siteContent.js";
 import { useTheme } from "../lib/theme.js";
 import { useScrollLock } from "../lib/scroll.js";
-import logoImg from "../assets/logobtnsg.jpg";
+import logoImg from "../assets/logobtnsg.webp";
 
 const ICONS = {
   home: PiHouse,
@@ -32,6 +33,7 @@ export default function BottomNav() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [theme, toggleTheme] = useTheme();
   const location = useLocation();
+  const { general } = content;
   useScrollLock(sheetOpen);
 
   useEffect(() => {
@@ -96,9 +98,9 @@ export default function BottomNav() {
                 <img src={logoImg} alt="" />
                 <div>
                   <strong>
-                    {site.brand} {site.brandCity}
+                    {general.brand} {general.brandCity}
                   </strong>
-                  <small>HTTL Việt Nam · Chi Hội Sài Gòn</small>
+                  <small>{general.orgLine}</small>
                 </div>
               </div>
               <button
@@ -134,7 +136,7 @@ export default function BottomNav() {
               </button>
               <a
                 className="bnav-action"
-                href={site.facebook}
+                href={general.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
               >

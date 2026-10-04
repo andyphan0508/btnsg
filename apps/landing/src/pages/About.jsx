@@ -2,18 +2,18 @@ import PageHero from "../components/PageHero.jsx";
 import PhotoStrip from "../components/PhotoStrip.jsx";
 import Intro from "../components/Intro.jsx";
 import Board from "../components/Board.jsx";
+import { content } from "../lib/siteContent.js";
 
 export default function About() {
+  const { about } = content;
+
   return (
     <>
-      <PageHero
-        title="Giới thiệu Ban Thanh Niên"
-        lead="Hành trình từ Ca đoàn 3 đến Ban Thanh Niên hôm nay — hơn 80 năm cùng người trẻ Sài Gòn."
-      />
+      <PageHero title={about.pageTitle} lead={about.pageLead} />
       <main>
         <Intro />
         <Board />
-        <PhotoStrip title="Chúng tôi trong những buổi nhóm" />
+        <PhotoStrip title={about.photoTitle} />
       </main>
     </>
   );

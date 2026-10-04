@@ -10,6 +10,7 @@ import {
   FiClipboard,
   FiDollarSign,
   FiFileText,
+  FiGlobe,
   FiGrid,
   FiHome,
   FiLogOut,
@@ -23,6 +24,7 @@ import {
 } from 'react-icons/fi';
 import { PROFILE_ROLE_LABELS } from '@btnsg/shared';
 import { useAuth } from '../../auth/AuthContext';
+import { FINANCE_ENABLED } from '../../lib/features';
 
 type TabItem = { to: string; label: string; icon: IconType };
 
@@ -32,7 +34,7 @@ const MAIN_TABS: TabItem[] = [
   { to: '/thanh-vien', label: 'Thành viên', icon: FiUsers },
   { to: '/thu-chi', label: 'Thu chi', icon: FiDollarSign },
   { to: '/cong-viec', label: 'Công việc', icon: FiClipboard },
-];
+].filter((tab) => FINANCE_ENABLED || tab.to !== '/thu-chi');
 
 const MORE_TABS: TabItem[] = [
   { to: '/diem-danh', label: 'Điểm danh', icon: FiCheckSquare },
@@ -47,7 +49,10 @@ const MORE_TABS: TabItem[] = [
   { to: '/thong-bao-day', label: 'Thông báo đẩy', icon: FiSend },
 ];
 
-const ADMIN_TABS: TabItem[] = [{ to: '/tai-khoan', label: 'Quản lý tài khoản', icon: FiUserCheck }];
+const ADMIN_TABS: TabItem[] = [
+  { to: '/website', label: 'Website', icon: FiGlobe },
+  { to: '/tai-khoan', label: 'Quản lý tài khoản', icon: FiUserCheck },
+];
 
 /**
  * Thanh tab dưới cho màn hình nhỏ — thay cho sidebar.

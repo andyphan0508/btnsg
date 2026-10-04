@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import logoImg from '../../assets/logobtnsg.jpg';
 import { useAuth } from '../../auth/AuthContext';
+import { FINANCE_ENABLED } from '../../lib/features';
 
 type NavItem = {
   to: string;
@@ -169,6 +170,17 @@ const WORK_NAV: NavItem[] = [
 
 const ADMIN_NAV: NavItem[] = [
   {
+    to: '/website',
+    label: 'Website',
+    icon: (
+      <svg {...ICON_PROPS}>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    ),
+  },
+  {
     to: '/tai-khoan',
     label: 'Tài khoản',
     icon: (
@@ -210,7 +222,7 @@ const Sidebar = () => {
         <div className="sidebar-section-label">Cộng đồng</div>
         {MAIN_NAV.map(renderLink)}
         <div className="sidebar-section-label">Điều hành</div>
-        {WORK_NAV.map(renderLink)}
+        {WORK_NAV.filter((item) => FINANCE_ENABLED || item.to !== '/thu-chi').map(renderLink)}
         {isAdmin && (
           <>
             <div className="sidebar-section-label">Quản trị</div>

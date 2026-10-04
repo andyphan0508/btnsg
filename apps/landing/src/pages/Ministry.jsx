@@ -1,19 +1,17 @@
-import { PiBooks, PiBuildings } from "react-icons/pi";
 import PageHero from "../components/PageHero.jsx";
 import PhotoStrip from "../components/PhotoStrip.jsx";
 import Ministries from "../components/Ministries.jsx";
 import MarqueeStrip from "../components/MarqueeStrip.jsx";
-import { duties, partners } from "../data/content.js";
-
-const DUTY_ICONS = { home: PiBuildings, books: PiBooks };
+import { iconFor } from "../lib/icons.js";
+import { content } from "../lib/siteContent.js";
+import { Rich } from "../lib/rich.jsx";
 
 export default function Ministry() {
+  const { ministryPage, duties } = content;
+
   return (
     <>
-      <PageHero
-        title="Chúng tôi phục vụ"
-        lead="Bồi linh, truyền giảng, công tác xã hội, dã ngoại, huấn luyện — được gây dựng để đi ra."
-      />
+      <PageHero title={ministryPage.pageTitle} lead={ministryPage.pageLead} />
       <main>
         <Ministries />
 
@@ -21,14 +19,14 @@ export default function Ministry() {
           <div className="wrap">
             <header className="sec-head">
               <h2>
-                Quản lý cơ sở &amp; <em>dịch vụ</em>
+                <Rich text={ministryPage.dutiesTitle} />
               </h2>
             </header>
             <div className="duty-grid">
               {duties.map((d, i) => {
-                const Icon = DUTY_ICONS[d.icon];
+                const Icon = iconFor(d.icon);
                 return (
-                  <article className="duty-card glass sfx-rise" style={{ "--i": i }} key={d.title} data-sheen>
+                  <article className="duty-card glass sfx-rise" style={{ "--i": i }} key={i} data-sheen>
                     <span className="icon-tile">
                       <Icon />
                     </span>
@@ -43,12 +41,12 @@ export default function Ministry() {
 
         <section className="section section-tight partners">
           <div className="wrap">
-            <h2 className="partners-title">Đồng hành cùng các ban ngành Hội Thánh</h2>
+            <h2 className="partners-title">{ministryPage.partnersTitle}</h2>
           </div>
-          <MarqueeStrip rows={[partners]} />
+          <MarqueeStrip rows={[ministryPage.partners]} />
         </section>
 
-        <PhotoStrip title="Dấu chân phục vụ" />
+        <PhotoStrip title={ministryPage.photoTitle} />
       </main>
     </>
   );

@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { motion, useMotionValueEvent, useScroll, useSpring } from "motion/react";
 import { PiArrowRight, PiMoon, PiSun } from "react-icons/pi";
-import { site, nav } from "../data/content.js";
+import { nav } from "../lib/nav.js";
+import { content } from "../lib/siteContent.js";
 import { useTheme } from "../lib/theme.js";
-import logoImg from "../assets/logobtnsg.jpg";
+import logoImg from "../assets/logobtnsg.webp";
 import RollText from "./RollText.jsx";
 
 /**
@@ -17,6 +18,7 @@ export default function Nav() {
   const [hidden, setHidden] = useState(false);
   const { scrollY, scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
+  const { general } = content;
 
   useMotionValueEvent(scrollY, "change", (y) => {
     setScrolled(y > 24);
@@ -27,11 +29,11 @@ export default function Nav() {
     <header className={`nav${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}`}>
       <motion.div className="nav-progress" style={{ scaleX: progress }} />
       <nav className="nav-pill glass" aria-label="Điều hướng chính">
-        <Link className="nav-brand" to="/" aria-label="Ban Thanh Niên Sài Gòn — Trang chủ">
+        <Link className="nav-brand" to="/" aria-label={`${general.brand} ${general.brandCity} — Trang chủ`}>
           <img src={logoImg} alt="" />
           <span>
-            {site.brand}
-            <em>{site.brandCity}</em>
+            {general.brand}
+            <em>{general.brandCity}</em>
           </span>
         </Link>
 

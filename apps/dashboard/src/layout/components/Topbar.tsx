@@ -16,6 +16,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/dang-bai': 'Đăng bài Tin tức',
   '/thong-bao-day': 'Thông báo đẩy',
   '/tai-khoan': 'Quản lý tài khoản',
+  '/website': 'Nội dung website',
 };
 
 const formatTodayLabel = (): string => {

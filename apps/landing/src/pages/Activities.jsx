@@ -2,33 +2,32 @@ import { useState } from "react";
 import PageHero from "../components/PageHero.jsx";
 import PhotoStrip from "../components/PhotoStrip.jsx";
 import Schedule from "../components/Schedule.jsx";
-import SubCommitteeModal, { COMMITTEE_ICONS } from "../components/SubCommitteeModal.jsx";
-import { subCommittees } from "../data/content.js";
+import SubCommitteeModal from "../components/SubCommitteeModal.jsx";
+import { iconFor } from "../lib/icons.js";
+import { content } from "../lib/siteContent.js";
 
 export default function Activities() {
   const [activeCommittee, setActiveCommittee] = useState(null);
+  const { activities, subCommittees } = content;
 
   return (
     <>
-      <PageHero
-        title="Lịch sinh hoạt"
-        lead="Nhóm thờ phượng chiều Chúa Nhật 14:30 — bạn có thể đến bất cứ lúc nào, luôn có người chào đón."
-      />
+      <PageHero title={activities.pageTitle} lead={activities.pageLead} />
       <main>
         <Schedule />
 
         <section className="section section-tight">
           <div className="wrap">
             <div className="committees glass sfx-rise">
-              <h2>Các tiểu ban công tác</h2>
+              <h2>{activities.committeesTitle}</h2>
               <div className="chip-row">
-                {subCommittees.map((c) => {
-                  const Icon = COMMITTEE_ICONS[c.icon];
+                {subCommittees.map((c, i) => {
+                  const Icon = iconFor(c.icon);
                   return (
                     <button
                       type="button"
                       className="chip"
-                      key={c.id}
+                      key={i}
                       onClick={() => setActiveCommittee(c)}
                     >
                       <Icon aria-hidden="true" />
@@ -41,7 +40,7 @@ export default function Activities() {
           </div>
         </section>
 
-        <PhotoStrip title="Không khí các buổi nhóm" />
+        <PhotoStrip title={activities.photoTitle} />
       </main>
 
       <SubCommitteeModal committee={activeCommittee} onClose={() => setActiveCommittee(null)} />

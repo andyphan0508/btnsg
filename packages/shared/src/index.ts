@@ -774,3 +774,7 @@ export const nextFreeSunday = (takenDates: string[], fromDate: string = todayInV
 
 /** Hôm nay theo giờ Việt Nam, dạng YYYY-MM-DD. */
 export const todayInVietnam = (): string => new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
+
+/* ---------- Nội dung landing chỉnh từ dashboard ---------- */
+
+export * from './siteContent';

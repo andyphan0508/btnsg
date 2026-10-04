@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
+import { FINANCE_ENABLED } from './lib/features';
 import { RequireAdmin, RequireAuth } from './auth/guards';
 import DashboardLayout from './layout';
 import AccountsScreen from './screens/Accounts';
@@ -19,6 +20,7 @@ import ProgramsScreen from './screens/Programs';
 import RequestsScreen from './screens/Requests';
 import ScheduleScreen from './screens/Schedule';
 import TasksScreen from './screens/Tasks';
+import WebsiteScreen from './screens/Website';
 
 export default function App() {
   return (
@@ -37,7 +39,7 @@ export default function App() {
             <Route path="/cong-viec" element={<TasksScreen />} />
             <Route path="/thong-bao" element={<AnnouncementsScreen />} />
             <Route path="/de-xuat" element={<RequestsScreen />} />
-            <Route path="/thu-chi" element={<FinanceScreen />} />
+            {FINANCE_ENABLED && <Route path="/thu-chi" element={<FinanceScreen />} />}
             <Route path="/ke-hoach" element={<PlansScreen />} />
             <Route path="/so-ghi-chep" element={<NotebookScreen />} />
             <Route path="/email-bdh" element={<EmailScreen />} />
@@ -45,6 +47,7 @@ export default function App() {
             <Route path="/thong-bao-day" element={<PushNotifyScreen />} />
             <Route element={<RequireAdmin />}>
               <Route path="/tai-khoan" element={<AccountsScreen />} />
+              <Route path="/website" element={<WebsiteScreen />} />
             </Route>
           </Route>
         </Route>

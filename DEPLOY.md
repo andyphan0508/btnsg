@@ -311,6 +311,44 @@ Ghi chú quan trọng:
 
 ---
 
+## Bước 2e — Nội dung landing chỉnh từ dashboard (màn hình **Website**)
+
+Mọi chữ, lịch tuần, Ban Điều Hành, mục vụ, liên kết, địa chỉ, ảnh Hero, SEO… của landing sửa ở
+dashboard → **Quản trị → Website** (chỉ tài khoản Quản trị), có khung **xem trước trực tiếp**
+trước khi bấm Lưu.
+
+1. Supabase → SQL Editor: chạy [`supabase/migrations/0007_site_content.sql`](supabase/migrations/0007_site_content.sql)
+   (bảng `site_content`: ai cũng đọc, chỉ Quản trị sửa).
+2. Project **landing** trên Vercel: đã có `SUPABASE_URL` + `SUPABASE_ANON_KEY` (Bước 2d) là đủ cho
+   `/api/site-content`. Khung xem trước chỉ nhận bản nháp từ `https://quanly-btnsg.vercel.app` — đổi domain
+   dashboard thì đặt `VITE_ADMIN_ORIGIN` (không có `/` cuối) rồi redeploy landing.
+3. Project **dashboard**: khung xem trước mở `https://btnsg.vercel.app` — đổi domain landing thì đặt `VITE_LANDING_URL`.
+
+Cách chạy: mục nào chưa từng lưu thì landing dùng nội dung mặc định trong
+[`packages/shared/src/siteContent.ts`](packages/shared/src/siteContent.ts) (cũng là nơi khai báo các ô của form).
+Landing đọc `/api/site-content` song song với tải JS, CDN của Vercel giữ bản sao 60 giây — **Supabase chỉ bị gọi
+khoảng 1 lần/phút dù đông người xem**, lượt gọi function tăng không đáng kể so với hạn mức 1.000.000/tháng.
+Lưu xong, trang công khai cập nhật sau tối đa ~1 phút. Supabase lỗi → landing dùng bản cache trên máy người xem
+rồi đến nội dung mặc định, không bao giờ trắng trang.
+
+Cú pháp các ô có ghi chú `*chữ*`: bọc chữ trong dấu sao để nhấn màu nắng / in nghiêng; `{anh}` chèn viên ảnh
+nhóm (ảnh Hero), `{logo}` chèn logo tròn.
+
+---
+
+## Bước 2f — Giữ project Supabase không bị tạm dừng (cron hằng ngày)
+
+Supabase gói Free tự **pause project sau 7 ngày không có hoạt động** — khi đó cả dashboard lẫn landing mất dữ liệu
+cho tới khi bật lại bằng tay. `apps/landing/vercel.json` khai báo Vercel Cron gọi
+[`/api/keep-alive`](apps/landing/api/keep-alive.js) **mỗi ngày lúc 9:00 sáng giờ VN** (02:00 UTC): một truy vấn đọc
+nhỏ, không ghi gì. Vercel Hobby cho phép cron 1 lần/ngày — đủ dư so với ngưỡng 7 ngày.
+
+- Không cần cấu hình thêm: dùng lại `SUPABASE_URL` + `SUPABASE_ANON_KEY` của project landing.
+- Nên đặt thêm biến `CRON_SECRET` (chuỗi ngẫu nhiên bất kỳ) trên project landing → chỉ Vercel Cron gọi được.
+- Kiểm tra: Vercel → project landing → **Settings → Cron Jobs** (bấm *Run* để chạy thử) và **Logs**.
+
+---
+
 ## Hạn mức Vercel Hobby (miễn phí) — bao lâu thì hết?
 
 | Hạn mức Hobby / tháng | Ban dùng khoảng | Tỷ lệ |
@@ -321,12 +359,13 @@ Ghi chú quan trọng:
 | **360 GB-giờ** bộ nhớ | không đáng kể | <1% |
 | **100** lần deploy/ngày | vài lần | — |
 
-Mỗi lượt truy cập mới tải khoảng **550 KB** (JS+CSS đã nén + ảnh nền + logo); lượt quay lại
+Mỗi lượt truy cập mới tải khoảng **370 KB** (JS+CSS đã nén + ảnh nền + logo dạng WebP); lượt quay lại
 gần như bằng 0 nhờ cache. **Ảnh thư viện và tin tức lấy từ Google Drive nên không tính vào
 băng thông Vercel** — đây là lý do mức dùng rất thấp.
 
-Để chạm 100 GB cần khoảng **175.000 lượt truy cập mới mỗi tháng**. Lượt gọi function chỉ
-phát sinh khi có người đăng ký nhận thông báo (1 lần/thiết bị) và khi BĐH bấm gửi thông báo.
+Để chạm 100 GB cần khoảng **270.000 lượt truy cập mới mỗi tháng**. Lượt gọi function phát sinh khi có
+người đăng ký nhận thông báo (1 lần/thiết bị), khi BĐH bấm gửi thông báo, và `/api/site-content`
+(CDN cache 60 giây nên tối đa vài chục nghìn lượt/tháng kể cả khi rất đông người xem).
 
 Hai điều cần lưu ý hơn hạn mức:
 - Gói Hobby dành cho **mục đích cá nhân / phi thương mại** — website của Ban thuộc diện này.
@@ -371,9 +410,11 @@ Chạy local (`npm run dev:admin`) thì API demo phục vụ cùng hợp đồng
 |---|---|
 | Root Directory | `apps/landing` |
 | Framework Preset | Vite |
-| Environment Variables | `VITE_GALLERY_SCRIPT_URL` (thư viện ảnh — Bước 2b), `VITE_NEWS_SCRIPT_URL` (tin tức — Bước 2c) |
+| Environment Variables | `VITE_GALLERY_SCRIPT_URL` (thư viện ảnh — Bước 2b), `VITE_NEWS_SCRIPT_URL` (tin tức — Bước 2c), `VITE_ADMIN_ORIGIN` (xem trước từ dashboard — Bước 2e) |
 
-File `apps/landing/vercel.json` đã có sẵn rewrite SPA cho react-router (`/thu-vien`, `/tin-tuc`).
+File `apps/landing/vercel.json` đã có sẵn rewrite SPA cho react-router (`/thu-vien`, `/tin-tuc`), header bảo mật
+và cache 1 năm cho `/assets/*` (tên file có hash). Dashboard gửi thêm `X-Frame-Options: DENY` (không trang nào
+nhúng được dashboard) và `noindex` (Google không lập chỉ mục trang quản trị).
 
 Sau đó gán domain tuỳ ý, ví dụ `btnsg.vercel.app` (landing) và `quanly-btnsg.vercel.app` (dashboard).
 

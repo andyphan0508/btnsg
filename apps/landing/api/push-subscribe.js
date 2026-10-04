@@ -67,6 +67,30 @@ const explainSupabaseError = (status, text) => {
   return `Không lưu được đăng ký: ${text.slice(0, 200)}`;
 };
 
+/**
+ * Chỉ nhận endpoint của dịch vụ push thật (Chrome/Android, Firefox, Safari/iOS, Edge) và giới hạn độ dài —
+ * chặn bot ghi rác vào bảng bằng endpoint bịa. Endpoint hợp lệ nhưng đã chết thì push-send tự dọn.
+ */
+const PUSH_HOSTS = [
+  /^fcm\.googleapis\.com$/,
+  /^updates\.push\.services\.mozilla\.com$/,
+  /(^|\.)push\.apple\.com$/,
+  /\.notify\.windows\.com$/,
+];
+
+const isValidSubscription = (subscription) => {
+  const { endpoint, keys } = subscription ?? {};
+  if (typeof endpoint !== 'string' || endpoint.length > 1000) return false;
+  if (typeof keys?.p256dh !== 'string' || keys.p256dh.length > 200) return false;
+  if (typeof keys?.auth !== 'string' || keys.auth.length > 100) return false;
+  try {
+    const url = new URL(endpoint);
+    return url.protocol === 'https:' && PUSH_HOSTS.some((host) => host.test(url.hostname));
+  } catch {
+    return false;
+  }
+};
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     Object.entries(jsonHeaders).forEach(([key, value]) => res.setHeader(key, value));
@@ -93,8 +117,8 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'POST') {
       const { subscription, userAgent } = req.body ?? {};
-      if (!subscription?.endpoint || !subscription?.keys?.p256dh || !subscription?.keys?.auth) {
-        return send(res, 400, { error: 'Thiếu thông tin subscription.' });
+      if (!isValidSubscription(subscription)) {
+        return send(res, 400, { error: 'Thông tin đăng ký nhận thông báo không hợp lệ.' });
       }
 
       // Cùng một thiết bị đăng ký lại thì cập nhật, không tạo bản ghi trùng.
@@ -118,7 +142,9 @@ export default async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       const { endpoint } = req.body ?? {};
-      if (!endpoint) return send(res, 400, { error: 'Thiếu endpoint.' });
+      if (typeof endpoint !== 'string' || !endpoint || endpoint.length > 1000) {
+        return send(res, 400, { error: 'Thiếu endpoint.' });
+      }
 
       const del = await supabaseFetch(`push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`, {
         method: 'DELETE',

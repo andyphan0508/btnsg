@@ -9,34 +9,32 @@ import Ministries from "../components/Ministries.jsx";
 import Schedule from "../components/Schedule.jsx";
 import MomentsRing from "../components/MomentsRing.jsx";
 import FinalCta from "../components/FinalCta.jsx";
-import { marquee } from "../data/content.js";
-import logoImg from "../assets/logobtnsg.jpg";
+import { content } from "../lib/siteContent.js";
+import { scrubParts } from "../lib/rich.jsx";
+import logoImg from "../assets/logobtnsg.webp";
 
 /**
  * Trang chủ theo mạch AIDA: Hero → băng chữ → tuyên ngôn sáng dần theo cuộn → bento →
  * accordion mục vụ → chồng thẻ lịch tuần → vòng ảnh 3D → lời mời Chúa Nhật.
  */
 export default function Home() {
+  const { home, marquee } = content;
+
   return (
     <>
       <Hero />
-      <MarqueeStrip rows={marquee} />
+      <MarqueeStrip rows={[marquee.row1, marquee.row2]} />
       <main>
         <section className="section manifesto">
           <div className="wrap">
             <ScrubText
               className="manifesto-text"
-              parts={[
-                "Ban Thanh Niên",
-                { node: <InkPill src={logoImg} size="78%" className="is-logo" /> },
-                "là mái nhà của những người trẻ cùng",
-                { hl: "thờ phượng Chúa," },
-                "học Lời Ngài, nâng đỡ nhau qua từng mùa của cuộc sống và phục vụ bằng âm nhạc, truyền giảng, thiện nguyện — với một sứ mệnh:",
-                { hl: "tất cả vì người chưa được cứu." },
-              ]}
+              parts={scrubParts(home.manifesto, {
+                logo: <InkPill src={logoImg} size="78%" className="is-logo" />,
+              })}
             />
             <Link className="text-link manifesto-link" to="/gioi-thieu">
-              Đọc câu chuyện hơn 80 năm <PiArrowRight aria-hidden="true" />
+              {home.manifestoLink} <PiArrowRight aria-hidden="true" />
             </Link>
           </div>
         </section>

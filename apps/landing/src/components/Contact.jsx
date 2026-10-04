@@ -1,35 +1,29 @@
-import {
-  PiArrowUpRight,
-  PiChatCircleDots,
-  PiFacebookLogo,
-  PiGlobe,
-  PiMapPin,
-  PiYoutubeLogo,
-} from "react-icons/pi";
+import { PiArrowUpRight, PiChatCircleDots, PiGlobe, PiMapPin } from "react-icons/pi";
 import RollText from "./RollText.jsx";
-import { church, contacts, links } from "../data/content.js";
+import { iconFor } from "../lib/icons.js";
+import { content } from "../lib/siteContent.js";
+import { mapLinks } from "../lib/map.js";
+import { Rich } from "../lib/rich.jsx";
 import { openContactPanel } from "../lib/contact.js";
 
-const LINK_ICONS = { facebook: PiFacebookLogo, youtube: PiYoutubeLogo, web: PiGlobe };
-
 export default function Contact() {
+  const { contactPage, contacts, links, church } = content;
+  const map = mapLinks(church);
+
   return (
     <section className="section">
       <div className="wrap">
         <header className="sec-head">
           <h2>
-            Ghé thăm &amp; <em>kết nối</em>
+            <Rich text={contactPage.title} />
           </h2>
-          <p className="lead">
-            Muốn nhắn tin cho chúng tôi? Bấm nút tin nhắn ở góc phải màn hình để gửi lời nhắn hoặc
-            đăng ký tham gia.
-          </p>
+          <p className="lead">{contactPage.lead}</p>
         </header>
 
         <div className="contact-grid">
           <div className="contact-list">
             {contacts.map((c, i) => (
-              <article className="contact-card glass sfx-rise" style={{ "--i": i }} key={c.title} data-sheen>
+              <article className="contact-card glass sfx-rise" style={{ "--i": i }} key={i} data-sheen>
                 <span className="icon-tile">
                   <PiMapPin />
                 </span>
@@ -40,17 +34,17 @@ export default function Contact() {
               </article>
             ))}
 
-            <article className="contact-card glass sfx-rise" style={{ "--i": 2 }}>
+            <article className="contact-card glass sfx-rise" style={{ "--i": contacts.length }}>
               <span className="icon-tile">
                 <PiGlobe />
               </span>
               <div className="contact-follow">
-                <h3>Theo dõi chúng tôi</h3>
+                <h3>{contactPage.followTitle}</h3>
                 <ul className="contact-links">
-                  {links.map((l) => {
-                    const Icon = LINK_ICONS[l.icon];
+                  {links.map((l, i) => {
+                    const Icon = iconFor(l.icon);
                     return (
-                      <li key={l.href}>
+                      <li key={i}>
                         <a href={l.href} target="_blank" rel="noopener noreferrer">
                           <Icon aria-hidden="true" />
                           <RollText text={l.label} />
@@ -71,8 +65,8 @@ export default function Contact() {
           <div className="map-card glass sfx-rise" style={{ "--i": 1 }}>
             <div className="map-frame">
               <iframe
-                title="Bản đồ Nhà thờ Tin Lành Sài Gòn — 155 Trần Hưng Đạo, Quận 1"
-                src={church.mapEmbed}
+                title={`Bản đồ ${church.name} — ${church.address}`}
+                src={map.embed}
                 loading="lazy"
                 allowFullScreen
                 referrerPolicy="no-referrer-when-downgrade"
@@ -83,7 +77,7 @@ export default function Contact() {
                 <strong>{church.name}</strong>
                 <span>{church.address}</span>
               </div>
-              <a className="btn btn-sun" href={church.directions} target="_blank" rel="noopener noreferrer">
+              <a className="btn btn-sun" href={map.directions} target="_blank" rel="noopener noreferrer">
                 <RollText text="Chỉ đường" />
                 <span className="btn-icon">
                   <PiArrowUpRight />

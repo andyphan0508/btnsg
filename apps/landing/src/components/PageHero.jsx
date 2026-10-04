@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { loadImages, pickImage } from "../lib/gallery.js";
 import { useHeroMotion } from "../lib/scroll.js";
+import { content } from "../lib/siteContent.js";
 import MediaTile from "./MediaTile.jsx";
 import Rays from "./Rays.jsx";
 import { HeroWords } from "./Hero.jsx";
@@ -16,6 +17,15 @@ export default function PageHero({ title, lead, seed, offset = 0 }) {
   const [image, setImage] = useState(null);
   const root = useRef(null);
   useHeroMotion(root);
+
+  // Mỗi trang con một tiêu đề tab riêng (SEO + lịch sử trình duyệt); rời trang → về tiêu đề chung.
+  useEffect(() => {
+    const siteTitle = content.general.seoTitle;
+    document.title = title ? `${title} — ${siteTitle}` : siteTitle;
+    return () => {
+      document.title = siteTitle;
+    };
+  }, [title]);
 
   useEffect(() => {
     let alive = true;

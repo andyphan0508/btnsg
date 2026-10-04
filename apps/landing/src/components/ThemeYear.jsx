@@ -1,9 +1,11 @@
 import { PiMusicNotes, PiQuotes } from "react-icons/pi";
 import ScrubText from "./ScrubText.jsx";
-import { themeYear } from "../data/content.js";
+import { content } from "../lib/siteContent.js";
 
 /** Chủ đề năm: tiêu đề nắng rực, câu gốc trên tấm kính dựng đứng dần và sáng lên theo cuộn. */
 export default function ThemeYear() {
+  const { themeYear } = content;
+
   return (
     <section className="section theme-year">
       <div className="wrap">
@@ -12,7 +14,7 @@ export default function ThemeYear() {
 
         <figure className="verse-card glass sfx-tilt">
           <PiQuotes className="verse-mark" aria-hidden="true" />
-          <ScrubText as="blockquote" className="verse-text" parts={[themeYear.verse.replace(/^"|"$/g, "")]} />
+          <ScrubText as="blockquote" className="verse-text" parts={[themeYear.verse.trim().replace(/^["“]|["”]$/g, "")]} />
           <figcaption>— {themeYear.ref}</figcaption>
         </figure>
 

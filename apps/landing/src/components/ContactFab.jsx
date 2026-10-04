@@ -9,7 +9,7 @@ import {
   PiX,
 } from "react-icons/pi";
 import { motion, AnimatePresence } from "motion/react";
-import { site } from "../data/content.js";
+import { content } from "../lib/siteContent.js";
 import { CONTACT_OPEN_EVENT, sendContactMessage } from "../lib/contact.js";
 import { useScrollLock } from "../lib/scroll.js";
 
@@ -24,6 +24,7 @@ export default function ContactFab() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
+  const { general } = content;
   useScrollLock(open);
 
   useEffect(() => {
@@ -93,9 +94,9 @@ export default function ContactFab() {
                   <p className="fab-status">
                     <span className="live-dot" /> Hộp thư kết nối
                   </p>
-                  <h3>Ban Thanh Niên</h3>
+                  <h3>{general.brand}</h3>
                   <p className="fab-sub">
-                    Lời nhắn sẽ chuyển thẳng về <strong>banthanhniensaigon@gmail.com</strong>
+                    Lời nhắn sẽ chuyển thẳng về <strong>{general.email}</strong>
                   </p>
                 </div>
                 <button
@@ -109,7 +110,7 @@ export default function ContactFab() {
               </div>
 
               <div className="fab-body">
-                <a className="fab-fb" href={site.facebook} target="_blank" rel="noopener noreferrer">
+                <a className="fab-fb" href={general.facebook} target="_blank" rel="noopener noreferrer">
                   <span className="fab-fb-icon">
                     <PiFacebookLogo />
                   </span>
@@ -171,7 +172,7 @@ export default function ContactFab() {
                     <motion.div className="alert is-ok" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
                       <PiCheckCircle aria-hidden="true" />
                       <span>
-                        Đã gửi thành công tới <strong>banthanhniensaigon@gmail.com</strong>! Chúng tôi
+                        Đã gửi thành công tới <strong>{general.email}</strong>! Chúng tôi
                         sẽ phản hồi sớm nhất.
                       </span>
                     </motion.div>

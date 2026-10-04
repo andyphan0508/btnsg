@@ -1200,3 +1200,28 @@ a:focus-visible, .btn:focus-visible, button:focus-visible, input:focus-visible, 
   .program-workspace { grid-template-columns: 1fr; }
   .program-aside { position: static; order: -1; }
 }
+
+/* ---------- Website (nội dung landing) ---------- */
+.website-tabs { flex-wrap: wrap; margin-bottom: 18px; }
+.website-workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 42%); gap: 18px; align-items: start; }
+.website-editors { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.website-section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.website-hint { font-size: 0.75rem; color: var(--ink-3); line-height: 1.5; margin: 4px 0 0; }
+.website-warn { font-size: 0.75rem; color: var(--red); }
+.website-image { display: flex; flex-direction: column; gap: 8px; }
+.website-image img { max-width: 220px; max-height: 140px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+.website-items { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.website-item { width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+.website-item > summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px 8px 14px; cursor: pointer; list-style: none; }
+.website-item > summary::-webkit-details-marker { display: none; }
+.website-item[open] > summary { border-bottom: 1px solid var(--line); }
+.website-item > .form-grid { padding: 14px; }
+.website-item-title { font-weight: 700; font-size: 0.86rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.website-preview { position: sticky; top: 84px; display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+.website-preview-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700; }
+.website-preview iframe { width: 100%; height: calc(100vh - 200px); min-height: 480px; border: 1px solid var(--line); border-radius: 12px; background: #07060b; }
+@media (max-width: 1080px) {
+  .website-workspace { grid-template-columns: 1fr; }
+  .website-preview { position: static; order: -1; }
+  .website-preview iframe { height: 70vh; }
+}

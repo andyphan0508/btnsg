@@ -2,31 +2,40 @@ import { PiArrowUpRight, PiChatCircleDots, PiClock, PiMapPin } from "react-icons
 import Rays from "./Rays.jsx";
 import InkPill from "./InkPill.jsx";
 import RollText from "./RollText.jsx";
-import { church } from "../data/content.js";
+import { content, heroImage } from "../lib/siteContent.js";
+import { Rich } from "../lib/rich.jsx";
 import { openContactPanel } from "../lib/contact.js";
-import groupPhoto from "../assets/background.jpg";
+import { mapLinks } from "../lib/map.js";
+import logoImg from "../assets/logobtnsg.webp";
 
 /** Lời mời cuối trang: mặt trời mọc sau tiêu đề lớn, hai hành động rõ ràng. */
 export default function FinalCta() {
+  const { home, general, church } = content;
+
   return (
     <section className="section final-cta">
       <div className="final-glow sfx-sunrise" aria-hidden="true" />
       <Rays className="final-rays" />
       <div className="wrap">
         <h2 className="final-title sfx-tilt">
-          Hẹn gặp bạn <InkPill src={groupPhoto} position="30% 70%" size="300%" /> Chúa Nhật
-          này.
+          <Rich
+            text={home.ctaTitle}
+            tokens={{
+              anh: <InkPill src={heroImage()} position="30% 70%" size="300%" />,
+              logo: <InkPill src={logoImg} size="78%" className="is-logo" />,
+            }}
+          />
         </h2>
         <p className="final-meta">
           <span>
-            <PiClock aria-hidden="true" /> 14:30 mỗi Chúa Nhật
+            <PiClock aria-hidden="true" /> {general.meeting}
           </span>
           <span>
             <PiMapPin aria-hidden="true" /> {church.room}
           </span>
         </p>
         <div className="final-actions">
-          <a className="btn btn-sun" href={church.directions} target="_blank" rel="noopener noreferrer">
+          <a className="btn btn-sun" href={mapLinks(church).directions} target="_blank" rel="noopener noreferrer">
             <RollText text="Chỉ đường đến nhà thờ" />
             <span className="btn-icon">
               <PiArrowUpRight />

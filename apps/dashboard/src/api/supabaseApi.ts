@@ -14,6 +14,7 @@ import type {
   ScheduleEvent,
   TaskItem,
 } from '@btnsg/shared';
+import { FINANCE_ENABLED } from '../lib/features';
 import { supabase } from '../lib/supabase';
 
 /* ============================================================
@@ -285,7 +286,8 @@ export const supabaseStatsApi = {
       supabaseAttendanceApi.getList(),
       supabaseTaskApi.getList(),
       supabaseRequestApi.getList(),
-      supabaseExpenseApi.getList(),
+      // Module thu chi đang tắt → không tải sổ quỹ (bớt một truy vấn Supabase mỗi lần mở Tổng quan).
+      FINANCE_ENABLED ? supabaseExpenseApi.getList() : Promise.resolve([] as Expense[]),
       supabaseScheduleApi.getList(),
       supabaseAnnouncementApi.getList(),
     ]);

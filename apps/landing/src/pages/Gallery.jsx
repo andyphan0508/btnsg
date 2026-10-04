@@ -12,6 +12,7 @@ import PageHero from "../components/PageHero.jsx";
 import MediaTile from "../components/MediaTile.jsx";
 import Lightbox from "../components/Lightbox.jsx";
 import { fetchImages, isGalleryConfigured } from "../lib/gallery.js";
+import { content } from "../lib/siteContent.js";
 
 const PAGE_SIZES = [12, 24, 48, 0];
 
@@ -100,10 +101,7 @@ export default function Gallery() {
 
   return (
     <>
-      <PageHero
-        title="Hành trình thắp sáng niềm tin"
-        lead="Những hình ảnh chân thật trong sự thờ phượng, nhóm lại và phục vụ của Ban Thanh Niên HTTL Sài Gòn."
-      />
+      <PageHero title={content.galleryPage.pageTitle} lead={content.galleryPage.pageLead} />
       <main className="section section-tight">
         <div className="wrap">
           {!isGalleryConfigured && (

@@ -19,6 +19,7 @@ import {
   tasksRouter,
 } from "./routes/resources.js";
 import { hymnRouter, programsRouter, publicProgramRouter } from "./routes/program.js";
+import { siteContentRouter } from "./routes/siteContent.js";
 import { statsRouter } from "./routes/stats.js";
 import { seedDatabase } from "./store/seed.js";
 
@@ -49,6 +50,7 @@ app.use("/api/programs", programsRouter);
 app.use("/api/program", publicProgramRouter);
 app.use("/api/hymn", hymnRouter);
 app.use("/api/stats", statsRouter);
+app.use("/api/site-content", siteContentRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Không tìm thấy đường dẫn API" });

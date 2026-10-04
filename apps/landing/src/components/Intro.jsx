@@ -1,10 +1,12 @@
 import { useRef } from "react";
 import ScrubText from "./ScrubText.jsx";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/scroll.js";
-import { stats, nameTimeline } from "../data/content.js";
+import { content } from "../lib/siteContent.js";
+import { Rich, scrubParts } from "../lib/rich.jsx";
 
 export default function Intro() {
   const statsRef = useRef(null);
+  const { about, stats, nameTimeline } = content;
 
   // Con số đếm lên khi thẻ cuộn vào khung nhìn.
   useGSAP(
@@ -33,29 +35,17 @@ export default function Intro() {
         <div className="wrap story">
           <header className="sec-head story-head">
             <h2>
-              Mái nhà cho nhiều thế hệ <em>bạn trẻ</em>
+              <Rich text={about.storyTitle} />
             </h2>
-            <p className="lead">
-              Ban Thanh Niên là một ban ngành của Hội Thánh Tin Lành Việt Nam – Chi Hội Sài Gòn,
-              Hội Thánh được thành lập năm 1920 — một trong những Hội Thánh Tin Lành đầu tiên tại
-              Sài Gòn.
-            </p>
+            <p className="lead">{about.storyLead}</p>
           </header>
-          <ScrubText
-            className="story-prose"
-            parts={[
-              "Ban được hình thành từ những năm đầu khi Hội Thánh mới thành lập, và chính thức trở thành một ban ngành trong tổ chức của Hội Thánh vào khoảng",
-              { hl: "năm 1942–1944," },
-              "sau Đại Hội Đồng Tổng Liên Hội năm 1942. Ban quy tụ các bạn trẻ cùng nhau thờ phượng Chúa, học Lời Chúa, gây dựng đời sống thuộc linh, phục vụ qua âm nhạc và chung tay trong công tác",
-              { hl: "truyền giảng, thiện nguyện xã hội." },
-            ]}
-          />
+          <ScrubText className="story-prose" parts={scrubParts(about.story)} />
         </div>
 
         <div className="wrap stats" ref={statsRef}>
           {stats.map((s, i) => (
-            <div className="stat glass sfx-rise" style={{ "--i": i }} key={s.label} data-sheen>
-              <span className="stat-num" data-value={s.num}>
+            <div className="stat glass sfx-rise" style={{ "--i": i }} key={i} data-sheen>
+              <span className="stat-num" data-value={Number.parseInt(s.num, 10) || 0}>
                 {s.num}
               </span>
               <p className="stat-label">{s.label}</p>
@@ -68,7 +58,7 @@ export default function Intro() {
         <div className="wrap">
           <header className="sec-head">
             <h2>
-              Tên gọi qua <em>các thời kỳ</em>
+              <Rich text={about.timelineTitle} />
             </h2>
           </header>
           <div className="timeline">
@@ -78,7 +68,7 @@ export default function Intro() {
                 <li
                   className={`timeline-card glass sfx-flip${t.current ? " is-current" : ""}`}
                   style={{ "--i": i }}
-                  key={t.name}
+                  key={i}
                 >
                   <span className="timeline-dot" aria-hidden="true" />
                   <span className="timeline-era">{t.era}</span>

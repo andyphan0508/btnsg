@@ -9,6 +9,28 @@
     />
     <meta name="theme-color" content="#07060b" />
     <title>Ban Thanh Niên — HTTL Sài Gòn</title>
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <!-- Ảnh & mô tả khi chia sẻ link lên Facebook/Zalo (bot không chạy JS nên phải nằm sẵn ở đây). -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:site_name" content="Ban Thanh Niên HTTL Sài Gòn" />
+    <meta property="og:url" content="https://btnsg.vercel.app/" />
+    <meta property="og:title" content="Ban Thanh Niên — HTTL Sài Gòn" />
+    <meta
+      property="og:description"
+      content="Nơi người trẻ gặp gỡ Chúa, gắn kết cộng đồng và sống cho điều cao đẹp. Hẹn bạn mỗi chiều Chúa Nhật lúc 14:30."
+    />
+    <meta property="og:image" content="https://btnsg.vercel.app/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Tải nội dung (chỉnh từ dashboard) song song với bundle JS — main.jsx chờ promise này trước khi vẽ.
+      window.__siteContent = fetch("/api/site-content")
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; });
+    </script>
     <script>
       // Đặt theme trước khi vẽ trang để không bị nháy sáng/tối.
       try {

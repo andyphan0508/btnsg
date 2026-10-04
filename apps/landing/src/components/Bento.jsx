@@ -3,19 +3,20 @@ import { Link } from "react-router-dom";
 import { PiArrowUpRight, PiMusicNotes, PiNewspaper } from "react-icons/pi";
 import Rays from "./Rays.jsx";
 import MediaTile from "./MediaTile.jsx";
-import { MINISTRY_ICONS } from "./Ministries.jsx";
-import { ministries, themeYear } from "../data/content.js";
+import { iconFor } from "../lib/icons.js";
+import { content } from "../lib/siteContent.js";
+import { Rich } from "../lib/rich.jsx";
 import { loadImages, pickImages } from "../lib/gallery.js";
 
-// Thứ Hai → Chúa Nhật; ngày có buổi nhóm được thắp sáng.
+// Thứ Hai → Chúa Nhật; ngày có trong lịch tuần được thắp sáng.
 const WEEK = [
-  ["T2", false],
-  ["T3", true],
-  ["T4", false],
-  ["T5", true],
-  ["T6", false],
-  ["T7", true],
-  ["CN", true],
+  ["T2", "thứ hai"],
+  ["T3", "thứ ba"],
+  ["T4", "thứ tư"],
+  ["T5", "thứ năm"],
+  ["T6", "thứ sáu"],
+  ["T7", "thứ bảy"],
+  ["CN", "chúa nhật"],
 ];
 
 const Arrow = () => (
@@ -29,6 +30,8 @@ const Arrow = () => (
  */
 export default function Bento() {
   const [photos, setPhotos] = useState([]);
+  const { home, themeYear, ministries, schedule, general } = content;
+  const meetingDays = new Set(schedule.map((s) => s.day.trim().toLowerCase()));
 
   useEffect(() => {
     let alive = true;
@@ -45,12 +48,9 @@ export default function Bento() {
       <div className="wrap">
         <header className="sec-head">
           <h2>
-            Một nơi để bạn <em>thuộc về</em>
+            <Rich text={home.bentoTitle} />
           </h2>
-          <p className="lead">
-            Từ câu Kinh Thánh định hướng cả năm đến những buổi nhóm mỗi tuần — đây là nhịp sống
-            của Ban Thanh Niên.
-          </p>
+          <p className="lead">{home.bentoLead}</p>
         </header>
 
         <div className="bento">
@@ -74,11 +74,11 @@ export default function Bento() {
             data-sheen
           >
             <h3>Lịch sinh hoạt</h3>
-            <p className="bento-big">Chúa Nhật · 14:30</p>
-            <p className="bento-note">Nhóm thờ phượng tại Lầu 2, số 161 Đề Thám, Quận 1.</p>
+            <p className="bento-big">{general.meeting}</p>
+            <p className="bento-note">{home.bentoScheduleNote}</p>
             <div className="bento-week" aria-hidden="true">
-              {WEEK.map(([day, on]) => (
-                <span className={on ? "is-on" : undefined} key={day}>
+              {WEEK.map(([day, name]) => (
+                <span className={meetingDays.has(name) ? "is-on" : undefined} key={day}>
                   {day}
                 </span>
               ))}
@@ -94,16 +94,16 @@ export default function Bento() {
           >
             <div className="bento-icons" aria-hidden="true">
               {ministries.map((m, i) => {
-                const Icon = MINISTRY_ICONS[m.icon];
+                const Icon = iconFor(m.icon);
                 return (
-                  <span key={m.title} style={{ "--i": i }}>
+                  <span key={i} style={{ "--i": i }}>
                     <Icon />
                   </span>
                 );
               })}
             </div>
             <h3>Mục vụ</h3>
-            <p className="bento-mid">6 mảng phục vụ</p>
+            <p className="bento-mid">{ministries.length} mảng phục vụ</p>
             <Arrow />
           </Link>
 
@@ -115,15 +115,15 @@ export default function Bento() {
           >
             <PiNewspaper className="bento-news-icon" aria-hidden="true" />
             <h3>Tin tức</h3>
-            <p className="bento-mid">Thông báo &amp; bài viết mới</p>
+            <p className="bento-mid">{home.bentoNews}</p>
             <Arrow />
           </Link>
 
           <Link to="/thu-vien" className="bento-card glass bento-gallery sfx-rise" data-sheen>
             <div className="bento-gallery-copy">
               <h3>Thư viện ảnh</h3>
-              <p className="bento-big">Hành trình thắp sáng niềm tin</p>
-              <p className="bento-note">Những khoảnh khắc thờ phượng, nhóm lại và phục vụ.</p>
+              <p className="bento-big">{home.bentoGalleryTitle}</p>
+              <p className="bento-note">{home.bentoGalleryNote}</p>
             </div>
             <div className="bento-fan" aria-hidden="true">
               {photos.map((image, i) => (

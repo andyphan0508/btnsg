@@ -1,13 +1,13 @@
 import PageHero from "../components/PageHero.jsx";
 import Contact from "../components/Contact.jsx";
+import { content } from "../lib/siteContent.js";
 
 export default function ContactPage() {
+  const { contactPage } = content;
+
   return (
     <>
-      <PageHero
-        title="Liên hệ với chúng tôi"
-        lead="Địa chỉ nhà thờ, bản đồ chỉ đường và các kênh liên lạc của Ban Thanh Niên."
-      />
+      <PageHero title={contactPage.pageTitle} lead={contactPage.pageLead} />
       <main>
         <Contact />
       </main>

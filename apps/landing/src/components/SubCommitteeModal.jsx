@@ -1,14 +1,8 @@
 import { useEffect } from "react";
-import { PiHandshake, PiMegaphone, PiMusicNotes, PiUsersThree, PiX } from "react-icons/pi";
+import { PiX } from "react-icons/pi";
 import { motion, AnimatePresence } from "motion/react";
 import { useScrollLock } from "../lib/scroll.js";
-
-export const COMMITTEE_ICONS = {
-  leaders: PiUsersThree,
-  evangelism: PiMegaphone,
-  visit: PiHandshake,
-  music: PiMusicNotes,
-};
+import { iconFor } from "../lib/icons.js";
 
 /** Modal kính hiển thị chi tiết một tiểu ban. */
 export default function SubCommitteeModal({ committee, onClose }) {
@@ -24,7 +18,7 @@ export default function SubCommitteeModal({ committee, onClose }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
-  const Icon = committee ? COMMITTEE_ICONS[committee.icon] : null;
+  const Icon = committee ? iconFor(committee.icon) : null;
 
   return (
     <AnimatePresence>

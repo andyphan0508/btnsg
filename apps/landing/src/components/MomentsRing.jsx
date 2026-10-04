@@ -5,6 +5,8 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/scroll.js";
 import MediaTile from "./MediaTile.jsx";
 import RollText from "./RollText.jsx";
 import { loadImages, pickImages } from "../lib/gallery.js";
+import { content } from "../lib/siteContent.js";
+import { Rich } from "../lib/rich.jsx";
 
 const COUNT = 10;
 const STEP = 360 / COUNT;
@@ -54,7 +56,7 @@ export default function MomentsRing() {
     <section className="ring-section" ref={root}>
       <div className="ring-stage">
         <h2 className="ring-title">
-          Những ngày <em>ta có nhau</em>
+          <Rich text={content.home.ringTitle} />
         </h2>
         <div className="ring-scene">
           <div className="ring-tilt">
@@ -73,7 +75,7 @@ export default function MomentsRing() {
         </div>
 
         <div className="ring-foot">
-          <p>Mỗi bức ảnh là một câu chuyện về sự thờ phượng, tình thân và phục vụ.</p>
+          <p>{content.home.ringCaption}</p>
           <Link className="btn btn-glass" to="/thu-vien">
             <RollText text="Xem thư viện ảnh" />
             <span className="btn-icon">

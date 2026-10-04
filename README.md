@@ -54,12 +54,15 @@ Các chức năng chính (mỗi màn hình là một thư mục trong `apps/dash
   (~1600px) rồi upload thẳng lên folder Tin Tức trên Google Drive qua Apps Script webhook
   (`VITE_NEWS_SCRIPT_URL` kèm `?secret=`); hỗ trợ sửa/xoá bài, chọn ảnh bìa, chèn ảnh vào bài.
 - **Tài khoản** (chỉ Quản trị) — duyệt tài khoản mới, phân quyền Quản trị / BĐH.
+- **Website** (chỉ Quản trị) — sửa toàn bộ nội dung landing (chữ từng trang, chủ đề năm, lịch tuần, Ban Điều Hành,
+  mục vụ, tiểu ban, liên kết, địa chỉ, ảnh Hero, SEO) với khung xem trước trực tiếp; lưu vào bảng `site_content`,
+  mục chưa lưu dùng mặc định trong `packages/shared/src/siteContent.ts`. Xem DEPLOY.md → Bước 2e.
 - **Điểm danh** — tạo buổi điểm danh theo lịch sinh hoạt, đánh dấu có mặt / vắng / vắng phép.
 - **Lịch sinh hoạt** — các buổi định kỳ hằng tuần và sự kiện một lần.
 - **Công việc** — bảng Kanban (Cần làm / Đang làm / Hoàn thành), phân công cho thành viên.
 - **Thông báo** — đăng và ghim thông báo lịch nhóm, sự kiện.
 - **Đề xuất / Request** — ghi nhận yêu cầu với trạng thái xử lý, tránh miss thông tin.
-- **Thu chi** — sổ quỹ chi tiết: hạng mục + hạng mục con (có gợi ý sẵn), số chứng từ,
+- **Thu chi** *(đang tạm ẩn — bật lại bằng `FINANCE_ENABLED` trong `apps/dashboard/src/lib/features.ts`)* — sổ quỹ chi tiết: hạng mục + hạng mục con (có gợi ý sẵn), số chứng từ,
   hình thức thanh toán, người nộp/nhận, thủ quỹ, thuộc hoạt động nào, link ảnh chứng từ;
   lọc theo loại/hạng mục/tháng và tìm kiếm toàn văn. **Phân tích** thu chi theo ngày/tháng/năm
   (biểu đồ cột đôi + so sánh kỳ trước + cơ cấu theo hạng mục). **Xuất phiếu thu/phiếu chi**

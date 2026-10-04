@@ -1,4 +1,5 @@
 import type { OverviewStats } from '@btnsg/shared';
+import { FINANCE_ENABLED } from '../../../lib/features';
 import { formatMoney } from '../../../utils/format';
 
 type OverviewStatGridProps = {
@@ -13,7 +14,9 @@ const OverviewStatGrid = ({ stats }: OverviewStatGridProps) => {
     { value: `${stats.attendanceRate}%`, label: 'Tỷ lệ tham gia', hint: 'Trung bình các buổi gần nhất' },
     { value: String(stats.openTasks), label: 'Công việc đang mở', hint: `${stats.doneTasks} đã hoàn thành` },
     { value: String(stats.openRequests), label: 'Request chờ xử lý', hint: 'Mới + đang xem xét' },
-    { value: formatMoney(stats.balance), label: 'Số dư quỹ', hint: `Thu ${formatMoney(stats.totalIncome)}` },
+    ...(FINANCE_ENABLED
+      ? [{ value: formatMoney(stats.balance), label: 'Số dư quỹ', hint: `Thu ${formatMoney(stats.totalIncome)}` }]
+      : []),
   ];
 
   return (

@@ -3,6 +3,7 @@ import PageHero from '../components/PageHero.jsx'
 import NewsCard from '../components/NewsCard.jsx'
 import NewsFeaturedCard from '../components/NewsFeaturedCard.jsx'
 import { fetchPosts, isNewsConfigured, readNewsCache, subscribeWindowFocus } from '../lib/news.js'
+import { content } from '../lib/siteContent.js'
 
 export default function News() {
   // Vẽ ngay từ cache trình duyệt (nếu có), rồi fetch bản mới phía sau cập nhật đè.
@@ -35,10 +36,7 @@ export default function News() {
 
   return (
     <>
-      <PageHero
-        title="Tin tức & bài viết"
-        lead="Tin tức, thông báo và bài viết về các hoạt động của Ban Thanh Niên HTTL Sài Gòn."
-      />
+      <PageHero title={content.newsPage.pageTitle} lead={content.newsPage.pageLead} />
       <main className="section section-tight">
         <div className="wrap">
           {!isNewsConfigured && (

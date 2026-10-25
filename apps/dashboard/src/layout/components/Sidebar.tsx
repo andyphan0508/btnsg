@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import logoImg from '../../assets/logobtnsg.jpg';
 import { useAuth } from '../../auth/AuthContext';
-import { FINANCE_ENABLED } from '../../lib/features';
+import { FINANCE_ENABLED, INTERNAL_ENABLED } from '../../lib/features';
 
 type NavItem = {
   to: string;
@@ -126,7 +126,7 @@ const WORK_NAV: NavItem[] = [
   },
   {
     to: '/so-ghi-chep',
-    label: 'Sổ ghi chép',
+    label: 'Bài giảng & ghi chép',
     icon: (
       <svg {...ICON_PROPS}>
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -157,6 +157,17 @@ const WORK_NAV: NavItem[] = [
     ),
   },
   {
+    to: '/khoanh-khac',
+    label: 'Khoảnh khắc',
+    icon: (
+      <svg {...ICON_PROPS}>
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <path d="M21 15l-5-5L5 21" />
+      </svg>
+    ),
+  },
+  {
     to: '/thong-bao-day',
     label: 'Thông báo đẩy',
     icon: (
@@ -167,6 +178,10 @@ const WORK_NAV: NavItem[] = [
     ),
   },
 ];
+
+/** Thứ tự menu khi chỉ dùng dashboard cho website (INTERNAL_ENABLED = false). */
+const WEB_PATHS = ['/dang-bai', '/khoanh-khac', '/so-ghi-chep', '/chuong-trinh', '/thong-bao-day'];
+const WEB_NAV = WEB_PATHS.map((to) => [...MAIN_NAV, ...WORK_NAV].find((item) => item.to === to)!);
 
 const ADMIN_NAV: NavItem[] = [
   {
@@ -219,10 +234,19 @@ const Sidebar = () => {
         </div>
       </div>
       <nav className="sidebar-nav">
-        <div className="sidebar-section-label">Cộng đồng</div>
-        {MAIN_NAV.map(renderLink)}
-        <div className="sidebar-section-label">Điều hành</div>
-        {WORK_NAV.filter((item) => FINANCE_ENABLED || item.to !== '/thu-chi').map(renderLink)}
+        {INTERNAL_ENABLED ? (
+          <>
+            <div className="sidebar-section-label">Cộng đồng</div>
+            {MAIN_NAV.map(renderLink)}
+            <div className="sidebar-section-label">Điều hành</div>
+            {WORK_NAV.filter((item) => FINANCE_ENABLED || item.to !== '/thu-chi').map(renderLink)}
+          </>
+        ) : (
+          <>
+            <div className="sidebar-section-label">Đăng tải lên website</div>
+            {WEB_NAV.map(renderLink)}
+          </>
+        )}
         {isAdmin && (
           <>
             <div className="sidebar-section-label">Quản trị</div>

@@ -11,7 +11,7 @@ import {
 import PageHero from "../components/PageHero.jsx";
 import MediaTile from "../components/MediaTile.jsx";
 import Lightbox from "../components/Lightbox.jsx";
-import { isGalleryConfigured, loadImages } from "../lib/gallery.js";
+import { loadImages } from "../lib/gallery.js";
 import { content } from "../lib/siteContent.js";
 
 const PAGE_SIZES = [12, 24, 48, 0];
@@ -24,6 +24,7 @@ export default function Gallery() {
 
   // Bộ lọc & Chế độ xem
   const [searchQuery, setSearchQuery] = useState("");
+  const [album, setAlbum] = useState("");
   const [viewMode, setViewMode] = useState("grid");
 
   // Phân trang
@@ -47,11 +48,17 @@ export default function Gallery() {
     };
   }, []);
 
+  // Album = dịp/sự kiện đặt khi đăng ảnh từ dashboard (ảnh Drive cũ không có album).
+  const albums = useMemo(() => [...new Set(images.map((img) => img.album).filter(Boolean))], [images]);
+
   const filteredImages = useMemo(() => {
-    if (!searchQuery.trim()) return images;
-    const q = searchQuery.toLowerCase();
-    return images.filter((img) => (img.name || "").toLowerCase().includes(q));
-  }, [images, searchQuery]);
+    const q = searchQuery.trim().toLowerCase();
+    return images.filter(
+      (img) =>
+        (!album || img.album === album) &&
+        (!q || `${img.name || ""} ${img.album || ""}`.toLowerCase().includes(q)),
+    );
+  }, [images, searchQuery, album]);
 
   const totalCount = filteredImages.length;
   const isAll = pageSize === 0 || pageSize >= totalCount;
@@ -104,10 +111,10 @@ export default function Gallery() {
       <PageHero title={content.galleryPage.pageTitle} lead={content.galleryPage.pageLead} />
       <main className="section section-tight">
         <div className="wrap">
-          {!isGalleryConfigured && (
+          {images[0]?.demo && (
             <div className="notice glass">
-              Đang xem dữ liệu mẫu — cấu hình <code>VITE_GALLERY_SCRIPT_URL</code> để hiển thị ảnh
-              thật từ Google Drive.
+              Đang xem dữ liệu mẫu — đăng ảnh tại dashboard → <strong>Khoảnh khắc</strong> để hiển thị
+              ảnh thật.
             </div>
           )}
 
@@ -175,13 +182,32 @@ export default function Gallery() {
                 </div>
               </div>
 
+              {albums.length > 1 && (
+                <div className="chip-row album-row" role="group" aria-label="Lọc theo album">
+                  {["", ...albums].map((name) => (
+                    <button
+                      key={name || "all"}
+                      type="button"
+                      className={`chip${album === name ? " is-active" : ""}`}
+                      onClick={() => {
+                        setAlbum(name);
+                        setCurrentPage(1);
+                      }}
+                      aria-pressed={album === name}
+                    >
+                      {name || "Tất cả"}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <p className="gallery-meta">
                 Hiển thị{" "}
                 <strong>
                   {totalCount > 0 ? startIndex + 1 : 0}–{endIndex}
                 </strong>{" "}
                 trên tổng số <strong>{totalCount}</strong> ảnh
-                {searchQuery && ` (lọc từ ${images.length} ảnh)`}
+                {(searchQuery || album) && ` (lọc từ ${images.length} ảnh)`}
               </p>
 
               {currentImages.length === 0 ? (

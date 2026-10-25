@@ -7,6 +7,7 @@ export const nav = [
   { to: "/sinh-hoat", label: "Sinh hoạt" },
   { to: "/muc-vu", label: "Mục vụ" },
   { to: "/tin-tuc", label: "Tin tức" },
+  { to: "/bai-giang", label: "Bài giảng" },
   { to: "/thu-vien", label: "Thư viện ảnh" },
   { to: "/lien-he", label: "Liên hệ" },
 ];
@@ -27,5 +28,6 @@ export const sheetNav = [
   { to: "/gioi-thieu", label: "Giới thiệu", desc: "Lịch sử & con số của Ban" },
   { to: "/chu-de", label: "Chủ đề năm", desc: "Câu gốc và định hướng năm nay" },
   { to: "/muc-vu", label: "Mục vụ", desc: "Các mảng phục vụ thường niên" },
+  { to: "/bai-giang", label: "Bài giảng", desc: "Lưu giữ Lời Chúa đã chia sẻ" },
   { to: "/lien-he", label: "Liên hệ", desc: "Địa chỉ, bản đồ, kết nối" },
 ];

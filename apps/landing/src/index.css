@@ -975,7 +975,7 @@ a.chip:hover {
   }
 }
 
-@media (max-width: 1140px) {
+@media (max-width: 1240px) {
   .nav-links {
     display: none;
   }
@@ -2874,6 +2874,10 @@ a.chip:hover {
 .seg button.is-active {
   background: var(--grad-sun);
   color: var(--ink-on-sun);
+}
+
+.album-row {
+  margin-bottom: 1.25rem;
 }
 
 .gallery-meta {

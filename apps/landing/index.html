@@ -32,7 +32,7 @@
         return fetch(url).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
       }
       window.__siteContent = early("/api/site-content");
-      window.__galleryFeed = early("/api/feed?src=gallery");
+      window.__momentsFeed = early("/api/library?t=moments");
     </script>
     <script>
       // Đặt theme trước khi vẽ trang để không bị nháy sáng/tối.

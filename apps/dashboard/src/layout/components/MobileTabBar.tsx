@@ -13,6 +13,7 @@ import {
   FiGlobe,
   FiGrid,
   FiHome,
+  FiImage,
   FiLogOut,
   FiMail,
   FiMessageSquare,
@@ -24,7 +25,7 @@ import {
 } from 'react-icons/fi';
 import { PROFILE_ROLE_LABELS } from '@btnsg/shared';
 import { useAuth } from '../../auth/AuthContext';
-import { FINANCE_ENABLED } from '../../lib/features';
+import { FINANCE_ENABLED, INTERNAL_ENABLED } from '../../lib/features';
 
 type TabItem = { to: string; label: string; icon: IconType };
 
@@ -43,10 +44,19 @@ const MORE_TABS: TabItem[] = [
   { to: '/thong-bao', label: 'Thông báo', icon: FiBell },
   { to: '/de-xuat', label: 'Đề xuất / Request', icon: FiMessageSquare },
   { to: '/ke-hoach', label: 'Kế hoạch', icon: FiTarget },
-  { to: '/so-ghi-chep', label: 'Sổ ghi chép', icon: FiBookOpen },
+  { to: '/so-ghi-chep', label: 'Bài giảng & ghi chép', icon: FiBookOpen },
   { to: '/email-bdh', label: 'Email BĐH', icon: FiMail },
   { to: '/dang-bai', label: 'Đăng bài Tin tức', icon: FiFileText },
+  { to: '/khoanh-khac', label: 'Khoảnh khắc', icon: FiImage },
   { to: '/thong-bao-day', label: 'Thông báo đẩy', icon: FiSend },
+];
+
+/** Khi chỉ dùng dashboard cho website (INTERNAL_ENABLED = false): 4 mục đăng tải nằm hết trên thanh. */
+const WEB_TABS: TabItem[] = [
+  { to: '/dang-bai', label: 'Tin tức', icon: FiFileText },
+  { to: '/khoanh-khac', label: 'Ảnh', icon: FiImage },
+  { to: '/so-ghi-chep', label: 'Bài giảng', icon: FiBookOpen },
+  { to: '/thong-bao-day', label: 'Đẩy tin', icon: FiSend },
 ];
 
 const ADMIN_TABS: TabItem[] = [
@@ -81,7 +91,9 @@ const MobileTabBar = () => {
     };
   }, [sheetOpen]);
 
-  const moreItems = isAdmin ? [...MORE_TABS, ...ADMIN_TABS] : MORE_TABS;
+  const mainTabs = INTERNAL_ENABLED ? MAIN_TABS : WEB_TABS;
+  const moreTabs = INTERNAL_ENABLED ? MORE_TABS : MORE_TABS.filter((tab) => tab.to === '/chuong-trinh');
+  const moreItems = isAdmin ? [...moreTabs, ...ADMIN_TABS] : moreTabs;
   const isOnMoreScreen = moreItems.some((item) => item.to === location.pathname);
 
   return (
@@ -128,7 +140,7 @@ const MobileTabBar = () => {
       </div>
 
       <nav className="mobile-tabbar" aria-label="Điều hướng dashboard">
-        {MAIN_TABS.map((tab) => (
+        {mainTabs.map((tab) => (
           <NavLink
             key={tab.to}
             to={tab.to}

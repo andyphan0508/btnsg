@@ -22,7 +22,11 @@ Khi **không** cấu hình Supabase, dashboard tự chạy **chế độ demo/lo
    → [`0003_push_subscriptions.sql`](supabase/migrations/0003_push_subscriptions.sql)
    → [`0004_members_detail.sql`](supabase/migrations/0004_members_detail.sql)
    → [`0005_notes.sql`](supabase/migrations/0005_notes.sql)
-   → [`0006_programs.sql`](supabase/migrations/0006_programs.sql).
+   → [`0006_programs.sql`](supabase/migrations/0006_programs.sql)
+   → [`0007_site_content.sql`](supabase/migrations/0007_site_content.sql)
+   → [`0008_moments_sermons.sql`](supabase/migrations/0008_moments_sermons.sql)
+   (`0008`: bucket Storage + bảng ảnh **Khoảnh khắc** đăng từ dashboard, và cờ công khai **Bài giảng** cho trang `/bai-giang`;
+   landing tự dùng ảnh Supabase, chưa có ảnh nào thì vẫn đọc folder Drive cũ qua `VITE_GALLERY_SCRIPT_URL`).
    Các file 0002–0006 an toàn khi chạy lại nhiều lần: `0002` bổ sung cột chi tiết cho Thu chi,
    `0003` tạo bảng đăng ký thông báo đẩy, `0004` bổ sung địa chỉ/ngành nghề cho Thành viên,
    `0005` tạo bảng Sổ ghi chép / Bài giảng, `0006` tạo bảng Chương trình thờ phượng (đồng bộ sang OpenPresenter).

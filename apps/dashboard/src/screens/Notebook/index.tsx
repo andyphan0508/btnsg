@@ -47,6 +47,7 @@ const NotebookScreen = () => {
   const [scripture, setScripture] = useState<string>('');
   const [tagsText, setTagsText] = useState<string>('');
   const [content, setContent] = useState<string>('');
+  const [published, setPublished] = useState<boolean>(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   // State — lưu / xoá
@@ -80,6 +81,7 @@ const NotebookScreen = () => {
     setScripture('');
     setTagsText('');
     setContent('');
+    setPublished(false);
     setEditingNoteId(null);
     setSaveError(null);
   };
@@ -159,6 +161,7 @@ const NotebookScreen = () => {
     setScripture(selectedNote.scripture || '');
     setTagsText(selectedNote.tags.join(', '));
     setContent(selectedNote.content);
+    setPublished(Boolean(selectedNote.published));
     setSaveError(null);
     setViewMode('editor');
   };
@@ -194,6 +197,7 @@ const NotebookScreen = () => {
         scripture: scripture.trim() || undefined,
         tags: parseTags(tagsText),
         content: content.trim(),
+        published: category === 'bai_giang' && published,
       };
 
       const saved = editingNoteId ? await noteApi.update(editingNoteId, payload) : await noteApi.create(payload);
@@ -271,12 +275,14 @@ const NotebookScreen = () => {
             speaker={speaker}
             scripture={scripture}
             tagsText={tagsText}
+            published={published}
             onTitleChange={setTitle}
             onCategoryChange={setCategory}
             onDateChange={setDate}
             onSpeakerChange={setSpeaker}
             onScriptureChange={setScripture}
             onTagsTextChange={setTagsText}
+            onPublishedChange={setPublished}
           />
 
           <div className="card" style={styles.contentCard}>

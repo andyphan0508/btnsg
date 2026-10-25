@@ -7,12 +7,14 @@ type NoteMetaFormProps = {
   speaker: string;
   scripture: string;
   tagsText: string;
+  published: boolean;
   onTitleChange: (value: string) => void;
   onCategoryChange: (value: NoteCategory) => void;
   onDateChange: (value: string) => void;
   onSpeakerChange: (value: string) => void;
   onScriptureChange: (value: string) => void;
   onTagsTextChange: (value: string) => void;
+  onPublishedChange: (value: boolean) => void;
 };
 
 /** Thông tin chung của 1 mục sổ ghi chép: tiêu đề, loại, ngày, người chia sẻ, câu gốc, thẻ. */
@@ -23,12 +25,14 @@ const NoteMetaForm = ({
   speaker,
   scripture,
   tagsText,
+  published,
   onTitleChange,
   onCategoryChange,
   onDateChange,
   onSpeakerChange,
   onScriptureChange,
   onTagsTextChange,
+  onPublishedChange,
 }: NoteMetaFormProps) => {
   return (
     <div className="card">
@@ -82,6 +86,12 @@ const NoteMetaForm = ({
             onChange={(e) => onTagsTextChange(e.target.value)}
           />
         </div>
+        {category === 'bai_giang' && (
+          <label className="field span-2" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <input type="checkbox" checked={published} onChange={(e) => onPublishedChange(e.target.checked)} />
+            <span>Công khai trên website (trang Bài giảng) — hiện sau tối đa ~1 phút</span>
+          </label>
+        )}
       </div>
     </div>
   );

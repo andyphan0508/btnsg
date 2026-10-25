@@ -200,6 +200,8 @@ export type Note = {
   tags: string[];
   /** Nội dung dạng Markdown. */
   content: string;
+  /** Bài giảng hiện trên trang /bai-giang của landing (chỉ áp dụng cho loại bai_giang). */
+  published?: boolean;
   createdAt: string;
   updatedAt: string;
 };

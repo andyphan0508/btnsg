@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { PiArrowSquareOut, PiCaretLeft, PiCaretRight, PiX } from "react-icons/pi";
 import { motion, AnimatePresence } from "motion/react";
 import MediaTile from "./MediaTile.jsx";
-import { driveImage } from "../lib/gallery.js";
+import { imageUrl } from "../lib/gallery.js";
 import { useScrollLock } from "../lib/scroll.js";
 
 /** Lightbox: xem ảnh phóng to toàn màn hình trên nền kính tối. */
@@ -22,7 +22,7 @@ export default function Lightbox({ images = [], index, onClose, onNavigate }) {
   }, [isOpen, index, onClose, onNavigate]);
 
   const image = images[index];
-  const isDrive = !image?.demo && Boolean(image?.id);
+  const hasFile = Boolean(image) && !image.demo;
   const cleanTitle =
     (image?.name || "")
       .replace(/^(Copy of |Sao chép của )/i, "")
@@ -55,13 +55,13 @@ export default function Lightbox({ images = [], index, onClose, onNavigate }) {
               <h3>{cleanTitle}</h3>
             </div>
             <div className="lightbox-actions">
-              {isDrive && (
+              {hasFile && (
                 <a
                   className="chip"
-                  href={driveImage(image.id, 1920)}
+                  href={imageUrl(image, 1920)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  title="Mở ảnh gốc trên Google Drive"
+                  title="Mở ảnh gốc trong tab mới"
                 >
                   <PiArrowSquareOut aria-hidden="true" />
                   <span>Ảnh gốc</span>

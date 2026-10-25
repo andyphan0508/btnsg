@@ -20,6 +20,7 @@ const pages = {
   Gallery: () => import("./pages/Gallery.jsx"),
   News: () => import("./pages/News.jsx"),
   NewsPost: () => import("./pages/NewsPost.jsx"),
+  Sermons: () => import("./pages/Sermons.jsx"),
 };
 const About = lazy(pages.About);
 const Theme = lazy(pages.Theme);
@@ -29,6 +30,7 @@ const ContactPage = lazy(pages.ContactPage);
 const Gallery = lazy(pages.Gallery);
 const News = lazy(pages.News);
 const NewsPost = lazy(pages.NewsPost);
+const Sermons = lazy(pages.Sermons);
 
 const whenIdle = window.requestIdleCallback ?? ((callback) => setTimeout(callback, 1500));
 
@@ -74,6 +76,8 @@ export default function App() {
             <Route path="/thu-vien" element={<Gallery />} />
             <Route path="/tin-tuc" element={<News />} />
             <Route path="/tin-tuc/:postId" element={<NewsPost />} />
+            <Route path="/bai-giang" element={<Sermons />} />
+            <Route path="/bai-giang/:sermonId" element={<Sermons />} />
           </Routes>
         </Suspense>
       </div>

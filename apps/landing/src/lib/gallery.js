@@ -112,6 +112,7 @@ export async function fetchFeatured(limit = 6) {
 /* ---------- Cache dùng chung + chọn ảnh theo trang ---------- */
 
 let imagesPromise = null
+const FRESH_WAIT_MS = 1200
 
 /**
  * Tải danh sách ảnh một lần cho cả phiên, các trang dùng chung.
@@ -119,11 +120,16 @@ let imagesPromise = null
  */
 export function loadImages() {
   if (!imagesPromise) {
-    // Lượt quay lại: vẽ ngay bằng danh sách đã lưu, bản mới tải ngầm cho lần sau
+    // Ưu tiên bản mới (CDN trả trong ~0,1 giây) để ảnh vừa đăng hiện ngay; mạng chậm quá
+    // FRESH_WAIT_MS mới vẽ bằng danh sách đã lưu, bản mới dùng cho lần sau
     // (không thay ảnh đang hiển thị giữa chừng).
     const cached = readCache()
     const fresh = fetchImages()
-    imagesPromise = cached ? Promise.resolve(cached) : fresh
+    imagesPromise = cached
+      ? Promise.race([fresh, new Promise((resolve) => setTimeout(() => resolve(cached), FRESH_WAIT_MS))]).catch(
+          () => cached,
+        )
+      : fresh
     fresh.catch(() => {
       if (!cached) imagesPromise = null // cho phép thử lại ở lần sau
     })

@@ -78,7 +78,9 @@ export default async function handler(req, res) {
       body = { sermon: rows[0] };
     }
 
-    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=86400');
+    // stale-while-revalidate ngắn: web ít lượt xem thì bản lưu hay quá hạn, SWR dài khiến mỗi
+    // lượt xem nhận bản của lượt trước (ảnh/bài vừa đăng không hiện). Supabase vẫn chỉ ≤ 1 lần/phút.
+    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=60');
     return res.status(200).json(body);
   } catch (error) {
     // Lỗi cũng cache ngắn để một sự cố Supabase không biến mỗi lượt xem thành một lần gọi.

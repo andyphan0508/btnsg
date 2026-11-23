@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import type { NewsImage } from '../../../api/newsApi';
-import { driveThumbnailUrl } from '../../../utils/driveImage';
 import { formatBytes, type CompressedImage } from '../../../utils/imageCompress';
 
 type NewsImagePickerProps = {
@@ -96,11 +95,11 @@ const NewsImagePicker = ({
       {existingImages.length > 0 && (
         <>
           <div className="cell-muted" style={{ marginTop: 10 }}>
-            Ảnh đang có trên Drive:
+            Ảnh đang có trong bài:
           </div>
           <div style={styles.grid}>
             {existingImages.map((image) =>
-              renderImageTile(image.id, image.name, driveThumbnailUrl(image.id, 400), null, false),
+              renderImageTile(image.id, image.name, image.id, null, false),
             )}
           </div>
         </>

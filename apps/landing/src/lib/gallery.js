@@ -19,6 +19,7 @@ export const isGalleryConfigured = Boolean(GALLERY_URL)
  */
 export function driveImage(id, width = 1200) {
   if (!id) return ''
+  if (/^https?:\/\//.test(id)) return id // ảnh Supabase (bài viết mới) đã là link đầy đủ
   return `https://lh3.googleusercontent.com/d/${id}=w${width}-rw`
 }
 

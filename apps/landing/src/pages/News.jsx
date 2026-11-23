@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import PageHero from '../components/PageHero.jsx'
 import NewsCard from '../components/NewsCard.jsx'
 import NewsFeaturedCard from '../components/NewsFeaturedCard.jsx'
-import { fetchPosts, isNewsConfigured, readNewsCache, subscribeWindowFocus } from '../lib/news.js'
+import { fetchPosts, readNewsCache, subscribeWindowFocus } from '../lib/news.js'
 import { content } from '../lib/siteContent.js'
 
 export default function News() {
@@ -39,11 +39,10 @@ export default function News() {
       <PageHero title={content.newsPage.pageTitle} lead={content.newsPage.pageLead} />
       <main className="section section-tight">
         <div className="wrap">
-          {!isNewsConfigured && (
+          {posts[0]?.demo && (
             <div className="notice glass">
-              Đang xem dữ liệu mẫu — cấu hình <code>VITE_NEWS_SCRIPT_URL</code> (Google Apps Script
-              đọc folder Tin tức trên Google Drive) để hiển thị bài viết thật. Xem hướng dẫn trong{' '}
-              <code>DEPLOY.md</code>.
+              Đang xem dữ liệu mẫu — đăng bài tại dashboard → <strong>Đăng bài Tin tức</strong> để hiển thị
+              bài viết thật.
             </div>
           )}
 

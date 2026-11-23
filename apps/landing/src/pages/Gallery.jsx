@@ -25,6 +25,7 @@ export default function Gallery() {
   // Bộ lọc & Chế độ xem
   const [searchQuery, setSearchQuery] = useState("");
   const [album, setAlbum] = useState("");
+  const [year, setYear] = useState("");
   const [viewMode, setViewMode] = useState("grid");
 
   // Phân trang
@@ -48,17 +49,32 @@ export default function Gallery() {
     };
   }, []);
 
-  // Album = dịp/sự kiện đặt khi đăng ảnh từ dashboard (ảnh Drive cũ không có album).
-  const albums = useMemo(() => [...new Set(images.map((img) => img.album).filter(Boolean))], [images]);
+  // Năm lấy từ ngày chụp; album = dịp/sự kiện đặt khi đăng ảnh (ảnh Drive cũ không có cả hai).
+  const years = useMemo(
+    () => [...new Set(images.map((img) => (img.date || "").slice(0, 4)).filter(Boolean))].sort().reverse(),
+    [images],
+  );
+  const albums = useMemo(
+    () => [
+      ...new Set(
+        images
+          .filter((img) => !year || (img.date || "").startsWith(year))
+          .map((img) => img.album)
+          .filter(Boolean),
+      ),
+    ],
+    [images, year],
+  );
 
   const filteredImages = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return images.filter(
       (img) =>
+        (!year || (img.date || "").startsWith(year)) &&
         (!album || img.album === album) &&
         (!q || `${img.name || ""} ${img.album || ""}`.toLowerCase().includes(q)),
     );
-  }, [images, searchQuery, album]);
+  }, [images, searchQuery, album, year]);
 
   const totalCount = filteredImages.length;
   const isAll = pageSize === 0 || pageSize >= totalCount;
@@ -182,6 +198,26 @@ export default function Gallery() {
                 </div>
               </div>
 
+              {years.length > 1 && (
+                <div className="chip-row album-row" role="group" aria-label="Lọc theo năm">
+                  {["", ...years].map((y) => (
+                    <button
+                      key={y || "all-years"}
+                      type="button"
+                      className={`chip${year === y ? " is-active" : ""}`}
+                      onClick={() => {
+                        setYear(y);
+                        setAlbum("");
+                        setCurrentPage(1);
+                      }}
+                      aria-pressed={year === y}
+                    >
+                      {y ? `Năm ${y}` : "Mọi năm"}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {albums.length > 1 && (
                 <div className="chip-row album-row" role="group" aria-label="Lọc theo album">
                   {["", ...albums].map((name) => (
@@ -207,7 +243,7 @@ export default function Gallery() {
                   {totalCount > 0 ? startIndex + 1 : 0}–{endIndex}
                 </strong>{" "}
                 trên tổng số <strong>{totalCount}</strong> ảnh
-                {(searchQuery || album) && ` (lọc từ ${images.length} ảnh)`}
+                {(searchQuery || album || year) && ` (lọc từ ${images.length} ảnh)`}
               </p>
 
               {currentImages.length === 0 ? (

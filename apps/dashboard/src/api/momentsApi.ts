@@ -1,11 +1,10 @@
-// Thư viện ảnh "Khoảnh khắc": file ảnh nằm trong Supabase Storage (bucket công khai "moments"),
-// thông tin ảnh nằm ở bảng moments (supabase/migrations/0008_moments_sermons.sql).
+// Thư viện ảnh "Khoảnh khắc": file ảnh nằm trong kho ảnh (Cloudflare R2 qua Worker, hoặc Supabase
+// Storage khi chưa cấu hình R2 — xem lib/images.ts), thông tin ảnh nằm ở bảng moments.
 // Landing đọc qua /api/library?t=moments.
 
 import { supabase } from '../lib/supabase';
+import { deleteImages, imageUrl, uploadImage } from '../lib/images';
 import type { GalleryImage } from '../utils/imageCompress';
-
-const BUCKET = 'moments';
 
 export type Moment = {
   id: string;
@@ -16,6 +15,8 @@ export type Moment = {
   thumbPath: string;
   thumbUrl: string;
   url: string;
+  /** Dung lượng bản lớn + bản nhỏ; null với ảnh đăng trước migration 0009. */
+  bytes: number | null;
 };
 
 type MomentRow = {
@@ -25,14 +26,13 @@ type MomentRow = {
   taken_on: string | null;
   path: string;
   thumb_path: string;
+  bytes?: number | null;
 };
 
 const client = () => {
   if (!supabase) throw new Error('Supabase chưa được cấu hình');
   return supabase;
 };
-
-const publicUrl = (path: string) => client().storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 
 const fromRow = (row: MomentRow): Moment => ({
   id: row.id,
@@ -41,8 +41,9 @@ const fromRow = (row: MomentRow): Moment => ({
   takenOn: row.taken_on,
   path: row.path,
   thumbPath: row.thumb_path,
-  thumbUrl: publicUrl(row.thumb_path),
-  url: publicUrl(row.path),
+  thumbUrl: imageUrl(row.thumb_path),
+  url: imageUrl(row.path),
+  bytes: row.bytes ?? null,
 });
 
 const extensionOf = (blob: Blob) => (blob.type === 'image/webp' ? 'webp' : 'jpg');
@@ -51,7 +52,7 @@ export const momentsApi = {
   list: async (): Promise<Moment[]> => {
     const { data, error } = await client()
       .from('moments')
-      .select('id,album,caption,taken_on,path,thumb_path')
+      .select('*') // '*' thay vì liệt kê cột: chạy được cả khi chưa có cột bytes (migration 0009)
       .order('taken_on', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
@@ -60,37 +61,35 @@ export const momentsApi = {
 
   /** Upload 2 cỡ ảnh rồi ghi 1 dòng; ghi lỗi thì dọn file vừa upload để không mồ côi. */
   upload: async (image: GalleryImage, meta: { album: string; takenOn: string }): Promise<Moment> => {
-    const storage = client().storage.from(BUCKET);
     const base = `${meta.takenOn || 'khac'}/${crypto.randomUUID()}`;
     const path = `${base}.${extensionOf(image.full)}`;
     const thumbPath = `${base}-thumb.${extensionOf(image.thumb)}`;
-    // Tên file không bao giờ trùng → cho trình duyệt/CDN cache 1 năm.
-    const options = { cacheControl: '31536000', upsert: false };
-
-    const [full, thumb] = await Promise.all([
-      storage.upload(path, image.full, { ...options, contentType: image.full.type }),
-      storage.upload(thumbPath, image.thumb, { ...options, contentType: image.thumb.type }),
-    ]);
-    const uploadError = full.error || thumb.error;
-    if (uploadError) {
-      await storage.remove([path, thumbPath]);
-      throw new Error(uploadError.message);
+    try {
+      await Promise.all([uploadImage(path, image.full), uploadImage(thumbPath, image.thumb)]);
+    } catch (uploadError) {
+      await deleteImages([path, thumbPath]);
+      throw uploadError;
     }
 
-    const { data, error } = await client()
-      .from('moments')
-      .insert({
-        album: meta.album,
-        taken_on: meta.takenOn || null,
-        path,
-        thumb_path: thumbPath,
-        width: image.width,
-        height: image.height,
-      })
-      .select('id,album,caption,taken_on,path,thumb_path')
-      .single();
+    const row = {
+      album: meta.album,
+      taken_on: meta.takenOn || null,
+      path,
+      thumb_path: thumbPath,
+      width: image.width,
+      height: image.height,
+      bytes: image.full.size + image.thumb.size,
+    };
+    const insert = (values: Partial<typeof row>) =>
+      client().from('moments').insert(values).select('*').single();
+    let { data, error } = await insert(row);
+    // Chưa chạy migration 0009 (chưa có cột bytes) → vẫn đăng được, chỉ thiếu số dung lượng.
+    if (error && error.message.includes('bytes')) {
+      const { bytes: _bytes, ...withoutBytes } = row;
+      ({ data, error } = await insert(withoutBytes));
+    }
     if (error) {
-      await storage.remove([path, thumbPath]);
+      await deleteImages([path, thumbPath]);
       throw new Error(error.message);
     }
     return fromRow(data as MomentRow);
@@ -100,6 +99,6 @@ export const momentsApi = {
     const { error } = await client().from('moments').delete().eq('id', moment.id);
     if (error) throw new Error(error.message);
     // Dòng đã xoá thì ảnh không còn hiện ở đâu — file sót lại (nếu lỗi) chỉ tốn dung lượng.
-    await client().storage.from(BUCKET).remove([moment.path, moment.thumbPath]);
+    await deleteImages([moment.path, moment.thumbPath]);
   },
 };

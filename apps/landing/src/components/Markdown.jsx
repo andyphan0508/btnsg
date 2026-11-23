@@ -69,7 +69,7 @@ export default function Markdown({ content, imageMap = {}, coverId = '' }) {
       )
     }
     if (block.type === 'image') {
-      if (coverId && resolveImageId(block.src) === coverId) return null
+      if (coverId && (block.src === coverId || resolveImageId(block.src) === coverId)) return null
       const src = resolveImageSrc(block.src)
       if (!src) return null
       return (

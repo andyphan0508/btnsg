@@ -33,7 +33,7 @@ const NewsPostList = ({
       {isLoading && <div className="cell-muted">Đang tải danh sách bài…</div>}
       {error && <div className="form-error">{error}</div>}
       {!isLoading && !error && posts.length === 0 && (
-        <div className="cell-muted">Chưa có bài viết nào trên Google Drive.</div>
+        <div className="cell-muted">Chưa có bài viết nào.</div>
       )}
       <div style={styles.list}>
         {posts.map((post) => (

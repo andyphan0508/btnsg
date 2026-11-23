@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { newsApi, type NewsImage, type NewsPostMeta } from '../../api/newsApi';
-import { driveThumbnailUrl } from '../../utils/driveImage';
 import { compressImage, type CompressedImage } from '../../utils/imageCompress';
 import NewsPostForm from './components/NewsPostForm';
 import NewsImagePicker from './components/NewsImagePicker';
 import NewsMarkdownPreview from './components/NewsMarkdownPreview';
 import NewsPostList from './components/NewsPostList';
+import StorageBanner from '../../ui/StorageBanner';
 import { FiSave, FiSend } from 'react-icons/fi';
 
 const todayIso = (): string => new Date().toISOString().slice(0, 10);
@@ -62,7 +62,7 @@ const NewsScreen = () => {
       const name = normalizeName(img.name);
       return name === key || stripExtension(name) === keyNoExt;
     });
-    return existing ? driveThumbnailUrl(existing.id, 800) : '';
+    return existing ? existing.id : '';
   };
 
   const coverUrl = coverName ? resolveImageUrl(coverName) : '';
@@ -136,25 +136,12 @@ const NewsScreen = () => {
         cover: coverName,
       };
 
-      let postId = editingPostId;
-      if (postId) {
-        setPublishProgress('Đang cập nhật nội dung bài…');
-        await newsApi.updatePost(postId, input);
-      } else {
-        setPublishProgress('Đang tạo bài viết trên Google Drive…');
-        postId = await newsApi.createPost(input);
-      }
-
-      for (let i = 0; i < images.length; i++) {
-        setPublishProgress(`Đang tải ảnh ${i + 1}/${images.length}: ${images[i].name}…`);
-        await newsApi.uploadImage(postId, images[i]);
-      }
-
-      setPublishProgress('Đang làm mới cache để bài hiện ngay trên web…');
-      await newsApi.warmCache();
+      await newsApi.savePost(editingPostId, input, images, existingImages, setPublishProgress);
 
       setPublishSuccess(
-        editingPostId ? 'Đã cập nhật bài viết — web sẽ hiển thị bản mới ngay.' : 'Đã đăng bài lên Google Drive — bài đã hiện trên web!',
+        editingPostId
+          ? 'Đã cập nhật bài viết — web hiển thị bản mới sau khoảng 1 phút.'
+          : 'Đã đăng bài — bài hiện trên web sau khoảng 1 phút.',
       );
       resetForm();
       await loadPosts();
@@ -167,13 +154,12 @@ const NewsScreen = () => {
   };
 
   const deletePost = async (post: NewsPostMeta): Promise<void> => {
-    if (!window.confirm(`Xoá bài "${post.title}"?\n(Folder bài viết được chuyển vào Thùng rác Drive, khôi phục được trong 30 ngày.)`)) {
+    if (!window.confirm(`Xoá bài "${post.title}"?\nBài và ảnh trong bài sẽ bị xoá vĩnh viễn, không khôi phục được.`)) {
       return;
     }
     try {
       setDeletingPostId(post.id);
       await newsApi.deletePost(post.id);
-      await newsApi.warmCache();
       if (editingPostId === post.id) resetForm();
       await loadPosts();
     } catch (error) {
@@ -228,8 +214,8 @@ const NewsScreen = () => {
           <span className="page-eyebrow">Truyền thông</span>
           <h2>Đăng bài Tin tức</h2>
           <p className="page-sub">
-            Soạn bài bằng Markdown, ảnh tự nén rồi upload thẳng lên folder Tin Tức trên Google Drive —
-            web hiển thị ngay sau khi đăng.
+            Soạn bài bằng Markdown, ảnh chụp bao nhiêu MB cũng được — hệ thống tự nén (WebP) rồi lưu
+            vào kho ảnh. Bài hiện trên web sau khoảng 1 phút.
           </p>
         </div>
         {editingPostId && (
@@ -241,10 +227,12 @@ const NewsScreen = () => {
 
       {!newsApi.isConfigured() && (
         <div style={styles.demoNote}>
-          Chưa cấu hình <code>VITE_NEWS_SCRIPT_URL</code> (kèm <code>?secret=</code>) — thao tác chỉ được
-          mô phỏng, không ghi lên Google Drive thật. Xem hướng dẫn trong <code>DEPLOY.md</code> Bước 2c.
+          Chưa cấu hình Supabase (<code>VITE_SUPABASE_URL</code>, <code>VITE_SUPABASE_ANON_KEY</code>) — không
+          đăng bài được.
         </div>
       )}
+
+      <StorageBanner refreshKey={posts.length} />
 
       {isLoadingEditingPost && <div style={styles.progress}>Đang tải bài viết để sửa…</div>}
       {editingPostId && !isLoadingEditingPost && (

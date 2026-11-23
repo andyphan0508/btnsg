@@ -4,16 +4,21 @@
  * GET /api/library?t=moments          → { images: [{ id, name, album, date, src, thumb, w, h }] }
  * GET /api/library?t=sermons          → { sermons: [{ id, title, date, speaker, scripture, tags, excerpt }] }
  * GET /api/library?t=sermons&id=<id>  → { sermon: { id, title, date, speaker, scripture, tags, content } }
+ * GET /api/library?t=posts            → { posts: [{ id, title, date, description, cover }] }
+ * GET /api/library?t=posts&id=<id>    → { post: { id, title, date, description, cover, content, images: [] } }
  *
  * Đọc bằng anon key (RLS chỉ lộ ảnh + bài giảng đã công khai). CDN của Vercel giữ bản sao
  * nên Supabase chỉ bị gọi khoảng 1 lần/phút dù đông người; ảnh mới hiện ra sau tối đa ~1 phút.
  *
  * Biến môi trường (đã có sẵn cho push-send): SUPABASE_URL, SUPABASE_ANON_KEY
+ * Tuỳ chọn: IMAGES_BASE_URL = URL Worker R2 (workers/images) — có thì ảnh Khoảnh khắc lấy từ R2.
  */
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SERMON_FIELDS = 'id,title,date,speaker,scripture,tags,content';
 const SERMON_FILTER = 'published=is.true&category=eq.bai_giang';
+const POST_LIST_FIELDS = 'id,title,date,description,cover';
+const POST_ORDER = 'order=date.desc.nullslast,created_at.desc';
 
 /** Đoạn mở đầu dạng chữ thường (bỏ ký hiệu Markdown) cho thẻ trong danh sách. */
 const excerpt = (markdown) =>
@@ -37,6 +42,10 @@ export default async function handler(req, res) {
   if (t === 'moments') {
     // ponytail: PostgREST trả tối đa 1000 dòng (max-rows) — quá số đó thì phân trang theo album.
     query = 'moments?select=id,album,caption,taken_on,path,thumb_path,width,height&order=taken_on.desc.nullslast,created_at.desc';
+  } else if (t === 'posts' && id === undefined) {
+    query = `posts?select=${POST_LIST_FIELDS}&published=is.true&${POST_ORDER}`;
+  } else if (t === 'posts' && UUID.test(id)) {
+    query = `posts?select=${POST_LIST_FIELDS},content&published=is.true&id=eq.${id}`;
   } else if (t === 'sermons' && id === undefined) {
     query = `notes?select=${SERMON_FIELDS}&${SERMON_FILTER}&order=date.desc.nullslast,created_at.desc`;
   } else if (t === 'sermons' && UUID.test(id)) {
@@ -49,13 +58,15 @@ export default async function handler(req, res) {
     const response = await fetch(`${url}/rest/v1/${query}`, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
     });
-    // Chưa chạy migration 0008 (chưa có bảng moments) = chưa có ảnh → trả rỗng, landing dùng nguồn cũ.
+    // Chưa chạy migration 0008/0009 (chưa có bảng) = chưa có ảnh → trả rỗng, landing dùng nguồn cũ.
     if (!response.ok && response.status !== 404) throw new Error(`Supabase lỗi ${response.status}`);
     const rows = response.ok ? await response.json() : [];
 
     let body;
     if (t === 'moments') {
-      const storage = `${url}/storage/v1/object/public/moments/`;
+      // Có IMAGES_BASE_URL (Worker R2) thì ảnh lấy từ R2 — cùng path với Supabase, không cần đổi dữ liệu.
+      const imagesBase = (process.env.IMAGES_BASE_URL || '').trim().replace(/\/$/, '');
+      const storage = imagesBase ? `${imagesBase}/` : `${url}/storage/v1/object/public/moments/`;
       body = {
         images: rows.map((row) => ({
           id: row.id,
@@ -68,6 +79,13 @@ export default async function handler(req, res) {
           h: row.height,
         })),
       };
+    } else if (t === 'posts') {
+      if (id === undefined) body = { posts: rows };
+      else if (rows.length > 0) body = { post: { ...rows[0], images: [] } };
+      else {
+        res.setHeader('Cache-Control', 'public, s-maxage=30');
+        return res.status(404).json({ error: 'Không tìm thấy bài viết' });
+      }
     } else if (id === undefined) {
       body = { sermons: rows.map(({ content, ...sermon }) => ({ ...sermon, excerpt: excerpt(content) })) };
     } else {

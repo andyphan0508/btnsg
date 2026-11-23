@@ -1,0 +1,20 @@
+# Cloudflare Worker phát + nhận ảnh cho BTNSG (xem README.md cùng thư mục).
+name = "btnsg-images"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# Đếm lại dung lượng thật + gửi email cảnh báo, 6 giờ/lần (bucket lớn cần vài lần mới đếm xong).
+[triggers]
+crons = ["0 */6 * * *"]
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "btnsg-images"
+
+[vars]
+SUPABASE_URL = "https://xmesiwctugpiecumhrpq.supabase.co"
+ALLOWED_ORIGINS = "https://quanly-btnsg.vercel.app,https://btnsg-dashboard.vercel.app,http://localhost:5174"
+# Bí mật — KHÔNG ghi ở đây, đặt bằng `npx wrangler secret put <TÊN>`:
+#   SUPABASE_ANON_KEY   anon key của Supabase (giống VITE_SUPABASE_ANON_KEY)
+#   ALERT_WEBHOOK_URL   URL Apps Script gửi email, kèm ?secret=... (giống VITE_APPS_SCRIPT_URL)
+#   ALERT_EMAIL         email nhận cảnh báo

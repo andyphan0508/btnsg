@@ -1,23 +1,25 @@
-// Đăng bài Tin tức lên Google Drive qua Apps Script webhook (tools/apps-script/News.gs).
-// Cấu hình VITE_NEWS_SCRIPT_URL = "https://script.google.com/macros/s/.../exec?secret=..."
-// (secret phải trùng SHARED_SECRET trong News.gs — chỉ thao tác GHI mới cần secret).
-// Chưa cấu hình → chạy chế độ demo: mô phỏng toàn bộ thao tác trong bộ nhớ.
+// Đăng bài Tin tức lên Supabase (bảng posts — supabase/migrations/0009_posts.sql).
+// Ảnh trong bài đã nén sẵn ở trình duyệt, lưu trong kho ảnh (lib/images.ts) ở thư mục posts/<id bài>/.
+// Landing đọc qua /api/library?t=posts và gộp thêm bài cũ trên Google Drive (chỉ xem, không sửa ở đây).
 
-const NEWS_SCRIPT_URL: string = import.meta.env.VITE_NEWS_SCRIPT_URL || '';
-
-const FETCH_TIMEOUT_MS = 30000;
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { deleteImages, imageUrl, uploadImage } from '../lib/images';
+import type { CompressedImage } from '../utils/imageCompress';
 
 export type NewsPostMeta = {
   id: string;
   title: string;
   date: string;
   description: string;
+  /** Link ảnh bìa ('' nếu không có). */
   cover: string;
 };
 
+/** Ảnh đã nằm trên Storage: id = link công khai (dùng thẳng làm src). */
 export type NewsImage = {
   id: string;
   name: string;
+  path: string;
 };
 
 export type NewsPostFull = NewsPostMeta & {
@@ -25,151 +27,132 @@ export type NewsPostFull = NewsPostMeta & {
   images: NewsImage[];
 };
 
-export type NewsImageUpload = {
-  name: string;
-  mimeType: string;
-  dataBase64: string;
-};
-
 export type NewsPostInput = {
   title: string;
   date: string;
   description: string;
   markdown: string;
+  /** Tên ảnh được chọn làm bìa (ảnh mới hoặc ảnh đã có), '' = không bìa. */
   cover: string;
 };
 
-/* ---------- Chế độ demo (chưa cấu hình URL) ---------- */
+type StoredImage = { name: string; url: string; path: string };
 
-const demoStore: NewsPostFull[] = [
-  {
-    id: 'demo-1',
-    title: 'Bài viết mẫu (chế độ demo)',
-    date: '2026-07-20',
-    description: 'Cấu hình VITE_NEWS_SCRIPT_URL để đăng bài thật lên Google Drive.',
-    cover: '',
-    content: 'Đây là bài viết mô phỏng — mọi thao tác đăng/sửa/xoá chỉ diễn ra trong bộ nhớ.',
-    images: [],
-  },
-];
-
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/* ---------- Gọi webhook ---------- */
-
-const fetchJson = async <T>(url: string, init?: RequestInit): Promise<T> => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  let response: Response;
-  try {
-    response = await fetch(url, { redirect: 'follow', signal: controller.signal, ...init });
-  } catch (error) {
-    if ((error as Error).name === 'AbortError') {
-      throw new Error('Apps Script phản hồi quá lâu — kiểm tra URL deployment còn hoạt động không.');
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-  if (!response.ok) throw new Error(`Không gọi được Apps Script (HTTP ${response.status}).`);
-  const text = await response.text();
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    throw new Error('Apps Script không trả về JSON — kiểm tra deploy Web app "Who has access: Anyone".');
-  }
+type PostRow = {
+  id: string;
+  title: string;
+  date: string | null;
+  description: string;
+  cover: string;
+  content?: string;
+  images?: StoredImage[];
 };
 
-const getUrl = (params: Record<string, string>): string => {
-  const url = new URL(NEWS_SCRIPT_URL);
-  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
-  return url.toString();
+const client = () => {
+  if (!supabase) throw new Error('Supabase chưa được cấu hình');
+  return supabase;
 };
 
-type WebhookResult = { ok: boolean; error?: string; id?: string; imageId?: string };
+const toMeta = (row: PostRow): NewsPostMeta => ({
+  id: row.id,
+  title: row.title,
+  date: row.date ?? '',
+  description: row.description,
+  cover: row.cover,
+});
 
-// Content-Type text/plain để tránh CORS preflight (Apps Script không trả lời OPTIONS).
-const postAction = async (payload: Record<string, unknown>): Promise<WebhookResult> => {
-  const result = await fetchJson<WebhookResult>(NEWS_SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload),
-  });
-  if (!result.ok) throw new Error(result.error || 'Apps Script báo lỗi không rõ nguyên nhân.');
-  return result;
-};
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/* ---------- API công khai ---------- */
+/** Đổi `![...](ten-anh.webp)` trong Markdown thành link Storage của ảnh đó. */
+const linkImages = (markdown: string, images: StoredImage[]): string =>
+  images.reduce(
+    (text, image) => text.replace(new RegExp(`\\]\\(${escapeRegExp(image.name)}\\)`, 'g'), `](${image.url})`),
+    markdown,
+  );
 
 export const newsApi = {
-  isConfigured: (): boolean => NEWS_SCRIPT_URL !== '',
+  isConfigured: (): boolean => isSupabaseConfigured,
 
   fetchPosts: async (): Promise<NewsPostMeta[]> => {
-    if (!NEWS_SCRIPT_URL) {
-      await wait(300);
-      return demoStore.map(({ content: _c, images: _i, ...meta }) => meta);
-    }
-    const data = await fetchJson<{ posts?: NewsPostMeta[]; error?: string }>(getUrl({ refresh: '1' }));
-    if (data.error) throw new Error(data.error);
-    return Array.isArray(data.posts) ? data.posts : [];
+    const { data, error } = await client()
+      .from('posts')
+      .select('id,title,date,description,cover')
+      .order('date', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data as PostRow[]).map(toMeta);
   },
 
   fetchPost: async (postId: string): Promise<NewsPostFull> => {
-    if (!NEWS_SCRIPT_URL) {
-      await wait(200);
-      const post = demoStore.find((p) => p.id === postId);
-      if (!post) throw new Error('Không tìm thấy bài viết demo.');
-      return post;
-    }
-    const data = await fetchJson<NewsPostFull & { error?: string }>(getUrl({ post: postId, refresh: '1' }));
-    if (data.error) throw new Error(data.error);
-    return data;
+    const { data, error } = await client()
+      .from('posts')
+      .select('id,title,date,description,cover,content,images')
+      .eq('id', postId)
+      .single();
+    if (error) throw new Error(error.message);
+    const row = data as PostRow;
+    return {
+      ...toMeta(row),
+      content: row.content ?? '',
+      images: (row.images ?? []).map((image) => ({ id: image.url, name: image.name, path: image.path })),
+    };
   },
 
-  createPost: async (input: NewsPostInput): Promise<string> => {
-    if (!NEWS_SCRIPT_URL) {
-      await wait(500);
-      const id = `demo-${Date.now()}`;
-      demoStore.unshift({ ...input, id, content: input.markdown, images: [] });
-      return id;
-    }
-    const result = await postAction({ action: 'create-post', ...input });
-    if (!result.id) throw new Error('Apps Script không trả về ID bài viết.');
-    return result.id;
-  },
+  /**
+   * Tạo hoặc cập nhật bài: upload ảnh mới → thay tên ảnh trong Markdown bằng link → ghi 1 dòng.
+   * Ghi dòng lỗi thì xoá các ảnh vừa upload để không tốn dung lượng vô ích.
+   */
+  savePost: async (
+    postId: string | null,
+    input: NewsPostInput,
+    newImages: CompressedImage[],
+    existingImages: NewsImage[],
+    onProgress: (message: string) => void,
+  ): Promise<string> => {
+    const id = postId ?? crypto.randomUUID();
+    const uploaded: StoredImage[] = [];
 
-  updatePost: async (postId: string, input: NewsPostInput): Promise<void> => {
-    if (!NEWS_SCRIPT_URL) {
-      await wait(500);
-      const post = demoStore.find((p) => p.id === postId);
-      if (post) Object.assign(post, input, { content: input.markdown });
-      return;
+    for (const [index, image] of newImages.entries()) {
+      onProgress(`Đang tải ảnh ${index + 1}/${newImages.length}: ${image.name}…`);
+      const extension = image.blob.type === 'image/webp' ? 'webp' : 'jpg';
+      const path = `posts/${id}/${crypto.randomUUID()}.${extension}`;
+      try {
+        await uploadImage(path, image.blob);
+      } catch (error) {
+        await deleteImages(uploaded.map((u) => u.path));
+        throw new Error(`Không tải được ảnh "${image.name}": ${error instanceof Error ? error.message : error}`);
+      }
+      uploaded.push({ name: image.name, path, url: imageUrl(path) });
     }
-    await postAction({ action: 'update-post', postId, ...input });
-  },
 
-  uploadImage: async (postId: string, image: NewsImageUpload): Promise<void> => {
-    if (!NEWS_SCRIPT_URL) {
-      await wait(400);
-      const post = demoStore.find((p) => p.id === postId);
-      if (post) post.images.push({ id: `demo-img-${Date.now()}`, name: image.name });
-      return;
+    const images: StoredImage[] = [
+      ...existingImages.map((image) => ({ name: image.name, url: image.id, path: image.path })),
+      ...uploaded,
+    ];
+    const row = {
+      id,
+      title: input.title,
+      date: input.date || null,
+      description: input.description,
+      content: linkImages(input.markdown, images),
+      cover: images.find((image) => image.name === input.cover)?.url ?? '',
+      images,
+    };
+
+    onProgress(postId ? 'Đang cập nhật bài viết…' : 'Đang đăng bài viết…');
+    const { error } = await client().from('posts').upsert(row);
+    if (error) {
+      await deleteImages(uploaded.map((u) => u.path));
+      throw new Error(error.message);
     }
-    await postAction({ action: 'upload-image', postId, ...image });
+    return id;
   },
 
   deletePost: async (postId: string): Promise<void> => {
-    if (!NEWS_SCRIPT_URL) {
-      await wait(300);
-      const index = demoStore.findIndex((p) => p.id === postId);
-      if (index >= 0) demoStore.splice(index, 1);
-      return;
-    }
-    await postAction({ action: 'delete-post', postId });
-  },
-
-  warmCache: async (): Promise<void> => {
-    if (!NEWS_SCRIPT_URL) return;
-    await postAction({ action: 'warm' });
+    const { images } = await newsApi.fetchPost(postId);
+    const { error } = await client().from('posts').delete().eq('id', postId);
+    if (error) throw new Error(error.message);
+    // Bài đã xoá thì ảnh không còn hiện ở đâu — file sót lại (nếu lỗi) chỉ tốn dung lượng.
+    await deleteImages(images.map((image) => image.path));
   },
 };

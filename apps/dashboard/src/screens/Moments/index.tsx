@@ -3,13 +3,20 @@ import type { ChangeEvent, DragEvent } from 'react';
 import { FiImage, FiTrash2, FiUploadCloud } from 'react-icons/fi';
 import { momentsApi, type Moment } from '../../api/momentsApi';
 import { isSupabaseConfigured } from '../../lib/supabase';
+import { usesR2 } from '../../lib/images';
+import { migrateImagesToR2 } from '../../api/imageMigration';
+import StorageBanner from '../../ui/StorageBanner';
 import EmptyState from '../../ui/EmptyState';
 import LoadingState from '../../ui/LoadingState';
 import { todayIsoDate } from '../../utils/format';
-import { compressForGallery, formatBytes } from '../../utils/imageCompress';
+import { compressForGallery, formatBytes, isImageFile } from '../../utils/imageCompress';
 
 /** Số ảnh nén + upload cùng lúc: nhanh hơn tuần tự mà không làm treo máy khi chọn hàng trăm ảnh. */
 const UPLOAD_CONCURRENCY = 3;
+
+/** Supabase Free: 1GB lưu file. Ảnh đăng trước khi có cột bytes ước lượng ~300KB. */
+const STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024;
+const ESTIMATED_MOMENT_BYTES = 300 * 1024;
 
 /** bytes = tổng dung lượng (bản lớn + bản nhỏ) của các ảnh đã đăng thành công trong lượt này. */
 type Progress = { done: number; total: number; failed: string[]; bytes: number };
@@ -28,9 +35,15 @@ const MomentsScreen = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [migration, setMigration] = useState<string | null>(null);
 
   // 2. Logic thuần
   const isUploading = progress !== null && progress.done < progress.total;
+  const usedBytes = useMemo(
+    () => moments.reduce((sum, m) => sum + (m.bytes ?? ESTIMATED_MOMENT_BYTES), 0),
+    [moments],
+  );
+  const usedPercent = Math.min(100, (usedBytes / STORAGE_LIMIT_BYTES) * 100);
   const albums = useMemo(() => [...new Set(moments.map((m) => m.album).filter(Boolean))], [moments]);
   const visibleMoments = useMemo(
     () => (albumFilter ? moments.filter((m) => m.album === albumFilter) : moments),
@@ -51,7 +64,7 @@ const MomentsScreen = () => {
   };
 
   const uploadFiles = async (files: File[]): Promise<void> => {
-    const images = files.filter((file) => file.type.startsWith('image/'));
+    const images = files.filter(isImageFile);
     if (images.length === 0 || isUploading) return;
     const meta = { album: album.trim(), takenOn };
     const queue = [...images];
@@ -87,6 +100,22 @@ const MomentsScreen = () => {
       setListError(error instanceof Error ? error.message : String(error));
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const runMigration = async (): Promise<void> => {
+    if (!window.confirm('Chép toàn bộ ảnh cũ từ Supabase sang kho R2? Ảnh trên Supabase vẫn giữ nguyên, chạy lại nhiều lần cũng an toàn.')) {
+      return;
+    }
+    try {
+      const result = await migrateImagesToR2(setMigration);
+      setMigration(
+        result.failed.length === 0
+          ? `Xong — đã kiểm tra ${result.files} file, tất cả đã có trên R2.`
+          : `Xong ${result.files} file, ${result.failed.length} lỗi: ${result.failed.slice(0, 3).join('; ')}`,
+      );
+    } catch (error) {
+      setMigration(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -140,8 +169,31 @@ const MomentsScreen = () => {
       </div>
 
       <div style={styles.column}>
+        {usesR2 && (
+          <div className="card">
+            <div className="card-title">Chuyển ảnh cũ sang R2</div>
+            <p className="cell-muted" style={{ marginBottom: 10 }}>
+              Chép ảnh Khoảnh khắc và ảnh trong bài Tin tức từ Supabase sang kho R2 (giữ nguyên đường dẫn),
+              rồi đổi link trong bài viết. Chỉ cần chạy một lần sau khi bật R2.
+            </p>
+            <button className="btn btn-outline" onClick={runMigration} disabled={migration?.startsWith('Đang') ?? false}>
+              Chép ảnh sang R2
+            </button>
+            {migration && <div className="cell-muted" style={{ marginTop: 10 }}>{migration}</div>}
+          </div>
+        )}
         <div className="card">
           <div className="card-title">Đăng ảnh</div>
+          {usesR2 && <StorageBanner refreshKey={moments.length} />}
+          {!usesR2 && moments.length > 0 && (
+            <div style={styles.usage} title="Gói Supabase miễn phí có 1GB lưu ảnh — đầy thì xoá bớt ảnh cũ hoặc giảm ngân sách nén.">
+              <progress max={100} value={usedPercent} style={styles.progressBar} />
+              <span className="cell-muted">
+                Đã dùng ~{formatBytes(usedBytes)} / 1 GB miễn phí · còn chỗ cho khoảng{' '}
+                {Math.max(0, Math.floor((STORAGE_LIMIT_BYTES - usedBytes) / ESTIMATED_MOMENT_BYTES)).toLocaleString('vi-VN')} ảnh nữa
+              </span>
+            </div>
+          )}
           <div className="form-grid">
             <div className="field">
               <label className="field-label">Album / dịp</label>
@@ -167,7 +219,7 @@ const MomentsScreen = () => {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             multiple
             style={{ display: 'none' }}
             onChange={handleFileChange}
@@ -284,6 +336,7 @@ const createStyles = () => {
     dropZoneActive: { borderColor: 'var(--brand)', background: 'var(--brand-soft)' },
     progress: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 },
     progressBar: { flex: 1, height: 8 },
+    usage: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 },
     libraryHead: {
       display: 'flex',
       alignItems: 'center',

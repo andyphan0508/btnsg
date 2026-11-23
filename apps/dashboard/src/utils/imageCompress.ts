@@ -1,25 +1,25 @@
-// Nén ảnh phía trình duyệt trước khi upload lên Google Drive qua Apps Script:
-// - Thu nhỏ về tối đa 1600px cạnh dài (đủ nét cho web, Drive thumbnail cũng chỉ phát tới w1600).
-// - Xuất JPEG chất lượng 0.85 → ảnh điện thoại 4–6MB còn ~200–500KB.
-// Nhờ đó payload webhook nhỏ, Drive nhẹ, và web tải nhanh.
-
-import type { NewsImageUpload } from '../api/newsApi';
+// Nén ảnh phía trình duyệt trước khi upload lên Supabase Storage (gói Free không có xử lý ảnh
+// phía máy chủ): thu nhỏ + mã hoá WebP trong ngân sách dung lượng. Ảnh điện thoại 4–8MB còn ~100–300KB,
+// nhờ đó 1GB miễn phí chứa được nhiều ảnh và web tải nhanh.
 
 const MAX_DIMENSION = 1600;
-const JPEG_QUALITY = 0.85;
 
-export type CompressedImage = NewsImageUpload & {
+export type CompressedImage = {
+  /** Tên hiển thị/chèn vào Markdown (đuôi theo định dạng sau nén). */
+  name: string;
+  blob: Blob;
   /** URL tạm (objectURL) để preview ngay trong màn hình soạn bài. */
   previewUrl: string;
   /** Kích thước sau nén (bytes) — hiển thị cho người đăng biết. */
   sizeBytes: number;
 };
 
-/** Đổi đuôi file về .jpg (ảnh đã được re-encode sang JPEG). */
-const toJpgName = (fileName: string): string => {
-  const base = fileName.replace(/\.[a-z0-9]+$/i, '').trim() || 'anh';
-  return `${base}.jpg`;
-};
+/** Ảnh HEIC/HEIF (iPhone): Chrome/Edge trên máy tính không đọc được; Safari đọc được. */
+const isHeic = (file: File) => /hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+
+/** Lọc file ảnh khi chọn/kéo thả — HEIC trên Chrome có thể mang type rỗng nên xét cả đuôi file. */
+export const isImageFile = (file: File) =>
+  file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|avif|hei[cf])$/i.test(file.name);
 
 const loadImageElement = (file: File): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
@@ -28,12 +28,18 @@ const loadImageElement = (file: File): Promise<HTMLImageElement> =>
     image.onload = () => resolve(image);
     image.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error(`Không đọc được ảnh "${file.name}" — file có phải là ảnh không?`));
+      reject(
+        new Error(
+          isHeic(file)
+            ? `"${file.name}" là ảnh HEIC của iPhone — trình duyệt này không đọc được. Hãy đăng bằng Safari, hoặc đặt iPhone: Cài đặt → Camera → Định dạng → "Tương thích nhất".`
+            : `Không đọc được ảnh "${file.name}" — file có phải là ảnh không?`,
+        ),
+      );
     };
     image.src = url;
   });
 
-const canvasToBlob = (canvas: HTMLCanvasElement, type = 'image/jpeg', quality = JPEG_QUALITY): Promise<Blob> =>
+const canvasToBlob = (canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> =>
   new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error('Nén ảnh thất bại.'))),
@@ -55,34 +61,6 @@ const drawScaled = (image: HTMLImageElement, maxDimension: number): HTMLCanvasEl
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
   return canvas;
-};
-
-const blobToBase64 = (blob: Blob): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      // reader.result dạng "data:image/jpeg;base64,xxxx" → chỉ lấy phần sau dấu phẩy.
-      const result = String(reader.result);
-      resolve(result.slice(result.indexOf(',') + 1));
-    };
-    reader.onerror = () => reject(new Error('Không đọc được dữ liệu ảnh sau nén.'));
-    reader.readAsDataURL(blob);
-  });
-
-/** Nén 1 file ảnh → dữ liệu sẵn sàng upload + URL preview. */
-export const compressImage = async (file: File): Promise<CompressedImage> => {
-  const image = await loadImageElement(file);
-  const blob = await canvasToBlob(drawScaled(image, MAX_DIMENSION));
-  const dataBase64 = await blobToBase64(blob);
-  URL.revokeObjectURL(image.src);
-
-  return {
-    name: toJpgName(file.name),
-    mimeType: 'image/jpeg',
-    dataBase64,
-    previewUrl: URL.createObjectURL(blob),
-    sizeBytes: blob.size,
-  };
 };
 
 export type GalleryImage = {
@@ -149,6 +127,23 @@ export const compressForGallery = async (file: File): Promise<GalleryImage> => {
     const full = await encodeWithinBudget(image, MAX_DIMENSION, FULL_MAX_BYTES);
     const thumb = await encodeWithinBudget(image, 800, THUMB_MAX_BYTES);
     return { full: full.blob, thumb: thumb.blob, width: full.width, height: full.height };
+  } finally {
+    URL.revokeObjectURL(image.src);
+  }
+};
+
+/** Ảnh chèn trong bài Tin tức: 1 cỡ ≤1600px, ≤300KB. */
+export const compressImage = async (file: File): Promise<CompressedImage> => {
+  const image = await loadImageElement(file);
+  try {
+    const { blob } = await encodeWithinBudget(image, MAX_DIMENSION, 300 * 1024);
+    const base = file.name.replace(/\.[a-z0-9]+$/i, '').trim() || 'anh';
+    return {
+      name: `${base}.${blob.type === 'image/webp' ? 'webp' : 'jpg'}`,
+      blob,
+      previewUrl: URL.createObjectURL(blob),
+      sizeBytes: blob.size,
+    };
   } finally {
     URL.revokeObjectURL(image.src);
   }

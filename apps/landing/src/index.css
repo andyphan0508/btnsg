@@ -50,6 +50,7 @@
     rgb(255 255 255 / 0.07)
   );
   --glass-solid: rgb(22 18 30 / 0.78);
+  --glass-flat: linear-gradient(150deg, rgb(44 36 56 / 0.82), rgb(24 20 32 / 0.86));
   --glass-rim: linear-gradient(
     150deg,
     rgb(255 255 255 / 0.5),
@@ -65,7 +66,6 @@
   --orb-3: #2c35c8;
   --orb-4: #7a1c63;
   --orb-alpha: 0.5;
-  --grain-alpha: 0.075;
 }
 
 :root[data-theme="light"] {
@@ -86,6 +86,7 @@
     rgb(255 255 255 / 0.62)
   );
   --glass-solid: rgb(255 251 246 / 0.86);
+  --glass-flat: linear-gradient(150deg, rgb(255 255 255 / 0.92), rgb(255 252 247 / 0.84));
   --glass-rim: linear-gradient(
     150deg,
     rgb(255 255 255 / 1),
@@ -101,7 +102,6 @@
   --orb-3: #9fb1ff;
   --orb-4: #f7a8c8;
   --orb-alpha: 0.62;
-  --grain-alpha: 0.05;
 }
 
 /* ---------- 2. Nền tảng ---------- */
@@ -262,14 +262,6 @@ code {
   opacity: calc(var(--orb-alpha) * 0.6);
 }
 
-.grain {
-  position: fixed;
-  inset: 0;
-  z-index: 75;
-  pointer-events: none;
-  opacity: var(--grain-alpha);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
 
 /* ---------- 4. Khối dựng dùng chung ---------- */
 
@@ -678,12 +670,6 @@ a.chip:hover {
   fill: var(--sun-1);
 }
 
-@keyframes spin {
-  to {
-    rotate: 360deg;
-  }
-}
-
 /* Ô ảnh */
 .media-tile {
   display: block;
@@ -740,23 +726,6 @@ a.chip:hover {
       animation: sfx-sunrise linear both;
       animation-timeline: view();
       animation-range: entry 0% cover 60%;
-    }
-
-    .orb {
-      animation: orb-drift-1 linear both;
-      animation-timeline: scroll(root);
-    }
-
-    .orb-2 {
-      animation-name: orb-drift-2;
-    }
-
-    .orb-3 {
-      animation-name: orb-drift-3;
-    }
-
-    .orb-4 {
-      animation-name: orb-drift-4;
     }
   }
 }
@@ -822,30 +791,6 @@ a.chip:hover {
   to {
     opacity: 1;
     transform: none;
-  }
-}
-
-@keyframes orb-drift-1 {
-  to {
-    transform: translate3d(22vw, 45vh, 0) scale(1.2);
-  }
-}
-
-@keyframes orb-drift-2 {
-  to {
-    transform: translate3d(-26vw, 34vh, 0) scale(0.85);
-  }
-}
-
-@keyframes orb-drift-3 {
-  to {
-    transform: translate3d(14vw, -58vh, 0) scale(1.15);
-  }
-}
-
-@keyframes orb-drift-4 {
-  to {
-    transform: translate3d(46vw, -24vh, 0) scale(1.3);
   }
 }
 
@@ -1098,7 +1043,6 @@ a.chip:hover {
   width: 158%;
   translate: -50% -50%;
   opacity: 0.85;
-  animation: spin 80s linear infinite;
 }
 
 .hero-frame {
@@ -1147,7 +1091,7 @@ a.chip:hover {
     transparent 62%
   );
   transform: translateX(-100%);
-  animation: frame-sheen 7s var(--ease-soft) 1.6s infinite;
+  animation: frame-sheen 2.6s var(--ease-soft) 1.2s 1 both;
 }
 
 @keyframes frame-sheen {
@@ -1425,7 +1369,6 @@ a.chip:hover {
   width: 118%;
   translate: 50% -50%;
   opacity: 0.5;
-  animation: spin 90s linear infinite;
 }
 
 .bento-theme-title {
@@ -1942,7 +1885,7 @@ a.chip:hover {
   --card-h: calc(var(--card-w) * 1.3);
   --r: calc(var(--card-w) * 1.8);
   position: relative;
-  height: 320vh;
+  height: 240vh;
   overflow-x: clip;
 }
 
@@ -2073,7 +2016,6 @@ a.chip:hover {
   width: min(140vw, 64rem);
   translate: -50% -50%;
   opacity: 0.15;
-  animation: spin 110s linear infinite;
 }
 
 .final-title {
@@ -3370,7 +3312,7 @@ a.chip:hover {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  animation: pulse 2.8s infinite;
+  animation: pulse 2.8s 3; /* nhấp nháy 3 lần gây chú ý rồi dừng, không vẽ lại mãi */
 }
 
 .fab-btn > span {
@@ -3974,5 +3916,36 @@ img.media-tile:not([data-loaded]),
 @keyframes page-in {
   from {
     opacity: 0;
+  }
+}
+
+/* ---------- 27. Máy cảm ứng / màn hẹp: bỏ blur nền trên thẻ ---------- */
+/* backdrop-filter phải vẽ lại vùng phía sau mỗi khung hình khi cuộn — rất tốn GPU trên điện thoại.
+   Nền phía sau chỉ là quầng màu mềm nên thay bằng kính đục gần như không khác về mắt.
+   Nav, dock, modal (.is-solid) vẫn giữ blur. */
+@media (max-width: 900px), (hover: none) {
+  .glass:not(.is-solid),
+  .btn-glass,
+  .chip,
+  .marquee-tape.is-glass,
+  .hero-frame,
+  .acc-icon,
+  .tag {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .glass:not(.is-solid),
+  .marquee-tape.is-glass {
+    background: var(--glass-flat);
+  }
+
+  /* Thẻ lịch tuần chồng lên nhau: nền đặc để chữ thẻ phía dưới không lộ qua. */
+  .glass.stack-card {
+    background: linear-gradient(150deg, #2a2234, #17131f);
+  }
+
+  :root[data-theme="light"] .glass.stack-card {
+    background: linear-gradient(150deg, #ffffff, #fbf6ef);
   }
 }

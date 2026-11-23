@@ -1,12 +1,22 @@
-// Lớp lấy dữ liệu Tin tức từ Google Apps Script (mỗi bài viết = 1 folder con trong
-// folder "Tin tức" trên Google Drive, chứa 1 file .md + ảnh — xem tools/apps-script/News.gs).
-// Chưa cấu hình VITE_NEWS_SCRIPT_URL → dùng dữ liệu demo (không cần mạng).
+// Lớp lấy dữ liệu Tin tức. Nguồn chính: bài đăng từ dashboard (bảng posts trên Supabase, đọc qua
+// /api/library?t=posts). Bài cũ trên Google Drive (Apps Script, VITE_NEWS_SCRIPT_URL) vẫn được gộp
+// vào danh sách để không mất bài. Không có nguồn nào → dữ liệu demo.
 
 const NEWS_URL = import.meta.env.VITE_NEWS_SCRIPT_URL || ''
 // Production đi qua proxy có cache CDN (api/feed.js); chạy dev không có /api nên gọi thẳng Apps Script.
 const NEWS_FEED = import.meta.env.DEV ? NEWS_URL : '/api/feed?src=news'
 
 export const isNewsConfigured = Boolean(NEWS_URL)
+const POSTS_FEED = '/api/library?t=posts'
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+/** Bài Supabase có id dạng UUID; bài Drive dùng id folder Drive. */
+const isLibraryPost = (postId) => UUID.test(postId)
+
+/** /api/library trả JSON; chạy dev (không có /api) hoặc lỗi mạng → null. */
+const getLibrary = (url) =>
+  fetch(url)
+    .then((response) => (response.ok ? response.json() : null))
+    .catch(() => null)
 
 /* ---------- Cache trình duyệt (stale-while-revalidate) ----------
    Lượt xem sau hiển thị NGAY từ localStorage, rồi âm thầm fetch bản mới để cập nhật.
@@ -125,11 +135,18 @@ async function fetchJson(url) {
   return data
 }
 
-/** Danh sách bài viết (metadata, đã sắp mới → cũ từ phía script). */
+/** Danh sách bài viết (metadata), gộp bài Supabase + bài Drive cũ, sắp mới → cũ. */
 export async function fetchPosts() {
-  if (!isNewsConfigured) return DEMO_POSTS
-  const data = await fetchJson(NEWS_FEED)
-  const posts = Array.isArray(data.posts) ? data.posts : []
+  const [library, drive] = await Promise.all([
+    getLibrary(POSTS_FEED),
+    isNewsConfigured ? fetchJson(NEWS_FEED).catch((error) => ({ error })) : { posts: [] },
+  ])
+  const libraryPosts = Array.isArray(library?.posts) ? library.posts : []
+  // Drive lỗi mà Supabase cũng không có bài → báo lỗi như trước; có bài Supabase thì vẫn hiện.
+  if (drive.error && libraryPosts.length === 0) throw drive.error
+  const drivePosts = Array.isArray(drive.posts) ? drive.posts : []
+  if (!isNewsConfigured && libraryPosts.length === 0) return DEMO_POSTS
+  const posts = [...libraryPosts, ...drivePosts].sort((a, b) => (b.date || '').localeCompare(a.date || ''))
   if (posts.length > 0) writeNewsCache('list', posts)
   return posts
 }
@@ -137,6 +154,12 @@ export async function fetchPosts() {
 /** Một bài viết đầy đủ: nội dung Markdown + danh sách ảnh của bài. */
 export async function fetchPost(postId) {
   if (!postId) return null
+  if (isLibraryPost(postId)) {
+    const data = await getLibrary(`${POSTS_FEED}&id=${postId}`)
+    if (!data?.post) throw new Error('Không tìm thấy bài viết.')
+    writeNewsCache(`post:${postId}`, data.post)
+    return data.post
+  }
   if (!isNewsConfigured) return demoPost(postId)
   const separator = NEWS_FEED.includes('?') ? '&' : '?'
   const post = await fetchJson(`${NEWS_FEED}${separator}post=${encodeURIComponent(postId)}`)
@@ -172,7 +195,7 @@ const prefetchedIds = new Set()
 
 /** Tải trước bài viết (fire-and-forget) — bấm vào là bài đã nằm sẵn trong cache. */
 export function prefetchPost(postId) {
-  if (!postId || !isNewsConfigured) return
+  if (!postId || (!isNewsConfigured && !isLibraryPost(postId))) return
   if (prefetchedIds.has(postId)) return
   prefetchedIds.add(postId)
   fetchPost(postId).catch(() => {

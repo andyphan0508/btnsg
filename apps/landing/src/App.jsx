@@ -61,7 +61,6 @@ export default function App() {
         <span className="orb orb-3" />
         <span className="orb orb-4" />
       </div>
-      <div className="grain" aria-hidden="true" />
 
       <Nav />
       <div className="page" key={location.pathname}>

@@ -1,4 +1,5 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { cardImages, imageUrl, loadImages } from "../lib/gallery.js";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/scroll.js";
 import { iconFor } from "../lib/icons.js";
 import { content } from "../lib/siteContent.js";
@@ -11,6 +12,20 @@ import { Rich } from "../lib/rich.jsx";
 export default function Schedule() {
   const root = useRef(null);
   const { home, schedule } = content;
+  const [library, setLibrary] = useState([]);
+  // Lịch tuần chỉ hiện ảnh khi đã đặt ảnh riêng / tag ở dashboard — không lấy ảnh ngẫu nhiên.
+  const photos = cardImages(schedule, library, { fallback: false });
+
+  useEffect(() => {
+    if (!schedule.some((s) => s.image || s.tag)) return undefined;
+    let alive = true;
+    loadImages()
+      .then((all) => alive && setLibrary(all))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useGSAP(
     () => {
@@ -69,6 +84,11 @@ export default function Schedule() {
                 key={i}
               >
                 <span className="stack-glow" aria-hidden="true" />
+                {photos[i] && (
+                  <span className="stack-photo" aria-hidden="true">
+                    <img src={imageUrl(photos[i], 1200)} alt="" loading="lazy" decoding="async" />
+                  </span>
+                )}
                 <div className="stack-when">
                   <span className="stack-day">{s.day}</span>
                   <span className="stack-time">{s.time}</span>

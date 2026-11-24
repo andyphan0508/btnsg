@@ -3,7 +3,10 @@ import MediaTile from "./MediaTile.jsx";
 import { iconFor } from "../lib/icons.js";
 import { content } from "../lib/siteContent.js";
 import { Rich } from "../lib/rich.jsx";
-import { loadImages, pickImages } from "../lib/gallery.js";
+import { cardImages, loadImages } from "../lib/gallery.js";
+
+// Nền gradient khi thẻ chưa có ảnh nào (tông nắng/chàm xen kẽ).
+const FALLBACK_HUES = [22, 250, 34, 330, 14, 268];
 
 /**
  * Accordion ngang: sáu lát ảnh dọc, lát được chọn nở rộng ra để lộ nội dung trên tấm kính mờ.
@@ -11,13 +14,14 @@ import { loadImages, pickImages } from "../lib/gallery.js";
  */
 export default function Ministries() {
   const [active, setActive] = useState(0);
-  const [images, setImages] = useState([]);
+  const [library, setLibrary] = useState([]);
   const { home, ministries } = content;
+  const images = cardImages(ministries, library, { seed: "muc-vu-accordion" });
 
   useEffect(() => {
     let alive = true;
     loadImages()
-      .then((all) => alive && setImages(pickImages(all, "muc-vu-accordion", ministries.length)))
+      .then((all) => alive && setLibrary(all))
       .catch(() => {});
     return () => {
       alive = false;
@@ -47,7 +51,11 @@ export default function Ministries() {
                 onClick={() => setActive(i)}
               >
                 <div className="acc-media">
-                  {images[i] && <MediaTile image={images[i]} width={900} />}
+                  {images[i] ? (
+                    <MediaTile image={images[i]} width={900} />
+                  ) : (
+                    <div className="media-tile media-demo" style={{ "--h": FALLBACK_HUES[i % FALLBACK_HUES.length] }} />
+                  )}
                 </div>
                 <button
                   type="button"

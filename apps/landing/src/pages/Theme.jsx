@@ -11,7 +11,7 @@ export default function Theme() {
       <PageHero title={themeYear.pageTitle} lead={themeYear.pageLead} />
       <main>
         <ThemeYear />
-        <PhotoStrip title={themeYear.photoTitle} />
+        <PhotoStrip title={themeYear.photoTitle} tag={themeYear.photoTag} />
       </main>
     </>
   );

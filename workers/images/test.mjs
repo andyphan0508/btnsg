@@ -74,6 +74,29 @@ try {
   const evil = await fetch(`${base}/${k1}`, { method: 'OPTIONS', headers: { Origin: 'https://evil.example' } });
   assert.equal(evil.headers.get('access-control-allow-origin'), null);
 
+  // Ảnh tải lên từ màn hình Website + audio bài giảng (stream, Range để tua).
+  assert.equal((await put(`site/${uuid()}.webp`, 1000)).status, 201, 'ảnh site/');
+  assert.equal((await put(`audio/${uuid()}.mp3`, 1000, { type: 'image/webp' })).status, 415, 'audio sai kiểu');
+  assert.equal((await put(`audio/${uuid()}.wav`, 1000, { type: 'audio/wav' })).status, 404, 'đuôi audio lạ');
+  const audioKey = `audio/${uuid()}.mp3`;
+  const audioBytes = new Uint8Array(1000).map((_, i) => i % 256);
+  const audioPut = await fetch(`${base}/${audioKey}`, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer good', 'Content-Type': 'audio/mpeg' },
+    body: audioBytes,
+  });
+  assert.equal(audioPut.status, 201, 'audio mp3');
+  const ranged = await fetch(`${base}/${audioKey}`, { headers: { Range: 'bytes=100-199' } });
+  assert.equal(ranged.status, 206, 'Range → 206');
+  assert.equal(ranged.headers.get('content-range'), 'bytes 100-199/1000');
+  const part = new Uint8Array(await ranged.arrayBuffer());
+  assert.equal(part.length, 100);
+  assert.equal(part[0], 100);
+  const whole = await fetch(`${base}/${audioKey}`);
+  assert.equal(whole.headers.get('accept-ranges'), 'bytes');
+  assert.equal((await whole.arrayBuffer()).byteLength, 1000);
+  for (const key of [audioKey]) await fetch(`${base}/${key}`, { method: 'DELETE', headers: { Authorization: 'Bearer good' } });
+
   // Dashboard upload song song (3 ảnh × 2 cỡ) — bộ đếm không được mất lượt cộng nào.
   const before = (await (await fetch(`${base}/_usage`)).json()).bytes;
   const parallel = await Promise.all(Array.from({ length: 12 }, () => put(`khac/${uuid()}.webp`, 100_000)));
@@ -91,7 +114,7 @@ try {
     if (!usage.scan) break;
   }
   assert.equal(runs, 3, `đếm nối tiếp qua 3 lần cron (thực tế ${runs})`);
-  assert.equal(usage.bytes, 2_700_000, 'cron đếm lại đúng dung lượng thật');
+  assert.equal(usage.bytes, 2_701_000, 'cron đếm lại đúng dung lượng thật');
   assert.ok(usage.measuredAt, `cron phải ghi measuredAt (status ${cron.status})`);
   await new Promise((r) => setTimeout(r, 500));
   assert.equal(alerts.length, 2, `mỗi lần lên mức 80% chỉ 1 email (nhận ${alerts.length})`);

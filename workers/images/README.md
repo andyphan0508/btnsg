@@ -1,6 +1,6 @@
 # Kho ảnh R2 + soft limit (Cloudflare Worker `btnsg-images`)
 
-Worker này là **cửa duy nhất** vào bucket R2: phát ảnh cho web, nhận ảnh từ dashboard (chỉ thành viên
+Worker này là **cửa duy nhất** vào bucket R2: phát ảnh + audio bài giảng cho web, nhận file từ dashboard (chỉ thành viên
 đã duyệt), và tự chặn trước khi vượt hạn mức miễn phí:
 
 | Hạn mức free R2 | Cách chặn |
@@ -19,6 +19,10 @@ cron đếm lại dung lượng thật của bucket để sửa sai lệch (buck
 > Mọi truy cập phải đi qua Worker.
 > Giới hạn của Worker: quá 100.000 request/ngày (khoảng 2–5 nghìn lượt xem thư viện ảnh) thì ảnh
 > tạm không tải được đến 7:00 sáng hôm sau — không tính tiền.
+
+File nhận được: ảnh Khoảnh khắc / Tin tức / màn hình Website (`site/…`) — WebP/JPEG ≤ 2MB, đã nén ở
+trình duyệt; audio bài giảng (`audio/…`) — MP3/M4A/OGG ≤ 50MB, tính chung vào 10GB. GET hỗ trợ `Range`
+để tua audio (Safari/iPhone cần). Link YouTube cho bài giảng thì không tốn dung lượng.
 
 ## Cài đặt (làm 1 lần)
 

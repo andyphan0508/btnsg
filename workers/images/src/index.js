@@ -1,7 +1,8 @@
 /**
  * BTNSG Images — Cloudflare Worker đứng trước bucket R2, là CỬA DUY NHẤT vào kho ảnh.
  *
- *   GET    /<key>    ảnh công khai (cache trình duyệt 1 năm — tên file không bao giờ trùng)
+ *   GET    /<key>    ảnh / audio công khai (cache trình duyệt 1 năm — tên file không bao giờ trùng),
+ *                     hỗ trợ Range để tua audio
  *   PUT    /<key>    upload (chỉ thành viên đã duyệt trên Supabase), có soft limit
  *   DELETE /<key>    xoá ảnh (chỉ thành viên đã duyệt)
  *   GET    /_usage   dung lượng / lượt ghi đã dùng để dashboard hiện cảnh báo
@@ -21,13 +22,29 @@ const FREE_WRITES_PER_MONTH = 1_000_000;
 const WARN_RATIO = 0.8;
 const BLOCK_RATIO = 0.95;
 const WRITE_BLOCK_RATIO = 0.9;
-const MAX_OBJECT_BYTES = 2 * 1024 * 1024;
-const IMAGE_TYPES = new Set(['image/webp', 'image/jpeg']);
+const MB = 1024 * 1024;
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-/** Chỉ đúng 2 kiểu tên file dashboard tạo ra — không ai ghi đè được _usage.json hay file lạ. */
-const KEY_PATTERN = new RegExp(
-  `^(posts/${UUID}/${UUID}|(\\d{4}-\\d{2}-\\d{2}|khac)/${UUID}(-thumb)?)\\.(webp|jpg)$`,
-);
+
+/**
+ * Chỉ đúng các kiểu tên file dashboard tạo ra — không ai ghi đè được _usage.json hay file lạ.
+ * Ảnh (đã nén ở trình duyệt) ≤ 2MB; audio bài giảng ≤ 50MB (giới hạn mỗi file của Supabase Free,
+ * để hai kho nhận cùng một bộ file).
+ */
+const FILE_KINDS = [
+  {
+    pattern: new RegExp(`^(posts/${UUID}/${UUID}|site/${UUID}|(\\d{4}-\\d{2}-\\d{2}|khac)/${UUID}(-thumb)?)\\.(webp|jpg)$`),
+    types: new Set(['image/webp', 'image/jpeg']),
+    maxBytes: 2 * MB,
+    label: 'ảnh WebP hoặc JPEG',
+  },
+  {
+    pattern: new RegExp(`^audio/${UUID}\\.(mp3|m4a|ogg|opus)$`),
+    types: new Set(['audio/mpeg', 'audio/mp4', 'audio/x-m4a', 'audio/ogg', 'audio/opus']),
+    maxBytes: 50 * MB,
+    label: 'audio MP3, M4A hoặc OGG',
+  },
+];
+const kindOf = (key) => FILE_KINDS.find((kind) => kind.pattern.test(key));
 
 const currentMonth = () => new Date().toISOString().slice(0, 7);
 
@@ -158,22 +175,23 @@ function corsHeaders(request, env) {
 const json = (data, status, headers) =>
   new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', ...headers } });
 
-async function handlePut(request, env, ctx, key, cors) {
+async function handlePut(request, env, ctx, key, kind, cors) {
   const type = (request.headers.get('Content-Type') || '').split(';')[0];
-  if (!IMAGE_TYPES.has(type)) return json({ error: 'Chỉ nhận ảnh WebP hoặc JPEG.' }, 415, cors);
-  if (Number(request.headers.get('Content-Length')) > MAX_OBJECT_BYTES) {
-    return json({ error: 'Ảnh quá 2MB.' }, 413, cors);
+  if (!kind.types.has(type)) return json({ error: `Chỉ nhận ${kind.label}.` }, 415, cors);
+  // Cần biết trước dung lượng: vừa để chặn file quá lớn, vừa để R2 nhận dữ liệu dạng stream
+  // (audio vài chục MB không phải nạp hết vào bộ nhớ Worker).
+  const length = Number(request.headers.get('Content-Length'));
+  if (!Number.isInteger(length) || length <= 0) return json({ error: 'Thiếu Content-Length.' }, 411, cors);
+  if (length > kind.maxBytes) {
+    return json({ error: `File quá ${Math.round(kind.maxBytes / MB)}MB.` }, 413, cors);
   }
 
-  // Chép lại ảnh cũ (chạy nhiều lần) → file đã có thì bỏ qua, không tốn lượt ghi.
+  // Chép lại file cũ (chạy nhiều lần) → file đã có thì bỏ qua, không tốn lượt ghi.
   if (await env.BUCKET.head(key)) return json({ ok: true, exists: true }, 200, cors);
-
-  const body = await request.arrayBuffer();
-  if (body.byteLength > MAX_OBJECT_BYTES) return json({ error: 'Ảnh quá 2MB.' }, 413, cors);
 
   const usage = await readUsage(env);
   const limits = summarize(usage, env);
-  if (usage.bytes + body.byteLength > limits.blockBytes) {
+  if (usage.bytes + length > limits.blockBytes) {
     return json(
       { error: `Kho ảnh đã dùng ${formatGB(usage.bytes)} / ${formatGB(limits.limitBytes)} — tạm ngừng nhận ảnh để không phát sinh phí. Hãy xoá bớt ảnh cũ.` },
       507,
@@ -184,11 +202,11 @@ async function handlePut(request, env, ctx, key, cors) {
     return json({ error: 'Đã hết lượt ghi miễn phí của tháng này — thử lại vào tháng sau.' }, 429, cors);
   }
 
-  await env.BUCKET.put(key, body, {
+  const stored = await env.BUCKET.put(key, request.body, {
     httpMetadata: { contentType: type, cacheControl: 'public, max-age=31536000, immutable' },
   });
   const result = await updateUsage(env, (u) => {
-    u.bytes += body.byteLength;
+    u.bytes += stored.size;
     u.objects += 1;
     u.writes += 1; // chính file ảnh
   });
@@ -253,16 +271,28 @@ export default {
     if (key === '_usage') {
       return json(summarize(await readUsage(env), env), 200, { ...cors, 'Cache-Control': 'no-store' });
     }
-    if (!KEY_PATTERN.test(key)) return json({ error: 'Không tìm thấy' }, 404, cors);
+    const kind = kindOf(key);
+    if (!kind) return json({ error: 'Không tìm thấy' }, 404, cors);
 
     if (request.method === 'GET' || request.method === 'HEAD') {
-      const object = await env.BUCKET.get(key);
-      if (!object) return new Response('Không tìm thấy ảnh', { status: 404 });
+      // Range: trình phát audio (nhất là Safari/iPhone) xin từng đoạn để tua và phát.
+      const ranged = request.headers.has('Range');
+      const object = await env.BUCKET.get(key, ranged ? { range: request.headers } : undefined);
+      if (!object) return new Response('Không tìm thấy file', { status: 404 });
       const headers = new Headers();
       object.writeHttpMetadata(headers);
       headers.set('ETag', object.httpEtag);
       headers.set('Cache-Control', 'public, max-age=31536000, immutable');
       headers.set('Access-Control-Allow-Origin', '*');
+      headers.set('Accept-Ranges', 'bytes');
+      if (ranged && object.range) {
+        const start = object.range.offset ?? object.size - object.range.suffix;
+        const length = object.range.length ?? object.size - start;
+        headers.set('Content-Range', `bytes ${start}-${start + length - 1}/${object.size}`);
+        headers.set('Content-Length', String(length));
+        return new Response(request.method === 'HEAD' ? null : object.body, { status: 206, headers });
+      }
+      headers.set('Content-Length', String(object.size));
       return new Response(request.method === 'HEAD' ? null : object.body, { headers });
     }
 
@@ -272,7 +302,7 @@ export default {
     if (!(await isApproved(request, env))) {
       return json({ error: 'Cần đăng nhập dashboard bằng tài khoản đã được duyệt.' }, 401, cors);
     }
-    return request.method === 'PUT' ? handlePut(request, env, ctx, key, cors) : handleDelete(env, key, cors);
+    return request.method === 'PUT' ? handlePut(request, env, ctx, key, kind, cors) : handleDelete(env, key, cors);
   },
 
   async scheduled(_event, env, ctx) {

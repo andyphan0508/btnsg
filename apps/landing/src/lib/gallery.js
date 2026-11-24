@@ -1,3 +1,4 @@
+import { sameTag, toSiteImageUrl } from '@btnsg/shared'
 // Lớp lấy dữ liệu Thư viện ảnh. Nguồn chính: ảnh đăng từ dashboard (màn hình "Khoảnh khắc",
 // lưu Supabase Storage, đọc qua /api/library). Chưa có ảnh nào → dùng folder Google Drive cũ qua
 // Apps Script (VITE_GALLERY_SCRIPT_URL) nếu còn cấu hình → không thì dữ liệu demo (gradient).
@@ -136,6 +137,25 @@ export function loadImages() {
     })
   }
   return imagesPromise
+}
+
+/** Ảnh mang tag (so khớp NFC, không phân biệt hoa thường — giống dashboard). */
+export function withTag(images, tag) {
+  if (!tag) return []
+  return (images || []).filter((image) => (image.tags || []).some((t) => sameTag(t, tag)))
+}
+
+/**
+ * Ảnh cho từng thẻ (mục vụ, lịch tuần…): ảnh riêng đặt ở dashboard → ảnh mới nhất mang tag của thẻ
+ * → (nếu fallback) ảnh rải đều theo seed. Không có ảnh nào → null (thẻ tự vẽ nền gradient).
+ */
+export function cardImages(items, images, { seed = '', fallback = true } = {}) {
+  const spread = fallback ? pickImages(images, seed, items.length) : []
+  return items.map((item, i) => {
+    const own = toSiteImageUrl(item.image, 1600)
+    if (own) return { id: `card-${seed}-${i}`, src: own, thumb: own, name: item.title || item.what || '' }
+    return withTag(images, item.tag)[0] || spread[i] || null
+  })
 }
 
 /** Băm chuỗi → số, để mỗi trang luôn nhận cùng một ảnh (không nhảy loạn khi re-render). */

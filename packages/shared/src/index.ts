@@ -202,6 +202,8 @@ export type Note = {
   content: string;
   /** Bài giảng hiện trên trang /bai-giang của landing (chỉ áp dụng cho loại bai_giang). */
   published?: boolean;
+  /** Audio bài giảng: file đã tải lên kho, link YouTube hoặc link MP3 bên ngoài. */
+  audioUrl?: string;
   createdAt: string;
   updatedAt: string;
 };

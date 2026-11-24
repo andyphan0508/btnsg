@@ -40,7 +40,7 @@ export default function Activities() {
           </div>
         </section>
 
-        <PhotoStrip title={activities.photoTitle} />
+        <PhotoStrip title={activities.photoTitle} tag={activities.photoTag} />
       </main>
 
       <SubCommitteeModal committee={activeCommittee} onClose={() => setActiveCommittee(null)} />

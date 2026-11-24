@@ -1,6 +1,6 @@
 // Tự kiểm tra chuẩn hoá nội dung landing: npx tsx packages/shared/src/siteContent.check.ts
 import assert from 'node:assert/strict';
-import { mergeSiteContent, SITE_SECTIONS, toSiteImageUrl } from './siteContent';
+import { mergeSiteContent, sameTag, SITE_SECTIONS, toSiteImageUrl } from './siteContent';
 
 const defaults = mergeSiteContent(null);
 for (const section of SITE_SECTIONS) assert.deepEqual(defaults[section.key], section.defaults, `mặc định ${section.key}`);
@@ -31,5 +31,13 @@ assert.equal(toSiteImageUrl(id, 800), `https://lh3.googleusercontent.com/d/${id}
 assert.equal(toSiteImageUrl('https://example.com/a.jpg'), 'https://example.com/a.jpg');
 assert.equal(toSiteImageUrl('javascript:alert(1)'), '');
 assert.equal(toSiteImageUrl('http://insecure.example/a.jpg'), '');
+
+// Thẻ đã lưu trước khi có ô ảnh/tag → ô mới để trống (landing dùng ảnh dự phòng).
+const ministries = mergeSiteContent({ ministries: [{ title: 'Bồi linh', tag: ' Trại  hè ' }] }).ministries as Record<string, unknown>[];
+assert.equal(ministries[0].image, '');
+assert.equal(ministries[0].tag, 'Trại hè');
+// Tag: NFC + không phân biệt hoa thường ("Hè" dựng sẵn vs tổ hợp dấu).
+assert.ok(sameTag('Trại Hè', 'trại he\u0300'));
+assert.ok(!sameTag('', ''));
 
 console.log('siteContent: OK');

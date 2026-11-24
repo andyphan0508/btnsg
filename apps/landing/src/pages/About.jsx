@@ -13,7 +13,7 @@ export default function About() {
       <main>
         <Intro />
         <Board />
-        <PhotoStrip title={about.photoTitle} />
+        <PhotoStrip title={about.photoTitle} tag={about.photoTag} />
       </main>
     </>
   );

@@ -1,7 +1,7 @@
 /**
  * Vercel Serverless Function — dữ liệu công khai lưu trên Supabase (đăng từ dashboard).
  *
- * GET /api/library?t=moments          → { images: [{ id, name, album, date, src, thumb, w, h }] }
+ * GET /api/library?t=moments          → { images: [{ id, name, album, date, src, thumb, w, h, tags }] }
  * GET /api/library?t=sermons          → { sermons: [{ id, title, date, speaker, scripture, tags, excerpt }] }
  * GET /api/library?t=sermons&id=<id>  → { sermon: { id, title, date, speaker, scripture, tags, content } }
  * GET /api/library?t=posts            → { posts: [{ id, title, date, description, cover }] }
@@ -15,7 +15,7 @@
  */
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const SERMON_FIELDS = 'id,title,date,speaker,scripture,tags,content';
+const SERMON_FIELDS = 'id,title,date,speaker,scripture,tags,content,audio_url';
 const SERMON_FILTER = 'published=is.true&category=eq.bai_giang';
 const POST_LIST_FIELDS = 'id,title,date,description,cover';
 const POST_ORDER = 'order=date.desc.nullslast,created_at.desc';
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
   let query;
   if (t === 'moments') {
     // ponytail: PostgREST trả tối đa 1000 dòng (max-rows) — quá số đó thì phân trang theo album.
-    query = 'moments?select=id,album,caption,taken_on,path,thumb_path,width,height&order=taken_on.desc.nullslast,created_at.desc';
+    query = 'moments?select=id,album,caption,taken_on,path,thumb_path,width,height,tags&order=taken_on.desc.nullslast,created_at.desc';
   } else if (t === 'posts' && id === undefined) {
     query = `posts?select=${POST_LIST_FIELDS}&published=is.true&${POST_ORDER}`;
   } else if (t === 'posts' && UUID.test(id)) {
@@ -77,6 +77,7 @@ export default async function handler(req, res) {
           thumb: storage + row.thumb_path,
           w: row.width,
           h: row.height,
+          tags: row.tags || [],
         })),
       };
     } else if (t === 'posts') {

@@ -46,7 +46,7 @@ export default function Ministry() {
           <MarqueeStrip rows={[ministryPage.partners]} />
         </section>
 
-        <PhotoStrip title={ministryPage.photoTitle} />
+        <PhotoStrip title={ministryPage.photoTitle} tag={ministryPage.photoTag} />
       </main>
     </>
   );

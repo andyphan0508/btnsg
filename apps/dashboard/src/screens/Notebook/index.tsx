@@ -7,6 +7,7 @@ import NoteFilters from './components/NoteFilters';
 import NoteList from './components/NoteList';
 import NoteListToolbar, { type Density, type SortOrder } from './components/NoteListToolbar';
 import NoteMarkdownEditor from './components/NoteMarkdownEditor';
+import { deleteStoredUrl } from '../../lib/images';
 import NoteMetaForm from './components/NoteMetaForm';
 import NotePagination from './components/NotePagination';
 import NotePreview from './components/NotePreview';
@@ -48,6 +49,9 @@ const NotebookScreen = () => {
   const [tagsText, setTagsText] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [published, setPublished] = useState<boolean>(false);
+  const [audioUrl, setAudioUrl] = useState<string>('');
+  /** Audio lúc mở sửa — lưu xong mà đã đổi/bỏ thì xoá file cũ trong kho cho đỡ tốn dung lượng. */
+  const [originalAudioUrl, setOriginalAudioUrl] = useState<string>('');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   // State — lưu / xoá
@@ -82,6 +86,8 @@ const NotebookScreen = () => {
     setTagsText('');
     setContent('');
     setPublished(false);
+    setAudioUrl('');
+    setOriginalAudioUrl('');
     setEditingNoteId(null);
     setSaveError(null);
   };
@@ -162,6 +168,8 @@ const NotebookScreen = () => {
     setTagsText(selectedNote.tags.join(', '));
     setContent(selectedNote.content);
     setPublished(Boolean(selectedNote.published));
+    setAudioUrl(selectedNote.audioUrl || '');
+    setOriginalAudioUrl(selectedNote.audioUrl || '');
     setSaveError(null);
     setViewMode('editor');
   };
@@ -198,9 +206,14 @@ const NotebookScreen = () => {
         tags: parseTags(tagsText),
         content: content.trim(),
         published: category === 'bai_giang' && published,
+        audioUrl: category === 'bai_giang' ? audioUrl.trim() || undefined : undefined,
       };
 
       const saved = editingNoteId ? await noteApi.update(editingNoteId, payload) : await noteApi.create(payload);
+      if (originalAudioUrl && originalAudioUrl !== payload.audioUrl) {
+        // ponytail: file vừa tải lên rồi bấm Huỷ không lưu sẽ nằm lại trong kho (chỉ tốn dung lượng).
+        await deleteStoredUrl(originalAudioUrl).catch(() => {});
+      }
 
       await loadNotes();
       resetForm();
@@ -276,6 +289,8 @@ const NotebookScreen = () => {
             scripture={scripture}
             tagsText={tagsText}
             published={published}
+            audioUrl={audioUrl}
+            onAudioUrlChange={setAudioUrl}
             onTitleChange={setTitle}
             onCategoryChange={setCategory}
             onDateChange={setDate}

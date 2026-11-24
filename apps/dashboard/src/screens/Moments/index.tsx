@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
-import { FiImage, FiTrash2, FiUploadCloud } from 'react-icons/fi';
-import { momentsApi, type Moment } from '../../api/momentsApi';
+import { FiImage, FiTag, FiTrash2, FiUploadCloud } from 'react-icons/fi';
+import { momentsApi, parseTags, type Moment } from '../../api/momentsApi';
 import { isSupabaseConfigured } from '../../lib/supabase';
-import { usesR2 } from '../../lib/images';
+import { fetchSupabaseExtraBytes, usesR2 } from '../../lib/images';
 import { migrateImagesToR2 } from '../../api/imageMigration';
 import StorageBanner from '../../ui/StorageBanner';
 import EmptyState from '../../ui/EmptyState';
@@ -32,22 +32,32 @@ const MomentsScreen = () => {
   const [takenOn, setTakenOn] = useState<string>(todayIsoDate());
   const [progress, setProgress] = useState<Progress | null>(null);
   const [albumFilter, setAlbumFilter] = useState<string>('');
+  const [tagsText, setTagsText] = useState<string>('');
+  const [tagFilter, setTagFilter] = useState<string>('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [migration, setMigration] = useState<string | null>(null);
+  const [extraBytes, setExtraBytes] = useState<number>(0);
 
   // 2. Logic thuần
   const isUploading = progress !== null && progress.done < progress.total;
   const usedBytes = useMemo(
-    () => moments.reduce((sum, m) => sum + (m.bytes ?? ESTIMATED_MOMENT_BYTES), 0),
-    [moments],
+    () => extraBytes + moments.reduce((sum, m) => sum + (m.bytes ?? ESTIMATED_MOMENT_BYTES), 0),
+    [moments, extraBytes],
   );
   const usedPercent = Math.min(100, (usedBytes / STORAGE_LIMIT_BYTES) * 100);
   const albums = useMemo(() => [...new Set(moments.map((m) => m.album).filter(Boolean))], [moments]);
+  const allTags = useMemo(
+    () => [...new Set(moments.flatMap((m) => m.tags))].sort((a, b) => a.localeCompare(b, 'vi')),
+    [moments],
+  );
   const visibleMoments = useMemo(
-    () => (albumFilter ? moments.filter((m) => m.album === albumFilter) : moments),
-    [moments, albumFilter],
+    () =>
+      moments.filter(
+        (m) => (!albumFilter || m.album === albumFilter) && (!tagFilter || m.tags.includes(tagFilter)),
+      ),
+    [moments, albumFilter, tagFilter],
   );
 
   // 3. API calls
@@ -66,7 +76,7 @@ const MomentsScreen = () => {
   const uploadFiles = async (files: File[]): Promise<void> => {
     const images = files.filter(isImageFile);
     if (images.length === 0 || isUploading) return;
-    const meta = { album: album.trim(), takenOn };
+    const meta = { album: album.trim(), takenOn, tags: parseTags(tagsText) };
     const queue = [...images];
     const failed: string[] = [];
     let done = 0;
@@ -88,6 +98,17 @@ const MomentsScreen = () => {
       }
     };
     await Promise.all(Array.from({ length: UPLOAD_CONCURRENCY }, worker));
+  };
+
+  const editTags = async (moment: Moment): Promise<void> => {
+    const text = window.prompt('Tag của ảnh (cách nhau bằng dấu phẩy):', moment.tags.join(', '));
+    if (text === null) return;
+    try {
+      const updated = await momentsApi.setTags(moment, parseTags(text));
+      setMoments((prev) => prev.map((m) => (m.id === moment.id ? updated : m)));
+    } catch (error) {
+      setListError(error instanceof Error ? error.message : String(error));
+    }
   };
 
   const deleteMoment = async (moment: Moment): Promise<void> => {
@@ -121,7 +142,9 @@ const MomentsScreen = () => {
 
   // 4. Effects
   useEffect(() => {
-    if (isSupabaseConfigured) loadMoments();
+    if (!isSupabaseConfigured) return;
+    loadMoments();
+    fetchSupabaseExtraBytes().then(setExtraBytes).catch(() => {});
   }, []);
 
   // Đang upload mà đóng tab → các ảnh chưa xong bị bỏ dở: hỏi lại cho chắc.
@@ -214,6 +237,18 @@ const MomentsScreen = () => {
               <label className="field-label">Ngày chụp</label>
               <input className="input" type="date" value={takenOn} onChange={(e) => setTakenOn(e.target.value)} />
             </div>
+            <div className="field span-2">
+              <label className="field-label">Tag (cách nhau bằng dấu phẩy)</label>
+              <input
+                className="input"
+                value={tagsText}
+                placeholder="VD: Truyền giảng, Công tác xã hội — thẻ trên web gắn tag này sẽ lấy ảnh"
+                onChange={(e) => setTagsText(e.target.value)}
+              />
+              {allTags.length > 0 && (
+                <span className="cell-muted" style={{ fontSize: '0.8rem' }}>Tag đang có: {allTags.join(', ')}</span>
+              )}
+            </div>
           </div>
 
           <input
@@ -239,7 +274,7 @@ const MomentsScreen = () => {
           >
             <FiUploadCloud size={28} />
             <b>{isUploading ? 'Đang đăng ảnh…' : 'Chọn hoặc kéo-thả nhiều ảnh vào đây'}</b>
-            <span className="cell-muted">Album và ngày ở trên áp dụng cho cả lượt ảnh này.</span>
+            <span className="cell-muted">Album, ngày và tag ở trên áp dụng cho cả lượt ảnh này.</span>
           </div>
 
           {progress && (
@@ -278,6 +313,16 @@ const MomentsScreen = () => {
                 ))}
               </select>
             )}
+            {allTags.length > 0 && (
+              <select className="select" style={styles.filter} value={tagFilter} onChange={(e) => setTagFilter(e.target.value)}>
+                <option value="">Tất cả tag</option>
+                {allTags.map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {listError && <div className="form-error">{listError}</div>}
@@ -293,9 +338,19 @@ const MomentsScreen = () => {
                     <img src={moment.thumbUrl} alt={moment.caption || moment.album} loading="lazy" style={styles.thumb} />
                   </a>
                   <div style={styles.tileBar}>
-                    <span className="cell-muted" style={styles.tileLabel} title={moment.album}>
+                    <span className="cell-muted" style={styles.tileLabel} title={[moment.album, ...moment.tags].join(' · ')}>
                       {moment.album || 'Không album'}
+                      {moment.tags.length > 0 && ` · #${moment.tags.join(' #')}`}
                     </span>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      aria-label="Sửa tag"
+                      title="Sửa tag"
+                      onClick={() => editTags(moment)}
+                    >
+                      <FiTag />
+                    </button>
                     <button
                       type="button"
                       className="btn btn-ghost btn-sm"

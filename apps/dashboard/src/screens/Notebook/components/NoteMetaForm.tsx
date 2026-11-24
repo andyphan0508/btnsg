@@ -1,4 +1,9 @@
+import { useState } from 'react';
 import { NOTE_CATEGORY_LABELS, type NoteCategory } from '@btnsg/shared';
+import { uploadAudio } from '../../../lib/images';
+import { isSupabaseConfigured } from '../../../lib/supabase';
+
+const YOUTUBE = /(?:youtube\.com\/(?:watch\?v=|live\/|shorts\/)|youtu\.be\/)([\w-]{11})/;
 
 type NoteMetaFormProps = {
   title: string;
@@ -8,6 +13,8 @@ type NoteMetaFormProps = {
   scripture: string;
   tagsText: string;
   published: boolean;
+  audioUrl: string;
+  onAudioUrlChange: (value: string) => void;
   onTitleChange: (value: string) => void;
   onCategoryChange: (value: NoteCategory) => void;
   onDateChange: (value: string) => void;
@@ -26,6 +33,8 @@ const NoteMetaForm = ({
   scripture,
   tagsText,
   published,
+  audioUrl,
+  onAudioUrlChange,
   onTitleChange,
   onCategoryChange,
   onDateChange,
@@ -34,6 +43,21 @@ const NoteMetaForm = ({
   onTagsTextChange,
   onPublishedChange,
 }: NoteMetaFormProps) => {
+  const [uploadState, setUploadState] = useState<string | null>(null);
+
+  const pickAudio = async (file: File | undefined) => {
+    if (!file) return;
+    setUploadState(`Đang tải lên ${(file.size / 1024 / 1024).toFixed(1)}MB…`);
+    try {
+      onAudioUrlChange(await uploadAudio(file));
+      setUploadState(`Đã tải lên (${(file.size / 1024 / 1024).toFixed(1)}MB) — nhớ bấm Lưu.`);
+    } catch (error) {
+      setUploadState(error instanceof Error ? error.message : String(error));
+    }
+  };
+
+  const isUploading = uploadState?.startsWith('Đang') ?? false;
+
   return (
     <div className="card">
       <div className="card-title">Thông tin</div>
@@ -86,6 +110,47 @@ const NoteMetaForm = ({
             onChange={(e) => onTagsTextChange(e.target.value)}
           />
         </div>
+        {category === 'bai_giang' && (
+          <div className="field span-2">
+            <label className="field-label">Audio bài giảng</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                className="input"
+                value={audioUrl}
+                placeholder="Dán link YouTube / link MP3, hoặc tải file lên"
+                onChange={(e) => onAudioUrlChange(e.target.value)}
+              />
+              {isSupabaseConfigured && (
+                <label className="btn btn-outline" style={{ flex: 'none', cursor: isUploading ? 'wait' : 'pointer' }}>
+                  {isUploading ? 'Đang tải…' : 'Tải audio'}
+                  <input
+                    type="file"
+                    accept=".mp3,.m4a,.ogg,.opus,audio/mpeg,audio/mp4"
+                    hidden
+                    disabled={isUploading}
+                    onChange={(e) => {
+                      pickAudio(e.target.files?.[0]);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+              )}
+              {audioUrl && (
+                <button type="button" className="btn btn-outline" style={{ flex: 'none' }} onClick={() => onAudioUrlChange('')}>
+                  Bỏ audio
+                </button>
+              )}
+            </div>
+            {uploadState && <span className="cell-muted">{uploadState}</span>}
+            {audioUrl && !YOUTUBE.test(audioUrl) && /^https:\/\//.test(audioUrl) && (
+              <audio controls preload="none" src={audioUrl} style={{ width: '100%', marginTop: 8 }} />
+            )}
+            {audioUrl && YOUTUBE.test(audioUrl) && <span className="cell-muted">Link YouTube — web sẽ nhúng trình phát.</span>}
+            <span className="cell-muted" style={{ fontSize: '0.8rem' }}>
+              Link YouTube không tốn dung lượng. Tải file: tối đa 50MB — nên xuất MP3 mono ~48kbps (40 phút ≈ 14MB).
+            </span>
+          </div>
+        )}
         {category === 'bai_giang' && (
           <label className="field span-2" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
             <input type="checkbox" checked={published} onChange={(e) => onPublishedChange(e.target.checked)} />

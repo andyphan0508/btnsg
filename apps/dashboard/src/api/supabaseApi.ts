@@ -158,6 +158,7 @@ const noteMapper = buildMapper<Note>('notes', [
   f('tags', 'tags', []),
   f('content', 'content'),
   f('published', 'published', false),
+  f('audioUrl', 'audio_url'),
 ]);
 
 const programMapper = buildMapper<Program>('programs', [

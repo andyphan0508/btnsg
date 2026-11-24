@@ -8,7 +8,7 @@
  * Ô kiểu "rich": *chữ* → nhấn màu nắng / in nghiêng; {anh} → viên ảnh nhóm; {logo} → logo tròn.
  */
 
-export type SiteFieldType = 'text' | 'textarea' | 'rich' | 'url' | 'image' | 'lines' | 'checkbox' | 'select';
+export type SiteFieldType = 'text' | 'textarea' | 'rich' | 'url' | 'image' | 'tag' | 'lines' | 'checkbox' | 'select';
 
 export type SiteOption = { value: string; label: string };
 
@@ -85,6 +85,15 @@ export const SITE_TONE_OPTIONS: SiteOption[] = [
 const RICH_HINT = '*chữ* → nhấn màu · {anh} → viên ảnh nhóm · {logo} → logo';
 const icon = () => field('icon', 'Icon', 'select', { options: SITE_ICON_OPTIONS });
 const pageHero = (title: string, lead: string) => ({ pageTitle: title, pageLead: lead });
+/** Ảnh riêng của thẻ + tag để lấy ảnh Khoảnh khắc — landing ưu tiên ảnh riêng, rồi ảnh mới nhất có tag. */
+const cardImageFields = () => [
+  field('image', 'Ảnh thẻ (tải lên hoặc dán link)', 'image'),
+  field('tag', 'Hoặc lấy ảnh Khoảnh khắc có tag', 'tag', { hint: 'Ảnh mới nhất mang tag này sẽ hiện trên thẻ.' }),
+];
+const withCardImage = (items: SiteRecord[]) => items.map((item) => ({ ...item, image: '', tag: '' }));
+const photoTagField = () =>
+  field('photoTag', 'Dải ảnh cuối trang: chỉ lấy ảnh có tag', 'tag', { hint: 'Để trống = ảnh bất kỳ trong thư viện.' });
+
 const pageHeroFields = () => [field('pageTitle', 'Tiêu đề đầu trang'), field('pageLead', 'Mô tả đầu trang', 'textarea')];
 
 export const SITE_PAGES: SitePage[] = [
@@ -270,6 +279,7 @@ export const SITE_PAGES: SitePage[] = [
           field('boardTitle', 'Ban Điều Hành — tiêu đề', 'rich', { hint: RICH_HINT }),
           field('boardLead', 'Ban Điều Hành — mô tả', 'textarea'),
           field('photoTitle', 'Tiêu đề dải ảnh cuối trang'),
+          photoTagField(),
         ],
         defaults: {
           ...pageHero(
@@ -286,6 +296,7 @@ export const SITE_PAGES: SitePage[] = [
           boardLead:
             'Những người trẻ tận tụy gánh vác các tiểu ban và công việc nhà Chúa, cùng gây dựng một cộng đồng vững mạnh.',
           photoTitle: 'Chúng tôi trong những buổi nhóm',
+          photoTag: '',
         },
       },
       {
@@ -366,6 +377,7 @@ export const SITE_PAGES: SitePage[] = [
           field('note', 'Ghi chú cuối', 'textarea'),
           ...pageHeroFields(),
           field('photoTitle', 'Tiêu đề dải ảnh cuối trang'),
+          photoTagField(),
         ],
         defaults: {
           eyebrow: 'Chủ đề năm 2026',
@@ -381,6 +393,7 @@ export const SITE_PAGES: SitePage[] = [
             'Mỗi năm, Ban Thanh Niên chọn một chủ đề gắn với câu Kinh Thánh gốc và một bài hát khẩu hiệu.',
           ),
           photoTitle: 'Sống chủ đề năm cùng nhau',
+          photoTag: '',
         },
       },
     ],
@@ -393,7 +406,12 @@ export const SITE_PAGES: SitePage[] = [
       {
         key: 'activities',
         label: 'Nội dung trang',
-        fields: [...pageHeroFields(), field('committeesTitle', 'Tiêu đề khối tiểu ban'), field('photoTitle', 'Tiêu đề dải ảnh cuối trang')],
+        fields: [
+          ...pageHeroFields(),
+          field('committeesTitle', 'Tiêu đề khối tiểu ban'),
+          field('photoTitle', 'Tiêu đề dải ảnh cuối trang'),
+          photoTagField(),
+        ],
         defaults: {
           ...pageHero(
             'Lịch sinh hoạt',
@@ -401,6 +419,7 @@ export const SITE_PAGES: SitePage[] = [
           ),
           committeesTitle: 'Các tiểu ban công tác',
           photoTitle: 'Không khí các buổi nhóm',
+          photoTag: '',
         },
       },
       {
@@ -416,8 +435,9 @@ export const SITE_PAGES: SitePage[] = [
           field('main', 'Là buổi nhóm chính', 'checkbox'),
           icon(),
           field('tone', 'Màu thẻ', 'select', { options: SITE_TONE_OPTIONS }),
+          ...cardImageFields(),
         ],
-        defaults: [
+        defaults: withCardImage([
           {
             day: 'Chúa Nhật',
             time: '14:30',
@@ -439,7 +459,7 @@ export const SITE_PAGES: SitePage[] = [
             tone: 'violet',
           },
           { day: 'Thứ Bảy', time: '19:30', what: 'Tập hát', note: 'Chuẩn bị tôn vinh Chúa cho Chúa Nhật.', main: false, icon: 'music', tone: 'amber' },
-        ],
+        ]),
       },
       {
         key: 'subCommittees',
@@ -485,6 +505,7 @@ export const SITE_PAGES: SitePage[] = [
           field('partnersTitle', 'Tiêu đề khối ban ngành đồng hành'),
           field('partners', 'Các ban ngành đồng hành (mỗi dòng một ban)', 'lines'),
           field('photoTitle', 'Tiêu đề dải ảnh cuối trang'),
+          photoTagField(),
         ],
         defaults: {
           ...pageHero(
@@ -495,6 +516,7 @@ export const SITE_PAGES: SitePage[] = [
           partnersTitle: 'Đồng hành cùng các ban ngành Hội Thánh',
           partners: ['Ban Phiên dịch', 'Ban Trình chiếu', 'Trường Chúa Nhật', 'Ban Đàn', 'Ban Trang trí', 'Ban Âm thanh', 'Ban Thiếu Nhi', 'Ban Ấu Nhi'],
           photoTitle: 'Dấu chân phục vụ',
+          photoTag: '',
         },
       },
       {
@@ -502,8 +524,8 @@ export const SITE_PAGES: SitePage[] = [
         label: 'Các mảng mục vụ',
         hint: 'Cũng hiện ở trang chủ (khối accordion ảnh).',
         list: { itemLabel: 'mục vụ', titleField: 'title' },
-        fields: [field('kind', 'Nhóm (vd: Thuộc linh)'), field('title', 'Tên'), field('desc', 'Mô tả', 'textarea'), icon()],
-        defaults: [
+        fields: [field('kind', 'Nhóm (vd: Thuộc linh)'), field('title', 'Tên'), field('desc', 'Mô tả', 'textarea'), icon(), ...cardImageFields()],
+        defaults: withCardImage([
           {
             kind: 'Thuộc linh',
             title: 'Bồi linh',
@@ -540,7 +562,7 @@ export const SITE_PAGES: SitePage[] = [
             desc: 'Giao lưu, họp bạn với Ban Thanh Niên của các Hội Thánh bạn.',
             icon: 'friends',
           },
-        ],
+        ]),
       },
       {
         key: 'duties',
@@ -606,12 +628,26 @@ export const SITE_PAGES: SitePage[] = [
       {
         key: 'galleryPage',
         label: 'Trang Thư viện ảnh',
-        hint: 'Ảnh lấy từ folder Google Drive của thư viện.',
+        hint: 'Ảnh đăng ở mục "Khoảnh khắc" — lọc được theo năm, album và tag.',
         fields: pageHeroFields(),
         defaults: pageHero(
           'Hành trình thắp sáng niềm tin',
           'Những hình ảnh chân thật trong sự thờ phượng, nhóm lại và phục vụ của Ban Thanh Niên HTTL Sài Gòn.',
         ),
+      },
+    ],
+  },
+  {
+    id: 'sermons',
+    label: 'Bài giảng',
+    path: '/bai-giang',
+    sections: [
+      {
+        key: 'sermonsPage',
+        label: 'Trang Bài giảng',
+        hint: 'Bài giảng soạn ở "Sổ ghi chép" (loại Bài giảng, bật Công khai) — kèm audio/YouTube được.',
+        fields: pageHeroFields(),
+        defaults: pageHero('Bài giảng', 'Lưu giữ Lời Chúa đã được chia sẻ tại Ban Thanh Niên — đọc lại, suy ngẫm và chia sẻ.'),
       },
     ],
   },
@@ -627,6 +663,13 @@ const isRecord = (value: unknown): value is SiteRecord =>
 /** Chỉ cho phép liên kết http(s)/mailto/tel — chặn javascript: lọt vào href của landing. */
 const SAFE_URL = /^(https?:\/\/|mailto:|tel:)/i;
 
+/** Tag ảnh: NFC (tiếng Việt gõ trên iPhone và Windows có thể khác dạng mã) + bỏ khoảng trắng thừa. */
+export const normalizeTag = (value: unknown): string => String(value ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+
+/** So khớp tag không phân biệt hoa thường. */
+export const sameTag = (a: unknown, b: unknown): boolean =>
+  normalizeTag(a).toLocaleLowerCase('vi') === normalizeTag(b).toLocaleLowerCase('vi') && normalizeTag(a) !== '';
+
 const normalizeValue = (spec: SiteField, value: unknown, fallback: unknown): unknown => {
   if (value == null) return fallback;
   switch (spec.type) {
@@ -636,6 +679,8 @@ const normalizeValue = (spec: SiteField, value: unknown, fallback: unknown): unk
       return (Array.isArray(value) ? value : String(value).split('\n'))
         .map((line) => String(line).trim())
         .filter(Boolean);
+    case 'tag':
+      return normalizeTag(value);
     case 'url': {
       const url = String(value ?? '').trim();
       return url === '' || SAFE_URL.test(url) ? url : '';

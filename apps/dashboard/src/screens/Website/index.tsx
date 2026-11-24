@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { mergeSiteContent, SITE_PAGES, SITE_SECTIONS, type SiteContent, type SiteRecord } from '@btnsg/shared';
 import { siteContentApi } from '../../api/siteContentApi';
+import { momentsApi } from '../../api/momentsApi';
+import { isSupabaseConfigured } from '../../lib/supabase';
+import { TAG_DATALIST_ID } from './components/FieldInput';
 import { useAuth } from '../../auth/AuthContext';
 import LoadingState from '../../ui/LoadingState';
 import PreviewFrame from './components/PreviewFrame';
@@ -19,6 +22,7 @@ const WebsiteScreen = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
+  const [momentTags, setMomentTags] = useState<string[]>([]);
 
   // 2. Logic functions
   /** Bản nháp đã chuẩn hoá (bỏ dòng trống, chặn link lạ…) — đúng thứ sẽ lưu và gửi sang xem trước. */
@@ -71,6 +75,13 @@ const WebsiteScreen = () => {
   // 4. Effects
   useEffect(() => {
     fetchContent();
+    // Gợi ý cho ô "tag": các tag đang có trên ảnh Khoảnh khắc.
+    if (isSupabaseConfigured) {
+      momentsApi
+        .list()
+        .then((moments) => setMomentTags([...new Set(moments.flatMap((m) => m.tags))].sort((a, b) => a.localeCompare(b, 'vi'))))
+        .catch(() => {});
+    }
   }, []);
 
   // Còn thay đổi chưa lưu → hỏi lại trước khi đóng / tải lại tab.
@@ -102,7 +113,10 @@ const WebsiteScreen = () => {
         <div>
           <span className="page-eyebrow">Website</span>
           <h2>Nội dung trang công khai</h2>
-          <p className="page-sub">Sửa chữ, lịch, Ban Điều Hành, liên kết… của landing — xem trước trực tiếp trước khi lưu.</p>
+          <p className="page-sub">
+            Sửa chữ, thẻ mục vụ, lịch tuần, ảnh, Ban Điều Hành, liên kết… của landing — xem trước trực tiếp
+            trước khi lưu. Thẻ nào gắn tag sẽ tự lấy ảnh Khoảnh khắc có tag đó.
+          </p>
         </div>
         <div className="cell-actions">
           <button type="button" className="btn btn-ghost" disabled={dirtyKeys.size === 0 || isSaving} onClick={handleDiscard}>
@@ -113,6 +127,12 @@ const WebsiteScreen = () => {
           </button>
         </div>
       </div>
+
+      <datalist id={TAG_DATALIST_ID}>
+        {momentTags.map((tag) => (
+          <option key={tag} value={tag} />
+        ))}
+      </datalist>
 
       {loadError && <div className="form-error" style={{ marginBottom: 14 }}>{loadError}</div>}
       {saveError && <div className="form-error" style={{ marginBottom: 14 }}>{saveError}</div>}

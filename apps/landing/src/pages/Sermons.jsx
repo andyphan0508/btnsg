@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { PiArrowLeft, PiArrowRight, PiBookOpenText, PiCalendarBlank, PiMagnifyingGlass, PiMicrophone, PiX } from "react-icons/pi";
+import { PiArrowLeft, PiArrowRight, PiBookOpenText, PiCalendarBlank, PiHeadphones, PiMagnifyingGlass, PiMicrophone, PiX } from "react-icons/pi";
 import Markdown from "../components/Markdown.jsx";
 import PageHero from "../components/PageHero.jsx";
 import RollText from "../components/RollText.jsx";
 import { formatNewsDate } from "../lib/news.js";
+import { content } from "../lib/siteContent.js";
 
 // Bài giảng = mục "Bài giảng" trong Sổ ghi chép của dashboard đã bật "Công khai trên website".
 async function getJson(url) {
@@ -12,6 +13,38 @@ async function getJson(url) {
   const data = await response.json().catch(() => null);
   if (!response.ok || !data) throw new Error(data?.error || "Không tải được bài giảng.");
   return data;
+}
+
+const YOUTUBE = /(?:youtube\.com\/(?:watch\?v=|live\/|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/;
+
+/** Nghe bài giảng: link YouTube → nhúng trình phát; file audio (kho ảnh hoặc link MP3) → <audio>. */
+function SermonPlayer({ url, title }) {
+  if (!url) return null;
+  const youtubeId = url.match(YOUTUBE)?.[1];
+  if (youtubeId) {
+    return (
+      <div className="sermon-player glass">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
+          title={`Video bài giảng: ${title}`}
+          loading="lazy"
+          allow="encrypted-media; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+  if (!/^https:\/\//i.test(url)) return null;
+  return (
+    <div className="sermon-player glass">
+      <p className="sermon-player-label">
+        <PiHeadphones aria-hidden="true" /> Nghe bài giảng
+      </p>
+      <audio controls preload="metadata" src={url}>
+        <a href={url}>Tải audio bài giảng</a>
+      </audio>
+    </div>
+  );
 }
 
 /** Ngày · người giảng · câu gốc — dùng chung cho thẻ và trang đọc. */
@@ -34,6 +67,12 @@ function SermonMeta({ sermon, className }) {
         <span className="news-date">
           <PiBookOpenText aria-hidden="true" />
           {sermon.scripture}
+        </span>
+      )}
+      {sermon.audio_url && (
+        <span className="news-date">
+          <PiHeadphones aria-hidden="true" />
+          Có audio
         </span>
       )}
     </div>
@@ -63,7 +102,7 @@ function SermonList() {
 
   return (
     <>
-      <PageHero title="Bài giảng" lead="Lưu giữ Lời Chúa đã được chia sẻ tại Ban Thanh Niên — đọc lại, suy ngẫm và chia sẻ." />
+      <PageHero title={content.sermonsPage.pageTitle} lead={content.sermonsPage.pageLead} />
       <main className="section section-tight">
         <div className="wrap">
           {loading && <div className="status">Đang tải bài giảng…</div>}
@@ -158,6 +197,8 @@ function SermonDetail({ id }) {
             <SermonMeta sermon={sermon} className="article-meta" />
             <h1 className="article-title">{sermon.title}</h1>
           </header>
+
+          <SermonPlayer url={sermon.audio_url} title={sermon.title} />
 
           <Markdown content={sermon.content} />
 

@@ -11,7 +11,7 @@ import {
 import PageHero from "../components/PageHero.jsx";
 import MediaTile from "../components/MediaTile.jsx";
 import Lightbox from "../components/Lightbox.jsx";
-import { loadImages } from "../lib/gallery.js";
+import { loadImages, withTag } from "../lib/gallery.js";
 import { content } from "../lib/siteContent.js";
 
 const PAGE_SIZES = [12, 24, 48, 0];
@@ -26,6 +26,7 @@ export default function Gallery() {
   const [searchQuery, setSearchQuery] = useState("");
   const [album, setAlbum] = useState("");
   const [year, setYear] = useState("");
+  const [tag, setTag] = useState("");
   const [viewMode, setViewMode] = useState("grid");
 
   // Phân trang
@@ -66,15 +67,23 @@ export default function Gallery() {
     [images, year],
   );
 
+  // Tag gắn ở dashboard (Khoảnh khắc) — phân loại xuyên năm/album, VD "Truyền giảng".
+  const tags = useMemo(
+    () => [...new Set(images.flatMap((img) => img.tags || []))].sort((a, b) => a.localeCompare(b, "vi")),
+    [images],
+  );
+  const taggedIds = useMemo(() => (tag ? new Set(withTag(images, tag).map((img) => img.id)) : null), [images, tag]);
+
   const filteredImages = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return images.filter(
       (img) =>
         (!year || (img.date || "").startsWith(year)) &&
         (!album || img.album === album) &&
-        (!q || `${img.name || ""} ${img.album || ""}`.toLowerCase().includes(q)),
+        (!taggedIds || taggedIds.has(img.id)) &&
+        (!q || `${img.name || ""} ${img.album || ""} ${(img.tags || []).join(" ")}`.toLowerCase().includes(q)),
     );
-  }, [images, searchQuery, album, year]);
+  }, [images, searchQuery, album, year, taggedIds]);
 
   const totalCount = filteredImages.length;
   const isAll = pageSize === 0 || pageSize >= totalCount;
@@ -237,13 +246,32 @@ export default function Gallery() {
                 </div>
               )}
 
+              {tags.length > 0 && (
+                <div className="chip-row album-row" role="group" aria-label="Lọc theo tag">
+                  {["", ...tags].map((name) => (
+                    <button
+                      key={name || "all-tags"}
+                      type="button"
+                      className={`chip${tag === name ? " is-active" : ""}`}
+                      onClick={() => {
+                        setTag(name);
+                        setCurrentPage(1);
+                      }}
+                      aria-pressed={tag === name}
+                    >
+                      {name ? `#${name}` : "Mọi chủ đề"}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <p className="gallery-meta">
                 Hiển thị{" "}
                 <strong>
                   {totalCount > 0 ? startIndex + 1 : 0}–{endIndex}
                 </strong>{" "}
                 trên tổng số <strong>{totalCount}</strong> ảnh
-                {(searchQuery || album || year) && ` (lọc từ ${images.length} ảnh)`}
+                {(searchQuery || album || year || tag) && ` (lọc từ ${images.length} ảnh)`}
               </p>
 
               {currentImages.length === 0 ? (

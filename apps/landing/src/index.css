@@ -1813,6 +1813,32 @@ a.chip:hover {
   pointer-events: none;
 }
 
+/* Ảnh của buổi (đặt ở dashboard: ảnh riêng hoặc tag) — mờ dần sang trái để chữ luôn đọc rõ. */
+.stack-photo {
+  position: absolute;
+  inset: 0 0 0 38%;
+  z-index: -1;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 55%);
+  mask-image: linear-gradient(90deg, transparent, #000 55%);
+  pointer-events: none;
+}
+
+.stack-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 767px) {
+  .stack-photo {
+    inset: 0;
+    opacity: 0.22;
+    -webkit-mask-image: linear-gradient(180deg, #000, transparent 85%);
+    mask-image: linear-gradient(180deg, #000, transparent 85%);
+  }
+}
+
 .stack-day {
   display: inline-flex;
   padding: 0.4rem 0.9rem;
@@ -3162,6 +3188,34 @@ a.chip:hover {
   font-style: italic;
   font-size: 1.2rem;
   color: var(--text-2);
+}
+
+.sermon-player {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-radius: var(--r-lg);
+}
+
+.sermon-player iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: calc(var(--r-lg) - 0.5rem);
+}
+
+.sermon-player audio {
+  display: block;
+  width: 100%;
+}
+
+.sermon-player-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .article-cover {

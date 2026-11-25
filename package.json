@@ -13,7 +13,12 @@
     "dev:admin": "concurrently -n api,dashboard -c yellow,cyan \"npm:dev:api\" \"npm:dev:dashboard\"",
     "build:landing": "npm run build --workspace @btnsg/landing",
     "build:dashboard": "npm run build --workspace @btnsg/dashboard",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "deploy:cf:landing": "npm run build:landing && cd apps/landing && npx wrangler@4 pages deploy dist --project-name btnsg-landing --branch main --commit-dirty=true",
+    "deploy:cf:dashboard": "npm run build:dashboard && cd apps/dashboard && npx wrangler@4 pages deploy dist --project-name btnsg-dashboard --branch main --commit-dirty=true",
+    "deploy:cf": "npm run deploy:cf:landing && npm run deploy:cf:dashboard",
+    "build:cf": "npm run build:landing && npm run build:dashboard",
+    "deploy:cf:ci": "cd apps/landing && npx wrangler@4 pages deploy dist --project-name btnsg-landing --branch main && cd ../dashboard && npx wrangler@4 pages deploy dist --project-name btnsg-dashboard --branch main"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

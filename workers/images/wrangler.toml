@@ -13,7 +13,7 @@ bucket_name = "btnsg-images"
 
 [vars]
 SUPABASE_URL = "https://xmesiwctugpiecumhrpq.supabase.co"
-ALLOWED_ORIGINS = "https://quanly-btnsg.vercel.app,https://btnsg-dashboard.vercel.app,http://localhost:5174"
+ALLOWED_ORIGINS = "https://btnsg-dashboard.pages.dev,https://quanly-btnsg.vercel.app,https://btnsg-dashboard.vercel.app,http://localhost:5174"
 # Bí mật — KHÔNG ghi ở đây, đặt bằng `npx wrangler secret put <TÊN>`:
 #   SUPABASE_ANON_KEY   anon key của Supabase (giống VITE_SUPABASE_ANON_KEY)
 #   ALERT_WEBHOOK_URL   URL Apps Script gửi email, kèm ?secret=... (giống VITE_APPS_SCRIPT_URL)

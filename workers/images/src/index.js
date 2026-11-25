@@ -226,8 +226,21 @@ async function handleDelete(env, key, cors) {
 }
 
 // Workers Free: tối đa 50 subrequest (mỗi lệnh R2 tính 1) mỗi lần chạy → mỗi lần cron chỉ đọc
-// tối đa 40 trang × 1.000 file, lưu vị trí dở dang vào bộ đếm và lần cron sau đọc tiếp.
-const RECOUNT_PAGES_PER_RUN = 40;
+// tối đa 35 trang × 1.000 file (chừa chỗ cho bộ đếm, email, ping Supabase), lưu vị trí dở dang vào
+// bộ đếm và lần cron sau đọc tiếp.
+const RECOUNT_PAGES_PER_RUN = 35;
+
+/**
+ * Supabase gói Free tạm dừng project sau 7 ngày không hoạt động — cron 6 giờ/lần đọc 1 dòng nhỏ
+ * (thay cho Vercel Cron /api/keep-alive khi web chuyển sang Cloudflare Pages).
+ */
+async function keepSupabaseAlive(env) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return;
+  const response = await fetch(`${env.SUPABASE_URL}/rest/v1/programs?select=id&limit=1`, {
+    headers: { apikey: env.SUPABASE_ANON_KEY, Authorization: `Bearer ${env.SUPABASE_ANON_KEY}` },
+  }).catch((error) => ({ ok: false, status: String(error) }));
+  if (!response.ok) console.error('[keep-alive] Supabase trả về', response.status);
+}
 
 /** Đếm lại dung lượng thật của bucket (nối tiếp qua nhiều lần cron nếu bucket lớn). */
 async function recount(env) {
@@ -306,6 +319,6 @@ export default {
   },
 
   async scheduled(_event, env, ctx) {
-    ctx.waitUntil(recount(env));
+    ctx.waitUntil(Promise.all([recount(env), keepSupabaseAlive(env)]));
   },
 };

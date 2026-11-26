@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react';
+import { useEffect, type MouseEvent, type ReactNode } from 'react';
+
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
 type ModalProps = {
   title: string;
@@ -6,19 +8,34 @@ type ModalProps = {
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  size?: ModalSize;
 };
 
-const Modal = ({ title, isOpen, onClose, children, footer }: ModalProps) => {
+const Modal = ({ title, isOpen, onClose, children, footer, size = 'md' }: ModalProps) => {
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleOverlayClick = (event: MouseEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return;
     onClose();
   };
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-card" role="dialog" aria-modal="true" aria-label={title}>
+      <div className={`modal-card modal-card--${size}`} role="dialog" aria-modal="true" aria-label={title}>
         <div className="modal-head">
           <h3>{title}</h3>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Đóng">

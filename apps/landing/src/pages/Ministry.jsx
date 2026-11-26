@@ -2,6 +2,7 @@ import PageHero from "../components/PageHero.jsx";
 import PhotoStrip from "../components/PhotoStrip.jsx";
 import Ministries from "../components/Ministries.jsx";
 import MarqueeStrip from "../components/MarqueeStrip.jsx";
+import CustomBlocks from "../components/CustomBlocks.jsx";
 import { iconFor } from "../lib/icons.js";
 import { content } from "../lib/siteContent.js";
 import { Rich } from "../lib/rich.jsx";
@@ -46,6 +47,7 @@ export default function Ministry() {
           <MarqueeStrip rows={[ministryPage.partners]} />
         </section>
 
+        <CustomBlocks page="ministry" />
         <PhotoStrip title={ministryPage.photoTitle} tag={ministryPage.photoTag} />
       </main>
     </>

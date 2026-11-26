@@ -20,6 +20,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/thong-bao-day': 'Thông báo đẩy',
   '/tai-khoan': 'Quản lý tài khoản',
   '/website': 'Nội dung website',
+  '/trinh-dieu-chinh/hoat-dong': 'Trình điều chỉnh · Mục vụ & Nhịp sinh hoạt',
 };
 
 const formatTodayLabel = (): string => {

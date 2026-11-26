@@ -7,6 +7,7 @@ import {
 } from '@btnsg/shared';
 import { emailApi, emailTemplateApi, memberApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import TemplateFormModal, { type TemplateFormValues } from './components/TemplateFormModal';
 import { FiAlertTriangle, FiSend } from 'react-icons/fi';
 
@@ -32,6 +33,7 @@ const fieldLabel = (field: string): string =>
   FIELD_LABEL_OVERRIDES[field] ?? field.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 
 const EmailScreen = () => {
+  const { confirm } = useDialog();
   // 1. State
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
@@ -152,7 +154,13 @@ const EmailScreen = () => {
   };
 
   const deleteTemplate = async (template: EmailTemplate): Promise<void> => {
-    if (!window.confirm(`Xoá template "${template.name}"?`)) return;
+    const confirmed = await confirm({
+      title: 'Xóa mẫu email',
+      message: `Xóa template "${template.name}"?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
+    if (!confirmed) return;
     try {
       await emailTemplateApi.remove(template.id);
       const templateList = await emailTemplateApi.getList();

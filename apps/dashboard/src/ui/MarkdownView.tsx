@@ -1,3 +1,4 @@
+import { isHtmlContent, sanitizeRichHtml } from '@btnsg/shared';
 import { parseMarkdown, type InlineSpan, type MarkdownBlock } from '../lib/markdown';
 
 type MarkdownViewProps = {
@@ -5,9 +6,16 @@ type MarkdownViewProps = {
   emptyHint?: string;
 };
 
-/** Render Markdown thuần (không có phần header/ảnh bìa riêng) — dùng cho Sổ ghi chép. */
+/** Render nội dung (hỗ trợ cả Rich Text HTML lẫn Markdown cũ) — dùng cho Sổ ghi chép & xem trước. */
 const MarkdownView = ({ markdown, emptyHint = 'Nội dung sẽ hiển thị ở đây khi bạn soạn.' }: MarkdownViewProps) => {
   const styles = createStyles();
+
+  if (!markdown.trim()) return <p className="cell-muted">{emptyHint}</p>;
+
+  if (isHtmlContent(markdown)) {
+    return <div className="rich-content" dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(markdown) }} />;
+  }
+
   const blocks = parseMarkdown(markdown);
 
   const renderSpan = (span: InlineSpan, key: number) => {
@@ -65,8 +73,6 @@ const MarkdownView = ({ markdown, emptyHint = 'Nội dung sẽ hiển thị ở 
     }
     return <p key={key} style={styles.paragraph}>{renderSpans(block.spans)}</p>;
   };
-
-  if (!markdown.trim()) return <p className="cell-muted">{emptyHint}</p>;
 
   return <div style={styles.wrap}>{blocks.map(renderBlock)}</div>;
 };

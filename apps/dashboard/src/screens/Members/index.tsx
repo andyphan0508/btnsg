@@ -8,6 +8,7 @@ import {
 } from '@btnsg/shared';
 import { memberApi, memberChangeApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import { exportMembersExcel, type ParsedMemberRow } from '../../utils/excel';
 import ImportExcelModal from './components/ImportExcelModal';
 import MemberFilters, { type MemberSortKey } from './components/MemberFilters';
@@ -46,6 +47,7 @@ const buildMemberPayload = (values: MemberFormValues): Partial<Member> => {
 };
 
 const MembersScreen = () => {
+  const { confirm } = useDialog();
   // 1. State declarations
   // Admin và BĐH đều được chỉnh danh sách (phân quyền chi tiết hơn nằm ở RLS phía Supabase).
   const canEdit = true;
@@ -184,7 +186,12 @@ const MembersScreen = () => {
   };
 
   const deleteMember = async (member: Member): Promise<boolean> => {
-    const confirmed = window.confirm(`Xoá thành viên "${member.name}"?`);
+    const confirmed = await confirm({
+      title: 'Xóa thành viên',
+      message: `Xóa thành viên "${member.name}"?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
     if (!confirmed) return false;
 
     try {

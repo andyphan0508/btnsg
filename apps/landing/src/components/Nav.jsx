@@ -18,7 +18,9 @@ export default function Nav() {
   const [hidden, setHidden] = useState(false);
   const { scrollY, scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
-  const { general } = content;
+  const { general, navItems } = content;
+  const visibleNav =
+    Array.isArray(navItems) && navItems.length > 0 ? navItems.filter((item) => item.visible !== false && item.to) : nav;
 
   useMotionValueEvent(scrollY, "change", (y) => {
     setScrolled(y > 24);
@@ -38,7 +40,7 @@ export default function Nav() {
         </Link>
 
         <ul className="nav-links">
-          {nav.map((item) => (
+          {visibleNav.map((item) => (
             <li key={item.to}>
               <NavLink to={item.to} className="nav-link">
                 {({ isActive }) => (

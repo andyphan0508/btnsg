@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Plan } from '@btnsg/shared';
 import { planApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import PlanFormModal, { type PlanFormValues } from './components/PlanFormModal';
 import PlanList from './components/PlanList';
 
@@ -18,6 +19,7 @@ const parsePlanItems = (itemsText: string, existingPlan: Plan | null) => {
 };
 
 const PlansScreen = () => {
+  const { confirm } = useDialog();
   // 1. State declarations
   const [planList, setPlanList] = useState<Plan[]>([]);
   const [isLoadingPlans, setIsLoadingPlans] = useState<boolean>(false);
@@ -102,7 +104,12 @@ const PlansScreen = () => {
   };
 
   const deletePlan = async (plan: Plan): Promise<boolean> => {
-    const confirmed = window.confirm(`Xoá kế hoạch "${plan.title}"?`);
+    const confirmed = await confirm({
+      title: 'Xóa kế hoạch',
+      message: `Xóa kế hoạch "${plan.title}"?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
     if (!confirmed) return false;
 
     try {

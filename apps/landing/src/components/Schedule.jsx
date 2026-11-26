@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { cardImages, imageUrl, loadImages } from "../lib/gallery.js";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/scroll.js";
 import { iconFor } from "../lib/icons.js";
-import { content } from "../lib/siteContent.js";
+import { content, heroImage } from "../lib/siteContent.js";
 import { Rich } from "../lib/rich.jsx";
+import EmptyState from "./EmptyState.jsx";
 
 /**
  * Lịch tuần dạng chồng thẻ 3D: mỗi thẻ kính dính (sticky) ở đỉnh, thẻ sau trượt lên phủ thẻ trước;
@@ -13,11 +14,11 @@ export default function Schedule() {
   const root = useRef(null);
   const { home, schedule } = content;
   const [library, setLibrary] = useState([]);
-  // Lịch tuần chỉ hiện ảnh khi đã đặt ảnh riêng / tag ở dashboard — không lấy ảnh ngẫu nhiên.
-  const photos = cardImages(schedule, library, { fallback: false });
+  // Ưu tiên ảnh riêng / tag đặt trong Dashboard (Trình điều chỉnh → Mục vụ & Nhịp sinh hoạt),
+  // chưa đặt riêng thì tự rải ảnh thư viện để thẻ nào cũng có hình nền sinh động.
+  const photos = cardImages(schedule, library, { seed: "lich-sinh-hoat-tuan", fallback: true });
 
   useEffect(() => {
-    if (!schedule.some((s) => s.image || s.tag)) return undefined;
     let alive = true;
     loadImages()
       .then((all) => alive && setLibrary(all))
@@ -31,6 +32,7 @@ export default function Schedule() {
     () => {
       if (prefersReducedMotion) return;
       const cards = gsap.utils.toArray(".stack-card");
+      if (cards.length < 2) return;
       const last = cards[cards.length - 1];
 
       cards.slice(0, -1).forEach((card, i) => {
@@ -74,40 +76,50 @@ export default function Schedule() {
           <p className="lead">{home.scheduleLead}</p>
         </header>
 
-        <div className="stack">
-          {schedule.map((s, i) => {
-            const Icon = iconFor(s.icon);
-            return (
-              <article
-                className={`stack-card glass tone-${s.tone}${s.main ? " is-main" : ""}`}
-                style={{ "--i": i }}
-                key={i}
-              >
-                <span className="stack-glow" aria-hidden="true" />
-                {photos[i] && (
-                  <span className="stack-photo" aria-hidden="true">
-                    <img src={imageUrl(photos[i], 1200)} alt="" loading="lazy" decoding="async" />
-                  </span>
-                )}
-                <div className="stack-when">
-                  <span className="stack-day">{s.day}</span>
-                  <span className="stack-time">{s.time}</span>
-                </div>
-                <div className="stack-what">
-                  {s.main && (
-                    <span className="live-chip">
-                      <span className="live-dot" /> Nhóm chính
+        {schedule.length === 0 ? (
+          <EmptyState
+            icon="default"
+            compact
+            title="Chưa có lịch sinh hoạt"
+            description="Lịch sinh hoạt hằng tuần của Ban Thanh Niên sẽ sớm được cập nhật tại đây."
+          />
+        ) : (
+          <div className="stack">
+            {schedule.map((s, i) => {
+              const Icon = iconFor(s.icon);
+              const bgUrl = photos[i] ? imageUrl(photos[i], 1200) : heroImage();
+              return (
+                <article
+                  className={`stack-card glass tone-${s.tone}${s.main ? " is-main" : ""}${bgUrl ? " has-photo" : ""}`}
+                  style={{ "--i": i }}
+                  key={i}
+                >
+                  <span className="stack-glow" aria-hidden="true" />
+                  {bgUrl && (
+                    <span className="stack-photo" aria-hidden="true">
+                      <img src={bgUrl} alt="" loading="lazy" decoding="async" />
                     </span>
                   )}
-                  <h3>{s.what}</h3>
-                  <p>{s.note}</p>
-                </div>
-                <Icon className="stack-icon" aria-hidden="true" />
-                <span className="stack-dim" aria-hidden="true" />
-              </article>
-            );
-          })}
-        </div>
+                  <div className="stack-when">
+                    <span className="stack-day">{s.day}</span>
+                    <span className="stack-time">{s.time}</span>
+                  </div>
+                  <div className="stack-what">
+                    {s.main && (
+                      <span className="live-chip">
+                        <span className="live-dot" /> Nhóm chính
+                      </span>
+                    )}
+                    <h3>{s.what}</h3>
+                    <p>{s.note}</p>
+                  </div>
+                  <Icon className="stack-icon" aria-hidden="true" />
+                  <span className="stack-dim" aria-hidden="true" />
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

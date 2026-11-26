@@ -58,30 +58,37 @@ const applyIfChanged = (fresh, shown) => {
   if (fresh && !isPreview && JSON.stringify(fresh) !== JSON.stringify(shown)) applySiteContent(fresh);
 };
 
+/** Đọc nhanh bản cache từ lần trước (đồng bộ) để vẽ khung hình đầu tiên ngay lập tức. */
+export function hydrateCachedSiteContent() {
+  const cached = readCache();
+  if (cached) applySiteContent(cached);
+  return cached;
+}
+
 export async function loadSiteContent() {
+  const cached = readCache();
   const request = (window.__siteContent ?? Promise.resolve(null)).then((payload) => {
-    if (payload?.content) writeCache(payload.content);
+    if (payload?.content && Object.keys(payload.content).length > 0) writeCache(payload.content);
     return payload?.content ?? null;
   });
 
-  // Lượt quay lại: vẽ ngay bằng bản đã lưu, không chờ mạng; bản mới (nếu vừa sửa) cập nhật ngầm.
-  const cached = readCache();
   if (cached) {
-    applySiteContent(cached);
     request.then((fresh) => applyIfChanged(fresh, cached));
     return;
   }
 
   const timeout = new Promise((resolve) => setTimeout(() => resolve(null), FIRST_VISIT_WAIT_MS));
   const fresh = await Promise.race([request, timeout]);
-  if (fresh) applySiteContent(fresh);
-  else request.then((late) => applyIfChanged(late, null));
+  if (fresh && Object.keys(fresh).length > 0) applySiteContent(fresh);
+  else request.then((late) => late && Object.keys(late).length > 0 && applyIfChanged(late, null));
 }
 
 /* ---------- Xem trước trực tiếp trong khung iframe của dashboard ---------- */
 
 // Chỉ nhận bản nháp từ đúng origin của dashboard — trang khác nhúng iframe không giả được nội dung.
-const ADMIN_ORIGINS = (import.meta.env.VITE_ADMIN_ORIGIN || "https://quanly-btnsg.vercel.app")
+const ADMIN_ORIGINS = (
+  import.meta.env.VITE_ADMIN_ORIGIN || "https://quanly-btnsg.vercel.app,https://btnsg-dashboard.pages.dev"
+)
   .split(",")
   .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean)

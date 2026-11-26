@@ -95,7 +95,7 @@ export async function subscribeToPush() {
     return {
       ok: false,
       reason:
-        'Máy chủ không trả về dữ liệu hợp lệ. Chức năng thông báo chỉ chạy trên bản đã deploy (Vercel), không chạy với `npm run dev`.',
+        'Máy chủ không trả về dữ liệu hợp lệ. Chức năng thông báo chỉ hoạt động trên bản đã triển khai, không khả dụng khi chạy `npm run dev`.',
     }
   }
 

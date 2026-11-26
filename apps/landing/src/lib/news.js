@@ -49,52 +49,6 @@ export function formatNewsDate(isoDate) {
   return `${day} tháng ${month}, ${year}`
 }
 
-/* ---------- Dữ liệu demo khi chưa cấu hình ---------- */
-
-const DEMO_CONTENT = `Đây là **bài viết mẫu** hiển thị khi chưa cấu hình \`VITE_NEWS_SCRIPT_URL\`.
-
-## Cách đăng bài thật
-
-1. Tạo folder con trong folder *Tin tức* trên Google Drive.
-2. Thả vào 1 file \`.md\` (nội dung bài) và các ảnh của bài.
-3. Web tự cập nhật — không cần sửa code.
-
-> Xem hướng dẫn chi tiết trong DEPLOY.md, Bước 2c.
-
-Ảnh chèn trong bài viết bằng cú pháp \`![Chú thích](ten-file-anh.jpg)\`.`
-
-const DEMO_POSTS = [
-  {
-    id: 'demo-post-1',
-    title: 'Chào mừng đến trang Tin tức',
-    date: '2026-07-20',
-    description: 'Bài viết mẫu — cấu hình Google Drive + Apps Script để đăng tin thật.',
-    demo: true,
-    hue: 24,
-  },
-  {
-    id: 'demo-post-2',
-    title: 'Đăng bài bằng Markdown trên Google Drive',
-    date: '2026-07-12',
-    description: 'Mỗi bài là một folder con chứa file .md và hình ảnh, kèm ngày đăng.',
-    demo: true,
-    hue: 152,
-  },
-  {
-    id: 'demo-post-3',
-    title: 'Ảnh bìa lấy tự động từ folder bài viết',
-    date: '2026-07-01',
-    description: 'Đặt tên ảnh là cover.jpg hoặc khai báo cover: trong frontmatter.',
-    demo: true,
-    hue: 268,
-  },
-]
-
-function demoPost(id) {
-  const post = DEMO_POSTS.find((item) => item.id === id) || DEMO_POSTS[0]
-  return { ...post, content: DEMO_CONTENT, images: [] }
-}
-
 /* ---------- API công khai ---------- */
 
 // Quá thời gian này coi như URL script chết/mạng lỗi — báo lỗi thay vì treo "Đang tải" mãi.
@@ -145,9 +99,8 @@ export async function fetchPosts() {
   // Drive lỗi mà Supabase cũng không có bài → báo lỗi như trước; có bài Supabase thì vẫn hiện.
   if (drive.error && libraryPosts.length === 0) throw drive.error
   const drivePosts = Array.isArray(drive.posts) ? drive.posts : []
-  if (!isNewsConfigured && libraryPosts.length === 0) return DEMO_POSTS
   const posts = [...libraryPosts, ...drivePosts].sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-  if (posts.length > 0) writeNewsCache('list', posts)
+  writeNewsCache('list', posts)
   return posts
 }
 
@@ -160,7 +113,7 @@ export async function fetchPost(postId) {
     writeNewsCache(`post:${postId}`, data.post)
     return data.post
   }
-  if (!isNewsConfigured) return demoPost(postId)
+  if (!isNewsConfigured) throw new Error('Không tìm thấy bài viết.')
   const separator = NEWS_FEED.includes('?') ? '&' : '?'
   const post = await fetchJson(`${NEWS_FEED}${separator}post=${encodeURIComponent(postId)}`)
   if (post && post.id) writeNewsCache(`post:${post.id}`, post)

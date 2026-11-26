@@ -1,16 +1,19 @@
-import { NOTE_CATEGORY_LABELS, type Note } from '@btnsg/shared';
+import { useState } from 'react';
+import { NOTE_CATEGORY_LABELS, stripHtmlToText, type Note } from '@btnsg/shared';
+import FacebookShareModal, { PUBLIC_LANDING_URL } from '../../../ui/FacebookShareModal';
 import MarkdownView from '../../../ui/MarkdownView';
 import { formatDate } from '../../../utils/format';
-import { FiBookOpen, FiCalendar, FiEdit3, FiUser } from 'react-icons/fi';
+import { FiBookOpen, FiCalendar, FiEdit3, FiShare2, FiUser } from 'react-icons/fi';
 
 type NotePreviewProps = {
   note: Note;
   onEdit: () => void;
 };
 
-/** Bố cục trang xem 1 ghi chép: tựa đề, câu gốc, diễn giả, thời gian, rồi tới nội dung Markdown. */
+/** Bố cục trang xem 1 ghi chép: tựa đề, câu gốc, diễn giả, thời gian, chia sẻ Facebook (nếu là bài giảng công khai) và nội dung. */
 const NotePreview = ({ note, onEdit }: NotePreviewProps) => {
   const styles = createStyles();
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const metaItems = [
     note.scripture && { icon: <FiBookOpen />, text: note.scripture },
@@ -21,6 +24,11 @@ const NotePreview = ({ note, onEdit }: NotePreviewProps) => {
   return (
     <div className="card" style={styles.page}>
       <div style={styles.editRow}>
+        {note.category === 'bai_giang' && note.published && (
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setIsShareOpen(true)}>
+            <FiShare2 /> Chia sẻ Facebook
+          </button>
+        )}
         <button type="button" className="btn btn-primary btn-sm" onClick={onEdit}>
           <FiEdit3 /> Chỉnh sửa
         </button>
@@ -52,6 +60,15 @@ const NotePreview = ({ note, onEdit }: NotePreviewProps) => {
       <hr style={styles.divider} />
 
       <MarkdownView markdown={note.content} />
+
+      <FacebookShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        url={`${PUBLIC_LANDING_URL}/bai-giang/${note.id}`}
+        title={note.title}
+        description={stripHtmlToText(note.content).slice(0, 180)}
+        isDraft={!note.published}
+      />
     </div>
   );
 };
@@ -61,7 +78,7 @@ export default NotePreview;
 const createStyles = () => {
   return {
     page: { maxWidth: 760, margin: '0 auto' },
-    editRow: { display: 'flex', justifyContent: 'flex-end', marginBottom: 10 },
+    editRow: { display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 10 },
     title: { fontSize: '1.6rem', lineHeight: 1.3, margin: '10px 0 12px' },
     metaRow: { display: 'flex', flexWrap: 'wrap' as const, gap: '8px 18px', marginBottom: 12 },
     metaItem: {

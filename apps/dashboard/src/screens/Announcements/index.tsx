@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Announcement } from '@btnsg/shared';
 import { announcementApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import AnnouncementFormModal, { type AnnouncementFormValues } from './components/AnnouncementFormModal';
 import AnnouncementList from './components/AnnouncementList';
 
 const AnnouncementsScreen = () => {
+  const { confirm } = useDialog();
   // 1. State declarations
   const [announcementList, setAnnouncementList] = useState<Announcement[]>([]);
   const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState<boolean>(false);
@@ -88,7 +90,12 @@ const AnnouncementsScreen = () => {
   };
 
   const deleteAnnouncement = async (item: Announcement): Promise<boolean> => {
-    const confirmed = window.confirm(`Xoá thông báo "${item.title}"?`);
+    const confirmed = await confirm({
+      title: 'Xóa thông báo',
+      message: `Xóa thông báo "${item.title}"?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
     if (!confirmed) return false;
 
     try {

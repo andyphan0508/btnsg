@@ -183,10 +183,21 @@ const WORK_NAV: NavItem[] = [
 const WEB_PATHS = ['/dang-bai', '/khoanh-khac', '/so-ghi-chep', '/chuong-trinh', '/thong-bao-day'];
 const WEB_NAV = WEB_PATHS.map((to) => [...MAIN_NAV, ...WORK_NAV].find((item) => item.to === to)!);
 
-const ADMIN_NAV: NavItem[] = [
+const ADJUSTER_NAV: NavItem[] = [
+  {
+    to: '/trinh-dieu-chinh/hoat-dong',
+    label: 'Mục vụ & Nhịp sinh hoạt',
+    icon: (
+      <svg {...ICON_PROPS}>
+        <rect x="3" y="3" width="18" height="8" rx="1.5" />
+        <rect x="3" y="14" width="8" height="7" rx="1.5" />
+        <rect x="13" y="14" width="8" height="7" rx="1.5" />
+      </svg>
+    ),
+  },
   {
     to: '/website',
-    label: 'Website',
+    label: 'Nội dung Website',
     icon: (
       <svg {...ICON_PROPS}>
         <circle cx="12" cy="12" r="10" />
@@ -195,6 +206,9 @@ const ADMIN_NAV: NavItem[] = [
       </svg>
     ),
   },
+];
+
+const ADMIN_NAV: NavItem[] = [
   {
     to: '/tai-khoan',
     label: 'Tài khoản',
@@ -249,6 +263,8 @@ const Sidebar = () => {
         )}
         {isAdmin && (
           <>
+            <div className="sidebar-section-label">Trình điều chỉnh</div>
+            {ADJUSTER_NAV.map(renderLink)}
             <div className="sidebar-section-label">Quản trị</div>
             {ADMIN_NAV.map(renderLink)}
           </>

@@ -1,20 +1,26 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  PiMagnifyingGlass,
-  PiX,
-  PiSquaresFour,
-  PiRows,
   PiArrowsOut,
+  PiCalendarBlank,
   PiCaretLeft,
   PiCaretRight,
+  PiFolderOpen,
+  PiMagnifyingGlass,
+  PiRows,
+  PiSquaresFour,
+  PiX,
 } from "react-icons/pi";
+import { formatWeekLabel, getIsoWeekInfo, getWeekKey } from "@btnsg/shared";
 import PageHero from "../components/PageHero.jsx";
 import MediaTile from "../components/MediaTile.jsx";
 import Lightbox from "../components/Lightbox.jsx";
+import EmptyState from "../components/EmptyState.jsx";
+import { GallerySkeleton } from "../components/Skeleton.jsx";
 import { loadImages, withTag } from "../lib/gallery.js";
 import { content } from "../lib/siteContent.js";
 
 const PAGE_SIZES = [12, 24, 48, 0];
+const programOf = (img) => img.program || img.album || "";
 
 export default function Gallery() {
   const [images, setImages] = useState([]);
@@ -22,12 +28,14 @@ export default function Gallery() {
   const [error, setError] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
-  // Bộ lọc & Chế độ xem
+  // Bộ lọc, sắp xếp & chế độ xem (đồng bộ với Dashboard Khoảnh khắc)
   const [searchQuery, setSearchQuery] = useState("");
-  const [album, setAlbum] = useState("");
   const [year, setYear] = useState("");
+  const [week, setWeek] = useState("");
+  const [program, setProgram] = useState("");
   const [tag, setTag] = useState("");
-  const [viewMode, setViewMode] = useState("grid");
+  const [sortMode, setSortMode] = useState("newest"); // "newest" | "oldest" | "program"
+  const [viewMode, setViewMode] = useState("grid"); // "grid" | "list" | "week" | "program"
 
   // Phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,7 +48,7 @@ export default function Gallery() {
         if (alive) setImages(data);
       })
       .catch((err) => {
-        if (alive) setError(err.message || "Không tải được thư viện.");
+        if (alive) setError(err.message || "Không tải được thư viện ảnh.");
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -50,24 +58,34 @@ export default function Gallery() {
     };
   }, []);
 
-  // Năm lấy từ ngày chụp; album = dịp/sự kiện đặt khi đăng ảnh (ảnh Drive cũ không có cả hai).
   const years = useMemo(
     () => [...new Set(images.map((img) => (img.date || "").slice(0, 4)).filter(Boolean))].sort().reverse(),
     [images],
   );
-  const albums = useMemo(
-    () => [
-      ...new Set(
-        images
-          .filter((img) => !year || (img.date || "").startsWith(year))
-          .map((img) => img.album)
-          .filter(Boolean),
-      ),
-    ],
-    [images, year],
+
+  const weeks = useMemo(() => {
+    const map = new Map();
+    for (const img of images) {
+      if (year && !(img.date || "").startsWith(year)) continue;
+      const info = getIsoWeekInfo(img.date);
+      if (info && !map.has(info.key)) map.set(info.key, info.label);
+    }
+    return [...map.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+  }, [images, year]);
+
+  const programs = useMemo(
+    () =>
+      [
+        ...new Set(
+          images
+            .filter((img) => (!year || (img.date || "").startsWith(year)) && (!week || getWeekKey(img.date) === week))
+            .map(programOf)
+            .filter(Boolean),
+        ),
+      ].sort((a, b) => a.localeCompare(b, "vi")),
+    [images, year, week],
   );
 
-  // Tag gắn ở dashboard (Khoảnh khắc) — phân loại xuyên năm/album, VD "Truyền giảng".
   const tags = useMemo(
     () => [...new Set(images.flatMap((img) => img.tags || []))].sort((a, b) => a.localeCompare(b, "vi")),
     [images],
@@ -76,17 +94,32 @@ export default function Gallery() {
 
   const filteredImages = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return images.filter(
-      (img) =>
-        (!year || (img.date || "").startsWith(year)) &&
-        (!album || img.album === album) &&
-        (!taggedIds || taggedIds.has(img.id)) &&
-        (!q || `${img.name || ""} ${img.album || ""} ${(img.tags || []).join(" ")}`.toLowerCase().includes(q)),
-    );
-  }, [images, searchQuery, album, year, taggedIds]);
+    const list = images.filter((img) => {
+      const prog = programOf(img);
+      if (year && !(img.date || "").startsWith(year)) return false;
+      if (week && getWeekKey(img.date) !== week) return false;
+      if (program && prog !== program) return false;
+      if (taggedIds && !taggedIds.has(img.id)) return false;
+      if (q) {
+        const hay = `${img.name || ""} ${img.caption || ""} ${prog} ${img.date || ""} ${(img.tags || []).join(" ")}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
 
+    return [...list].sort((a, b) => {
+      if (sortMode === "oldest") return (a.date || "").localeCompare(b.date || "");
+      if (sortMode === "program") {
+        const cmp = (programOf(a) || "zzz").localeCompare(programOf(b) || "zzz", "vi");
+        return cmp !== 0 ? cmp : (b.date || "").localeCompare(a.date || "");
+      }
+      return (b.date || "").localeCompare(a.date || "");
+    });
+  }, [images, searchQuery, year, week, program, taggedIds, sortMode]);
+
+  const isGrouped = viewMode === "week" || viewMode === "program";
   const totalCount = filteredImages.length;
-  const isAll = pageSize === 0 || pageSize >= totalCount;
+  const isAll = isGrouped || pageSize === 0 || pageSize >= totalCount;
   const effectivePageSize = isAll ? totalCount : pageSize;
   const totalPages = isAll ? 1 : Math.max(1, Math.ceil(totalCount / effectivePageSize));
 
@@ -98,6 +131,25 @@ export default function Gallery() {
     () => filteredImages.slice(startIndex, endIndex),
     [filteredImages, startIndex, endIndex],
   );
+
+  const groups = useMemo(() => {
+    if (!isGrouped) return null;
+    const map = new Map();
+    filteredImages.forEach((img, index) => {
+      const key = viewMode === "week" ? getWeekKey(img.date) || "unknown" : programOf(img) || "Chưa phân chương trình";
+      const label = viewMode === "week" ? formatWeekLabel(img.date) : key;
+      const bucket = map.get(key) || { key, label, items: [] };
+      bucket.items.push({ image: img, index });
+      map.set(key, bucket);
+    });
+    const list = [...map.values()];
+    if (viewMode === "week") {
+      list.sort((a, b) => (sortMode === "oldest" ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)));
+    } else {
+      list.sort((a, b) => a.label.localeCompare(b.label, "vi"));
+    }
+    return list;
+  }, [filteredImages, isGrouped, viewMode, sortMode]);
 
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
@@ -112,10 +164,25 @@ export default function Gallery() {
 
   const navigate = (i) => {
     if (filteredImages.length === 0) return;
-    const nextIdx = ((i % filteredImages.length) + filteredImages.length) % filteredImages.length;
-    const targetImg = filteredImages[nextIdx];
-    const realIdx = images.findIndex((img) => img.id === targetImg?.id);
-    setLightboxIndex(realIdx >= 0 ? realIdx : nextIdx);
+    setLightboxIndex(((i % filteredImages.length) + filteredImages.length) % filteredImages.length);
+  };
+
+  const onResetFilters = () => {
+    setSearchQuery("");
+    setYear("");
+    setWeek("");
+    setProgram("");
+    setTag("");
+    setCurrentPage(1);
+  };
+
+  const onRetry = () => {
+    setLoading(true);
+    setError(null);
+    loadImages()
+      .then((data) => setImages(data))
+      .catch((err) => setError(err.message || "Không tải được thư viện ảnh."))
+      .finally(() => setLoading(false));
   };
 
   const getPageNumbers = () => {
@@ -131,22 +198,58 @@ export default function Gallery() {
     return pages;
   };
 
+  const hasActiveFilters = Boolean(searchQuery || year || week || program || tag);
+
+  const renderTile = (image, idx, targetIdx) => {
+    const prog = programOf(image);
+    const weekInfo = getIsoWeekInfo(image.date);
+    return (
+      <button
+        key={image.id || idx}
+        className="gallery-item sfx-rise"
+        style={{ "--i": idx % 4 }}
+        onClick={() => setLightboxIndex(targetIdx)}
+        type="button"
+        aria-label={`Xem ảnh ${image.name}`}
+        data-sheen
+      >
+        <MediaTile image={image} width={800} />
+        <span className="gallery-item-bar">
+          <span className="tag">{prog || (weekInfo ? `Tuần ${weekInfo.week}` : `#${(targetIdx + 1).toString().padStart(2, "0")}`)}</span>
+          <span className="tag">
+            <PiArrowsOut aria-hidden="true" /> Phóng to
+          </span>
+        </span>
+      </button>
+    );
+  };
+
   return (
     <>
       <PageHero title={content.galleryPage.pageTitle} lead={content.galleryPage.pageLead} />
       <main className="section section-tight">
         <div className="wrap">
-          {images[0]?.demo && (
-            <div className="notice glass">
-              Đang xem dữ liệu mẫu — đăng ảnh tại dashboard → <strong>Khoảnh khắc</strong> để hiển thị
-              ảnh thật.
-            </div>
+          {loading && <GallerySkeleton />}
+          {error && (
+            <EmptyState
+              icon="error"
+              variant="error"
+              eyebrow="Không thể kết nối"
+              title="Chưa tải được thư viện ảnh"
+              description={error}
+              action={{ label: "Thử lại", onClick: onRetry, icon: "retry" }}
+              secondaryAction={{ label: "Về trang chủ", to: "/" }}
+            />
           )}
-
-          {loading && <div className="status">Đang tải thư viện ảnh…</div>}
-          {error && <div className="status is-error">{error}</div>}
           {!loading && !error && images.length === 0 && (
-            <div className="status">Thư viện chưa có ảnh nào.</div>
+            <EmptyState
+              icon="gallery"
+              eyebrow="Thư viện ảnh"
+              title="Chưa có khoảnh khắc nào được đăng tải"
+              description="Những hình ảnh thờ phượng, sinh hoạt và phục vụ của Ban Thanh Niên sẽ sớm được cập nhật tại đây."
+              action={{ label: "Xem lịch sinh hoạt", to: "/sinh-hoat", icon: "arrow" }}
+              secondaryAction={{ label: "Về trang chủ", to: "/" }}
+            />
           )}
 
           {!loading && !error && images.length > 0 && (
@@ -156,7 +259,7 @@ export default function Gallery() {
                   <PiMagnifyingGlass aria-hidden="true" />
                   <input
                     type="text"
-                    placeholder="Tìm kiếm khoảnh khắc..."
+                    placeholder="Tìm khoảnh khắc, chương trình, tag..."
                     aria-label="Tìm kiếm ảnh"
                     value={searchQuery}
                     onChange={(e) => {
@@ -171,6 +274,20 @@ export default function Gallery() {
                   )}
                 </label>
 
+                <select
+                  className="gallery-select"
+                  aria-label="Sắp xếp ảnh"
+                  value={sortMode}
+                  onChange={(e) => {
+                    setSortMode(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="newest">Mới nhất</option>
+                  <option value="oldest">Cũ nhất</option>
+                  <option value="program">Chương trình A–Z</option>
+                </select>
+
                 <div className="seg" role="group" aria-label="Chế độ xem">
                   <button
                     type="button"
@@ -183,6 +300,24 @@ export default function Gallery() {
                   </button>
                   <button
                     type="button"
+                    className={viewMode === "week" ? "is-active" : undefined}
+                    onClick={() => setViewMode("week")}
+                    aria-pressed={viewMode === "week"}
+                  >
+                    <PiCalendarBlank aria-hidden="true" />
+                    <span>Theo tuần</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={viewMode === "program" ? "is-active" : undefined}
+                    onClick={() => setViewMode("program")}
+                    aria-pressed={viewMode === "program"}
+                  >
+                    <PiFolderOpen aria-hidden="true" />
+                    <span>Chương trình</span>
+                  </button>
+                  <button
+                    type="button"
                     className={viewMode === "list" ? "is-active" : undefined}
                     onClick={() => setViewMode("list")}
                     aria-pressed={viewMode === "list"}
@@ -192,57 +327,90 @@ export default function Gallery() {
                   </button>
                 </div>
 
-                <div className="seg" role="group" aria-label="Số ảnh mỗi trang">
-                  {PAGE_SIZES.map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      className={pageSize === size ? "is-active" : undefined}
-                      onClick={() => handlePageSizeChange(size)}
-                      aria-pressed={pageSize === size}
-                    >
-                      {size === 0 ? "Tất cả" : size}
-                    </button>
-                  ))}
-                </div>
+                {!isGrouped && (
+                  <div className="seg" role="group" aria-label="Số ảnh mỗi trang">
+                    {PAGE_SIZES.map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        className={pageSize === size ? "is-active" : undefined}
+                        onClick={() => handlePageSizeChange(size)}
+                        aria-pressed={pageSize === size}
+                      >
+                        {size === 0 ? "Tất cả" : size}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {years.length > 1 && (
-                <div className="chip-row album-row" role="group" aria-label="Lọc theo năm">
-                  {["", ...years].map((y) => (
-                    <button
-                      key={y || "all-years"}
-                      type="button"
-                      className={`chip${year === y ? " is-active" : ""}`}
-                      onClick={() => {
-                        setYear(y);
-                        setAlbum("");
+              {(years.length > 1 || weeks.length > 0 || programs.length > 0) && (
+                <div className="gallery-filters">
+                  {years.length > 1 && (
+                    <select
+                      className="gallery-select"
+                      aria-label="Lọc theo năm"
+                      value={year}
+                      onChange={(e) => {
+                        setYear(e.target.value);
+                        setWeek("");
+                        setProgram("");
                         setCurrentPage(1);
                       }}
-                      aria-pressed={year === y}
                     >
-                      {y ? `Năm ${y}` : "Mọi năm"}
-                    </button>
-                  ))}
-                </div>
-              )}
+                      <option value="">Mọi năm</option>
+                      {years.map((y) => (
+                        <option key={y} value={y}>
+                          Năm {y}
+                        </option>
+                      ))}
+                    </select>
+                  )}
 
-              {albums.length > 1 && (
-                <div className="chip-row album-row" role="group" aria-label="Lọc theo album">
-                  {["", ...albums].map((name) => (
-                    <button
-                      key={name || "all"}
-                      type="button"
-                      className={`chip${album === name ? " is-active" : ""}`}
-                      onClick={() => {
-                        setAlbum(name);
+                  {weeks.length > 0 && (
+                    <select
+                      className="gallery-select"
+                      aria-label="Lọc theo tuần"
+                      value={week}
+                      onChange={(e) => {
+                        setWeek(e.target.value);
+                        setProgram("");
                         setCurrentPage(1);
                       }}
-                      aria-pressed={album === name}
                     >
-                      {name || "Tất cả"}
+                      <option value="">Mọi tuần</option>
+                      {weeks.map(([key, label]) => (
+                        <option key={key} value={key}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  {programs.length > 0 && (
+                    <select
+                      className="gallery-select"
+                      aria-label="Lọc theo chương trình"
+                      value={program}
+                      onChange={(e) => {
+                        setProgram(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <option value="">Mọi chương trình</option>
+                      {programs.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  {hasActiveFilters && (
+                    <button type="button" className="chip" onClick={onResetFilters}>
+                      <PiX aria-hidden="true" /> Xóa bộ lọc
                     </button>
-                  ))}
+                  )}
                 </div>
               )}
 
@@ -271,41 +439,39 @@ export default function Gallery() {
                   {totalCount > 0 ? startIndex + 1 : 0}–{endIndex}
                 </strong>{" "}
                 trên tổng số <strong>{totalCount}</strong> ảnh
-                {(searchQuery || album || year || tag) && ` (lọc từ ${images.length} ảnh)`}
+                {hasActiveFilters && ` (lọc từ ${images.length} ảnh)`}
               </p>
 
               {currentImages.length === 0 ? (
-                <div className="status">
-                  <p>Không tìm thấy ảnh nào khớp với từ khóa "{searchQuery}"</p>
-                  <button className="btn btn-glass" onClick={() => setSearchQuery("")} type="button">
-                    Xem toàn bộ thư viện
-                  </button>
+                <EmptyState
+                  icon="search"
+                  variant="search"
+                  compact
+                  title="Không tìm thấy khoảnh khắc phù hợp"
+                  description={
+                    searchQuery.trim()
+                      ? `Không có ảnh nào khớp với từ khóa "${searchQuery.trim()}" cùng bộ lọc hiện tại.`
+                      : "Không có ảnh nào khớp với bộ lọc bạn đã chọn."
+                  }
+                  action={{ label: "Xóa bộ lọc", onClick: onResetFilters }}
+                />
+              ) : groups ? (
+                <div className="gallery-groups">
+                  {groups.map((group) => (
+                    <section key={group.key} className="gallery-group">
+                      <header className="gallery-group-head">
+                        <h2>{group.label}</h2>
+                        <span>{group.items.length} ảnh</span>
+                      </header>
+                      <div className="gallery-grid">
+                        {group.items.map(({ image, index }, i) => renderTile(image, i, index))}
+                      </div>
+                    </section>
+                  ))}
                 </div>
               ) : (
                 <div className={`gallery-grid${viewMode === "list" ? " is-list" : ""}`}>
-                  {currentImages.map((image, idx) => {
-                    const realImageIdx = images.findIndex((img) => img.id === image.id);
-                    const targetIdx = realImageIdx >= 0 ? realImageIdx : startIndex + idx;
-                    return (
-                      <button
-                        key={image.id || idx}
-                        className="gallery-item sfx-rise"
-                        style={{ "--i": idx % 4 }}
-                        onClick={() => setLightboxIndex(targetIdx)}
-                        type="button"
-                        aria-label={`Xem ảnh ${image.name}`}
-                        data-sheen
-                      >
-                        <MediaTile image={image} width={800} />
-                        <span className="gallery-item-bar">
-                          <span className="tag">#{(startIndex + idx + 1).toString().padStart(2, "0")}</span>
-                          <span className="tag">
-                            <PiArrowsOut aria-hidden="true" /> Phóng to
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
+                  {currentImages.map((image, idx) => renderTile(image, idx, startIndex + idx))}
                 </div>
               )}
 
@@ -352,7 +518,7 @@ export default function Gallery() {
           )}
 
           <Lightbox
-            images={images}
+            images={filteredImages}
             index={lightboxIndex}
             onClose={() => setLightboxIndex(null)}
             onNavigate={navigate}

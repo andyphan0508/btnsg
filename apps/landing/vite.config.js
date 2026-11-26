@@ -14,6 +14,7 @@ const ROUTE_SECTIONS = {
   'lien-he': 'contactPage',
   'tin-tuc': 'newsPage',
   'thu-vien': 'galleryPage',
+  'bai-giang': 'sermonsPage',
 }
 
 const escapeHtml = (text) =>
@@ -63,8 +64,15 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Thư viện tách chunk riêng: mỗi lần deploy chỉ đổi code app, người xem cũ giữ cache thư viện.
-        manualChunks: (id) => (id.includes('node_modules') ? 'vendor' : undefined),
+        // Tách nhóm thư viện lớn để trình duyệt & Cloudflare CDN cache độc lập, giảm kích thước chunk khởi đầu.
+        manualChunks: (id) => {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('react-dom') || id.includes('react-router') || /\/react\//.test(id)) return 'vendor-react'
+          if (id.includes('gsap') || id.includes('@gsap') || id.includes('lenis')) return 'vendor-scroll'
+          if (id.includes('motion') || id.includes('framer-motion')) return 'vendor-motion'
+          if (id.includes('react-icons')) return 'vendor-icons'
+          return 'vendor'
+        },
       },
     },
   },

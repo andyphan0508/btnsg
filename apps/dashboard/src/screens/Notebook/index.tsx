@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Note, NoteCategory } from '@btnsg/shared';
+import { isHtmlContent, markdownToBasicHtml, type Note, type NoteCategory } from '@btnsg/shared';
 import { noteApi } from '../../api/resourceApi';
 import { todayIsoDate } from '../../utils/format';
+import { useDialog } from '../../ui/DialogProvider';
 import LoadingState from '../../ui/LoadingState';
+import RichTextEditor from '../../ui/RichTextEditor';
 import NoteFilters from './components/NoteFilters';
 import NoteList from './components/NoteList';
 import NoteListToolbar, { type Density, type SortOrder } from './components/NoteListToolbar';
-import NoteMarkdownEditor from './components/NoteMarkdownEditor';
 import { deleteStoredUrl } from '../../lib/images';
 import NoteMetaForm from './components/NoteMetaForm';
 import NotePagination from './components/NotePagination';
@@ -31,6 +32,7 @@ const parseTags = (tagsText: string): string[] => {
 };
 
 const NotebookScreen = () => {
+  const { confirm, notify } = useDialog();
   // 1. State — danh sách
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -166,7 +168,7 @@ const NotebookScreen = () => {
     setSpeaker(selectedNote.speaker || '');
     setScripture(selectedNote.scripture || '');
     setTagsText(selectedNote.tags.join(', '));
-    setContent(selectedNote.content);
+    setContent(isHtmlContent(selectedNote.content) ? selectedNote.content : markdownToBasicHtml(selectedNote.content));
     setPublished(Boolean(selectedNote.published));
     setAudioUrl(selectedNote.audioUrl || '');
     setOriginalAudioUrl(selectedNote.audioUrl || '');
@@ -227,12 +229,19 @@ const NotebookScreen = () => {
   };
 
   const deleteNote = async (note: Note): Promise<void> => {
-    if (!window.confirm(`Xoá "${note.title}"?`)) return;
+    const confirmed = await confirm({
+      title: 'Xóa ghi chép',
+      message: `Xóa "${note.title}"?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
+    if (!confirmed) return;
     try {
       setDeletingNoteId(note.id);
       await noteApi.remove(note.id);
       if (selectedNoteId === note.id) backToList();
       await loadNotes();
+      notify('Đã xóa ghi chép.');
     } catch (error) {
       setListError(error instanceof Error ? error.message : String(error));
     } finally {
@@ -301,13 +310,12 @@ const NotebookScreen = () => {
           />
 
           <div className="card" style={styles.contentCard}>
-            <div className="card-title">Nội dung (Markdown) *</div>
-            <NoteMarkdownEditor
+            <div className="card-title">Nội dung *</div>
+            <RichTextEditor
               value={content}
               onChange={setContent}
-              placeholder={
-                'Chọn văn bản rồi bấm nút định dạng ở trên, hoặc gõ Markdown trực tiếp:\n\n## Ý chính\n**đậm**, *nghiêng*, danh sách bằng dấu -\n\n> Trích dẫn câu Kinh Thánh'
-              }
+              minHeight={420}
+              placeholder="Soạn nội dung bài giảng hoặc ghi chép tại đây…"
             />
           </div>
 

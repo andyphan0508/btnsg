@@ -4,7 +4,7 @@
 
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { deleteImages, imageUrl, uploadImage } from '../lib/images';
-import type { CompressedImage } from '../utils/imageCompress';
+import { compressImage, type CompressedImage } from '../utils/imageCompress';
 
 export type NewsPostMeta = {
   id: string;
@@ -13,6 +13,7 @@ export type NewsPostMeta = {
   description: string;
   /** Link ảnh bìa ('' nếu không có). */
   cover: string;
+  published: boolean;
 };
 
 /** Ảnh đã nằm trên Storage: id = link công khai (dùng thẳng làm src). */
@@ -32,11 +33,12 @@ export type NewsPostInput = {
   date: string;
   description: string;
   markdown: string;
-  /** Tên ảnh được chọn làm bìa (ảnh mới hoặc ảnh đã có), '' = không bìa. */
+  /** Tên ảnh được chọn làm bìa (ảnh mới hoặc ảnh đã có), '' = không bìa, hoặc URL trực tiếp. */
   cover: string;
+  published?: boolean;
 };
 
-type StoredImage = { name: string; url: string; path: string };
+type StoredImage = { name: string; url: string; path: string; previewUrl?: string };
 
 type PostRow = {
   id: string;
@@ -44,6 +46,7 @@ type PostRow = {
   date: string | null;
   description: string;
   cover: string;
+  published?: boolean | null;
   content?: string;
   images?: StoredImage[];
 };
@@ -59,16 +62,30 @@ const toMeta = (row: PostRow): NewsPostMeta => ({
   date: row.date ?? '',
   description: row.description,
   cover: row.cover,
+  published: row.published ?? true,
 });
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** Đổi `![...](ten-anh.webp)` trong Markdown thành link Storage của ảnh đó. */
-const linkImages = (markdown: string, images: StoredImage[]): string =>
-  images.reduce(
-    (text, image) => text.replace(new RegExp(`\\]\\(${escapeRegExp(image.name)}\\)`, 'g'), `](${image.url})`),
-    markdown,
-  );
+/**
+ * Đổi ảnh cục bộ (Markdown `](ten-anh.webp)` hoặc HTML `<img src="blob:..." data-img-name="ten-anh.webp">`)
+ * thành link Storage công khai của ảnh đó sau khi upload.
+ */
+const linkImages = (content: string, images: StoredImage[]): string => {
+  let out = content;
+  for (const image of images) {
+    out = out.replace(new RegExp(`\\]\\(${escapeRegExp(image.name)}\\)`, 'g'), `](${image.url})`);
+    if (image.previewUrl) {
+      out = out.split(image.previewUrl).join(image.url);
+    }
+    const nameAttrPattern = new RegExp(
+      `(<img\\b[^>]*\\bsrc=)(["'])[^"']*\\2([^>]*\\bdata-img-name=(["'])${escapeRegExp(image.name)}\\4)`,
+      'gi',
+    );
+    out = out.replace(nameAttrPattern, `$1"${image.url}"$3`);
+  }
+  return out;
+};
 
 export const newsApi = {
   isConfigured: (): boolean => isSupabaseConfigured,
@@ -76,7 +93,7 @@ export const newsApi = {
   fetchPosts: async (): Promise<NewsPostMeta[]> => {
     const { data, error } = await client()
       .from('posts')
-      .select('id,title,date,description,cover')
+      .select('id,title,date,description,cover,published')
       .order('date', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
@@ -86,7 +103,7 @@ export const newsApi = {
   fetchPost: async (postId: string): Promise<NewsPostFull> => {
     const { data, error } = await client()
       .from('posts')
-      .select('id,title,date,description,cover,content,images')
+      .select('id,title,date,description,cover,published,content,images')
       .eq('id', postId)
       .single();
     if (error) throw new Error(error.message);
@@ -98,8 +115,17 @@ export const newsApi = {
     };
   },
 
+  /** Nén và upload nhanh một ảnh chèn trực tiếp trong trình soạn thảo Rich Text. */
+  uploadInlineImage: async (postId: string, file: File): Promise<NewsImage> => {
+    const compressed = await compressImage(file);
+    const extension = compressed.blob.type === 'image/webp' ? 'webp' : 'jpg';
+    const path = `posts/${postId}/${crypto.randomUUID()}.${extension}`;
+    await uploadImage(path, compressed.blob);
+    return { id: imageUrl(path), name: compressed.name, path };
+  },
+
   /**
-   * Tạo hoặc cập nhật bài: upload ảnh mới → thay tên ảnh trong Markdown bằng link → ghi 1 dòng.
+   * Tạo hoặc cập nhật bài: upload ảnh mới → thay tên/blob ảnh trong nội dung bằng link → ghi 1 dòng.
    * Ghi dòng lỗi thì xoá các ảnh vừa upload để không tốn dung lượng vô ích.
    */
   savePost: async (
@@ -108,8 +134,9 @@ export const newsApi = {
     newImages: CompressedImage[],
     existingImages: NewsImage[],
     onProgress: (message: string) => void,
+    forcedId?: string,
   ): Promise<string> => {
-    const id = postId ?? crypto.randomUUID();
+    const id = postId ?? forcedId ?? crypto.randomUUID();
     const uploaded: StoredImage[] = [];
 
     for (const [index, image] of newImages.entries()) {
@@ -122,21 +149,27 @@ export const newsApi = {
         await deleteImages(uploaded.map((u) => u.path));
         throw new Error(`Không tải được ảnh "${image.name}": ${error instanceof Error ? error.message : error}`);
       }
-      uploaded.push({ name: image.name, path, url: imageUrl(path) });
+      uploaded.push({ name: image.name, path, url: imageUrl(path), previewUrl: image.previewUrl });
     }
 
     const images: StoredImage[] = [
       ...existingImages.map((image) => ({ name: image.name, url: image.id, path: image.path })),
       ...uploaded,
     ];
+    const cleanImages = images.map(({ name, url, path }) => ({ name, url, path }));
+    const resolvedCover = /^https?:\/\//i.test(input.cover)
+      ? input.cover
+      : images.find((image) => image.name === input.cover)?.url ?? '';
+
     const row = {
       id,
       title: input.title,
       date: input.date || null,
       description: input.description,
       content: linkImages(input.markdown, images),
-      cover: images.find((image) => image.name === input.cover)?.url ?? '',
-      images,
+      cover: resolvedCover,
+      images: cleanImages,
+      published: input.published ?? true,
     };
 
     onProgress(postId ? 'Đang cập nhật bài viết…' : 'Đang đăng bài viết…');

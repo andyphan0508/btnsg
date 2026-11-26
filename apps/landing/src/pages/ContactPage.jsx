@@ -1,5 +1,6 @@
 import PageHero from "../components/PageHero.jsx";
 import Contact from "../components/Contact.jsx";
+import CustomBlocks from "../components/CustomBlocks.jsx";
 import { content } from "../lib/siteContent.js";
 
 export default function ContactPage() {
@@ -10,6 +11,7 @@ export default function ContactPage() {
       <PageHero title={contactPage.pageTitle} lead={contactPage.pageLead} />
       <main>
         <Contact />
+        <CustomBlocks page="contact" />
       </main>
     </>
   );

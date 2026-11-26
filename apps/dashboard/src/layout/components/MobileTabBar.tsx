@@ -14,6 +14,7 @@ import {
   FiGrid,
   FiHome,
   FiImage,
+  FiLayers,
   FiLogOut,
   FiMail,
   FiMessageSquare,
@@ -60,6 +61,7 @@ const WEB_TABS: TabItem[] = [
 ];
 
 const ADMIN_TABS: TabItem[] = [
+  { to: '/trinh-dieu-chinh/hoat-dong', label: 'Mục vụ & Sinh hoạt', icon: FiLayers },
   { to: '/website', label: 'Website', icon: FiGlobe },
   { to: '/tai-khoan', label: 'Quản lý tài khoản', icon: FiUserCheck },
 ];

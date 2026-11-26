@@ -1,18 +1,32 @@
+import { isHtmlContent, sanitizeRichHtml } from '@btnsg/shared'
 import { parseMarkdown } from '../lib/markdown.js'
 import { driveImage } from '../lib/gallery.js'
 
 /**
- * Render Markdown của bài viết tin tức thành React element.
- * imageMap: { tênFileẢnh (thường) → Drive file ID } — cho phép trong bài viết
- * chỉ cần viết ![Chú thích](ten-anh.jpg) với tên file ảnh nằm cùng folder Drive.
- * coverId: ảnh bìa đã hiện trên đầu bài — gặp lại trong nội dung thì bỏ qua, tránh trùng.
+ * Render nội dung bài viết / bài giảng (hỗ trợ cả Rich Text HTML kiểu WordPress lẫn Markdown cũ).
+ * imageMap: { tênFileẢnh (thường) → Drive file ID } — dùng cho bài Markdown cũ trên Drive.
+ * coverId: ảnh bìa đã hiện trên đầu bài — gặp lại trong nội dung Markdown thì bỏ qua, tránh trùng.
  */
 export default function Markdown({ content, imageMap = {}, coverId = '' }) {
+  if (isHtmlContent(content || '')) {
+    let html = sanitizeRichHtml(content || '')
+    if (Object.keys(imageMap).length > 0) {
+      html = html.replace(
+        /(<img\b[^>]*\bsrc=)(["'])([^"']+)\2/gi,
+        (full, prefix, quote, src) => {
+          if (/^(https?:\/\/|\/)/i.test(src)) return full
+          const key = src.normalize('NFC').toLowerCase()
+          const id = imageMap[key] || imageMap[key.replace(/\.[a-z0-9]+$/i, '')] || ''
+          return id ? `${prefix}${quote}${driveImage(id, 1200)}${quote}` : full
+        },
+      )
+    }
+    return <div className="news-content rich-content" dangerouslySetInnerHTML={{ __html: html }} />
+  }
+
   const blocks = parseMarkdown(content)
 
   const resolveImageId = (src) => {
-    // normalize('NFC'): tiếng Việt có 2 dạng mã hoá (dựng sẵn/tổ hợp) — quy về một dạng
-    // để tên file gõ trong bài .md luôn khớp tên file thật trên Drive.
     const key = src.normalize('NFC').toLowerCase()
     return imageMap[key] || imageMap[key.replace(/\.[a-z0-9]+$/i, '')] || ''
   }

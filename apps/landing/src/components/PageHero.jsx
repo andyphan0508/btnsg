@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { loadImages, pickImage } from "../lib/gallery.js";
 import { useHeroMotion } from "../lib/scroll.js";
-import { content } from "../lib/siteContent.js";
+import { content, heroImage } from "../lib/siteContent.js";
 import MediaTile from "./MediaTile.jsx";
 import Rays from "./Rays.jsx";
 import { HeroWords } from "./Hero.jsx";
@@ -15,6 +15,7 @@ export default function PageHero({ title, lead, seed, offset = 0 }) {
   const { pathname } = useLocation();
   const key = seed || pathname;
   const [image, setImage] = useState(null);
+  const [loaded, setLoaded] = useState(false);
   const root = useRef(null);
   useHeroMotion(root);
 
@@ -31,11 +32,15 @@ export default function PageHero({ title, lead, seed, offset = 0 }) {
     let alive = true;
     loadImages()
       .then((images) => alive && setImage(pickImage(images, key, offset)))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => alive && setLoaded(true));
     return () => {
       alive = false;
     };
   }, [key, offset]);
+
+  const fallbackPhoto = loaded && !image ? { id: "hero-fallback", src: heroImage(), thumb: heroImage(), name: title } : null;
+  const displayImage = image || fallbackPhoto;
 
   return (
     <header className="page-hero" ref={root}>
@@ -52,7 +57,7 @@ export default function PageHero({ title, lead, seed, offset = 0 }) {
             <div className="hero-glow" />
             <Rays className="hero-rays" />
             <figure className="hero-frame">
-              {image ? <MediaTile image={image} width={1200} eager /> : <span className="frame-empty" />}
+              {displayImage ? <MediaTile image={displayImage} width={1200} eager /> : <span className="frame-empty" />}
               <span className="hero-frame-sheen" />
             </figure>
           </div>

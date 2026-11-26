@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './lib/scroll.js'
 import App from './App.jsx'
-import { listenForPreview, loadSiteContent } from './lib/siteContent.js'
+import { hydrateCachedSiteContent, listenForPreview, loadSiteContent } from './lib/siteContent.js'
 import 'lenis/dist/lenis.css'
 import './fonts.css'
 import './index.css'
@@ -22,15 +22,13 @@ window.addEventListener('vite:preloadError', (event) => {
   window.location.reload()
 })
 
-// Ảnh nào tải xong cũng được đánh dấu → CSS cho hiện dần (sự kiện load không nổi bọt nên bắt ở pha capture).
-// Dùng data-loaded thay vì class: React không quản lý thuộc tính này nên không bao giờ xoá mất khi vẽ lại.
-document.addEventListener(
-  'load',
-  (event) => {
-    if (event.target.tagName === 'IMG') event.target.dataset.loaded = ''
-  },
-  true,
-)
+// Ảnh tải xong hoặc lỗi đều đánh dấu để bỏ trạng thái chờ nhấp nháy.
+// Dùng data-loaded thay vì class: React không quản lý thuộc tính này nên không bao giờ xóa mất khi vẽ lại.
+const markImgDone = (event) => {
+  if (event.target?.tagName === 'IMG') event.target.dataset.loaded = ''
+}
+document.addEventListener('load', markImgDone, true)
+document.addEventListener('error', markImgDone, true)
 
 /** Làm mờ dần màn chờ trong index.html sau khi trang đã vẽ khung hình đầu tiên. */
 function hideSplash() {
@@ -39,20 +37,21 @@ function hideSplash() {
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       splash.classList.add('is-done')
-      setTimeout(() => splash.remove(), 700)
+      setTimeout(() => splash.remove(), 600)
     }),
   )
 }
 
-// Lỗi gì ở bước tải nội dung cũng vẫn vẽ trang (bằng giá trị mặc định).
-loadSiteContent().catch(() => {}).then(() => {
-  listenForPreview()
-  ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </React.StrictMode>,
-  )
-  hideSplash()
-})
+// Vẽ ngay bằng cache/mặc định (không chặn màn hình chờ theo độ trễ mạng),
+// rồi âm thầm cập nhật nội dung mới từ /api/site-content khi phản hồi về.
+hydrateCachedSiteContent()
+listenForPreview()
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+)
+hideSplash()
+loadSiteContent().catch(() => {})

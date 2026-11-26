@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { PiArrowUpRight, PiMusicNotes, PiNewspaper } from "react-icons/pi";
+import { PiArrowUpRight, PiImages, PiMusicNotes, PiNewspaper } from "react-icons/pi";
 import Rays from "./Rays.jsx";
 import MediaTile from "./MediaTile.jsx";
 import { iconFor } from "../lib/icons.js";
@@ -30,6 +30,7 @@ const Arrow = () => (
  */
 export default function Bento() {
   const [photos, setPhotos] = useState([]);
+  const [photosLoaded, setPhotosLoaded] = useState(false);
   const { home, themeYear, ministries, schedule, general } = content;
   const meetingDays = new Set(schedule.map((s) => s.day.trim().toLowerCase()));
 
@@ -37,7 +38,8 @@ export default function Bento() {
     let alive = true;
     loadImages()
       .then((all) => alive && setPhotos(pickImages(all, "home-bento", 4)))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => alive && setPhotosLoaded(true));
     return () => {
       alive = false;
     };
@@ -126,11 +128,18 @@ export default function Bento() {
               <p className="bento-note">{home.bentoGalleryNote}</p>
             </div>
             <div className="bento-fan" aria-hidden="true">
-              {photos.map((image, i) => (
-                <div className="bento-fan-card" style={{ "--i": i }} key={image.id}>
-                  <MediaTile image={image} width={500} />
+              {photos.length > 0 ? (
+                photos.map((image, i) => (
+                  <div className="bento-fan-card" style={{ "--i": i }} key={image.id}>
+                    <MediaTile image={image} width={500} />
+                  </div>
+                ))
+              ) : photosLoaded ? (
+                <div className="bento-fan-empty">
+                  <PiImages />
+                  <span>Khoảnh khắc mới sắp được cập nhật</span>
                 </div>
-              ))}
+              ) : null}
             </div>
             <Arrow />
           </Link>

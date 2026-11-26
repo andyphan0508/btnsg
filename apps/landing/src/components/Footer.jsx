@@ -10,7 +10,9 @@ import { scrollToTop } from "../lib/scroll.js";
 import logoImg from "../assets/logobtnsg.webp";
 
 export default function Footer() {
-  const { general, links, church } = content;
+  const { general, links, church, navItems } = content;
+  const visibleNav =
+    Array.isArray(navItems) && navItems.length > 0 ? navItems.filter((item) => item.visible !== false && item.to) : nav;
 
   return (
     <footer className="footer">
@@ -24,7 +26,7 @@ export default function Footer() {
         <nav className="footer-col" aria-label="Khám phá">
           <h3>Khám phá</h3>
           <ul>
-            {nav.map((item) => (
+            {visibleNav.map((item) => (
               <li key={item.to}>
                 <Link to={item.to}>
                   <RollText text={item.label} />

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import PageHero from '../components/PageHero.jsx'
 import NewsCard from '../components/NewsCard.jsx'
 import NewsFeaturedCard from '../components/NewsFeaturedCard.jsx'
+import EmptyState from '../components/EmptyState.jsx'
+import { NewsSkeleton } from '../components/Skeleton.jsx'
 import { fetchPosts, readNewsCache, subscribeWindowFocus } from '../lib/news.js'
 import { content } from '../lib/siteContent.js'
 
@@ -34,21 +36,39 @@ export default function News() {
   const [featuredPost, ...otherPosts] = posts
   const ready = !isLoadingPosts && !postsError
 
+  const onRetry = () => {
+    setIsLoadingPosts(true)
+    setPostsError(null)
+    loadPosts(false)
+  }
+
   return (
     <>
       <PageHero title={content.newsPage.pageTitle} lead={content.newsPage.pageLead} />
       <main className="section section-tight">
         <div className="wrap">
-          {posts[0]?.demo && (
-            <div className="notice glass">
-              Đang xem dữ liệu mẫu — đăng bài tại dashboard → <strong>Đăng bài Tin tức</strong> để hiển thị
-              bài viết thật.
-            </div>
+          {isLoadingPosts && <NewsSkeleton />}
+          {postsError && (
+            <EmptyState
+              icon="error"
+              variant="error"
+              eyebrow="Không thể kết nối"
+              title="Chưa tải được tin tức"
+              description={postsError}
+              action={{ label: 'Thử lại', onClick: onRetry, icon: 'retry' }}
+              secondaryAction={{ label: 'Về trang chủ', to: '/' }}
+            />
           )}
-
-          {isLoadingPosts && <div className="status">Đang tải tin tức…</div>}
-          {postsError && <div className="status is-error">{postsError}</div>}
-          {ready && posts.length === 0 && <div className="status">Chưa có bài viết nào.</div>}
+          {ready && posts.length === 0 && (
+            <EmptyState
+              icon="news"
+              eyebrow="Tin tức & bài viết"
+              title="Chưa có bài viết nào được đăng tải"
+              description="Các thông báo mới nhất và bài viết về hoạt động của Ban Thanh Niên sẽ sớm được chia sẻ tại đây."
+              action={{ label: 'Xem lịch sinh hoạt', to: '/sinh-hoat', icon: 'arrow' }}
+              secondaryAction={{ label: 'Về trang chủ', to: '/' }}
+            />
+          )}
 
           {ready && featuredPost && <NewsFeaturedCard post={featuredPost} />}
 

@@ -12,6 +12,7 @@ import {
 import { FiArrowLeft } from 'react-icons/fi';
 import { programApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import { formatDate } from '../../utils/format';
 import ProgramItemCard from './components/ProgramItemCard';
 
@@ -27,6 +28,7 @@ const friendlyError = (error: unknown) => {
 
 /** Trang làm việc: /chuong-trinh/moi (tạo mới, ?copy=<id> để chép tuần trước) và /chuong-trinh/:id (sửa). */
 const ProgramEditorScreen = () => {
+  const { confirm } = useDialog();
   // 1. State declarations
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -101,7 +103,14 @@ const ProgramEditorScreen = () => {
   };
 
   const remove = async (): Promise<void> => {
-    if (!id || !window.confirm('Xoá chương trình này?')) return;
+    if (!id) return;
+    const confirmed = await confirm({
+      title: 'Xóa chương trình',
+      message: 'Xóa chương trình này?',
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
+    if (!confirmed) return;
     try {
       await programApi.remove(id);
       navigate('/chuong-trinh');

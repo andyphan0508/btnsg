@@ -3,6 +3,7 @@ import type { Expense } from '@btnsg/shared';
 import { EXPENSE_CATEGORIES } from '@btnsg/shared';
 import { expenseApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import { exportFinanceWorkbook } from '../../utils/financeExcel';
 import { openVoucherWindow } from '../../utils/voucher';
 import ExpenseFormModal, { type ExpenseFormValues } from './components/ExpenseFormModal';
@@ -12,6 +13,7 @@ import FinanceSummary from './components/FinanceSummary';
 import { FiDownload, FiPrinter } from 'react-icons/fi';
 
 const FinanceScreen = () => {
+  const { confirm } = useDialog();
   // 1. State declarations
   const [expenseList, setExpenseList] = useState<Expense[]>([]);
   const [isLoadingExpenses, setIsLoadingExpenses] = useState<boolean>(false);
@@ -127,7 +129,12 @@ const FinanceScreen = () => {
   };
 
   const deleteExpense = async (expense: Expense): Promise<boolean> => {
-    const confirmed = window.confirm(`Xoá giao dịch "${expense.category}" ngày ${expense.date}?`);
+    const confirmed = await confirm({
+      title: 'Xóa giao dịch',
+      message: `Xóa giao dịch "${expense.category}" ngày ${expense.date}?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
     if (!confirmed) return false;
 
     try {

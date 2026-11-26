@@ -10,6 +10,7 @@ import {
   type PushSendResult,
 } from '../../api/pushApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 
 /** Mẫu soạn nhanh — bấm là điền sẵn, chỉ cần sửa lại chi tiết. */
 const QUICK_TEMPLATES: {
@@ -48,6 +49,7 @@ const MAX_BODY = 160;
 const DAILY_SOFT_LIMIT = 3;
 
 const PushNotifyScreen = () => {
+  const { confirm } = useDialog();
   // 1. State
   const [title, setTitle] = useState<string>('');
   const [body, setBody] = useState<string>('');
@@ -81,9 +83,11 @@ const PushNotifyScreen = () => {
       setSendError('Vui lòng nhập tiêu đề và nội dung thông báo.');
       return;
     }
-    const confirmed = window.confirm(
-      `Gửi thông báo này tới ${subscriberCount ?? 'tất cả'} thiết bị đã đăng ký?\n\n${title}\n${body}`,
-    );
+    const confirmed = await confirm({
+      title: 'Gửi thông báo đẩy',
+      message: `Gửi thông báo này tới ${subscriberCount ?? 'tất cả'} thiết bị đã đăng ký?\n\n${title}\n${body}`,
+      confirmLabel: 'Gửi thông báo',
+    });
     if (!confirmed) return;
 
     try {

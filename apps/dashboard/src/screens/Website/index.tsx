@@ -6,6 +6,7 @@ import { isSupabaseConfigured } from '../../lib/supabase';
 import { TAG_DATALIST_ID } from './components/FieldInput';
 import { useAuth } from '../../auth/AuthContext';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import PreviewFrame from './components/PreviewFrame';
 import SectionEditor from './components/SectionEditor';
 
@@ -13,6 +14,7 @@ const sameValue = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringi
 
 const WebsiteScreen = () => {
   // 1. State declarations
+  const { confirm } = useDialog();
   const { profile } = useAuth();
   const [savedContent, setSavedContent] = useState<SiteContent | null>(null);
   const [draftContent, setDraftContent] = useState<SiteContent | null>(null);
@@ -101,8 +103,14 @@ const WebsiteScreen = () => {
     setDraftContent((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
 
-  const handleDiscard = () => {
-    if (!window.confirm('Bỏ mọi thay đổi chưa lưu?')) return;
+  const handleDiscard = async () => {
+    const ok = await confirm({
+      title: 'Hủy thay đổi',
+      message: 'Bỏ mọi thay đổi chưa lưu?',
+      confirmLabel: 'Bỏ thay đổi',
+      danger: true,
+    });
+    if (!ok) return;
     setDraftContent(savedContent);
   };
 
@@ -114,8 +122,8 @@ const WebsiteScreen = () => {
           <span className="page-eyebrow">Website</span>
           <h2>Nội dung trang công khai</h2>
           <p className="page-sub">
-            Sửa chữ, thẻ mục vụ, lịch tuần, ảnh, Ban Điều Hành, liên kết… của landing — xem trước trực tiếp
-            trước khi lưu. Thẻ nào gắn tag sẽ tự lấy ảnh Khoảnh khắc có tag đó.
+            Chỉnh nội dung, sắp xếp & ẩn/hiện cấu trúc trang chủ, menu, thêm khối thông tin mới và gắn ảnh/tag cho
+            landing — xem trước trực tiếp trước khi lưu.
           </p>
         </div>
         <div className="cell-actions">

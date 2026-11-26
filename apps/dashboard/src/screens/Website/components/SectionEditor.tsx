@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { blankSiteItem, type SiteRecord, type SiteSection } from '@btnsg/shared';
+import { useDialog } from '../../../ui/DialogProvider';
 import FieldInput from './FieldInput';
 
 type SectionEditorProps = {
@@ -30,12 +31,18 @@ const RecordFields = ({ section, record, onChange }: RecordFieldsProps) => (
 
 /** Một khối nội dung landing: form các ô, hoặc danh sách mục thêm / xoá / đổi thứ tự được. */
 const SectionEditor = ({ section, value, isDirty, onChange }: SectionEditorProps) => {
+  const { confirm } = useDialog();
   // Mục vừa thêm mở sẵn để gõ ngay; các mục khác gập lại cho gọn.
   const [lastAddedIndex, setLastAddedIndex] = useState<number | null>(null);
   const items = Array.isArray(value) ? value : [];
 
-  const restoreDefaults = () => {
-    if (!window.confirm(`Điền lại nội dung mặc định cho "${section.label}"? (Chỉ áp dụng khi bấm Lưu.)`)) return;
+  const restoreDefaults = async () => {
+    const ok = await confirm({
+      title: 'Khôi phục mặc định',
+      message: `Điền lại nội dung mặc định cho "${section.label}"? (Chỉ áp dụng khi bấm Lưu.)`,
+      confirmLabel: 'Khôi phục',
+    });
+    if (!ok) return;
     onChange(section.defaults);
   };
 
@@ -49,9 +56,15 @@ const SectionEditor = ({ section, value, isDirty, onChange }: SectionEditorProps
     onChange(next);
   };
 
-  const removeItem = (index: number) => {
+  const removeItem = async (index: number) => {
     const title = String(items[index][section.list?.titleField ?? ''] || `#${index + 1}`);
-    if (!window.confirm(`Xoá "${title}"?`)) return;
+    const ok = await confirm({
+      title: 'Xóa mục',
+      message: `Xóa "${title}"?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
+    if (!ok) return;
     onChange(items.filter((_, i) => i !== index));
   };
 

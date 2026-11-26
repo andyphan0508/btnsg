@@ -5,6 +5,9 @@ import BottomNav from "./components/BottomNav.jsx";
 import Footer from "./components/Footer.jsx";
 import ContactFab from "./components/ContactFab.jsx";
 import PushPrompt from "./components/PushPrompt.jsx";
+import EmptyState from "./components/EmptyState.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import { PageSkeleton } from "./components/Skeleton.jsx";
 import Home from "./pages/Home.jsx";
 import { scrollToTop } from "./lib/scroll.js";
 import { isPreview, useSiteContent } from "./lib/siteContent.js";
@@ -64,21 +67,38 @@ export default function App() {
 
       <Nav />
       <div className="page" key={location.pathname}>
-        <Suspense fallback={<div style={{ minHeight: "100vh" }} />}>
-          <Routes location={location}>
-            <Route path="/" element={<Home />} />
-            <Route path="/gioi-thieu" element={<About />} />
-            <Route path="/chu-de" element={<Theme />} />
-            <Route path="/sinh-hoat" element={<Activities />} />
-            <Route path="/muc-vu" element={<Ministry />} />
-            <Route path="/lien-he" element={<ContactPage />} />
-            <Route path="/thu-vien" element={<Gallery />} />
-            <Route path="/tin-tuc" element={<News />} />
-            <Route path="/tin-tuc/:postId" element={<NewsPost />} />
-            <Route path="/bai-giang" element={<Sermons />} />
-            <Route path="/bai-giang/:sermonId" element={<Sermons />} />
-          </Routes>
-        </Suspense>
+        <ErrorBoundary resetKey={location.pathname}>
+          <Suspense fallback={<PageSkeleton />}>
+            <Routes location={location}>
+              <Route path="/" element={<Home />} />
+              <Route path="/gioi-thieu" element={<About />} />
+              <Route path="/chu-de" element={<Theme />} />
+              <Route path="/sinh-hoat" element={<Activities />} />
+              <Route path="/muc-vu" element={<Ministry />} />
+              <Route path="/lien-he" element={<ContactPage />} />
+              <Route path="/thu-vien" element={<Gallery />} />
+              <Route path="/tin-tuc" element={<News />} />
+              <Route path="/tin-tuc/:postId" element={<NewsPost />} />
+              <Route path="/bai-giang" element={<Sermons />} />
+              <Route path="/bai-giang/:sermonId" element={<Sermons />} />
+              <Route
+                path="*"
+                element={
+                  <main className="section wrap">
+                    <EmptyState
+                      icon="notFound"
+                      eyebrow="404"
+                      title="Không tìm thấy trang này"
+                      description="Đường dẫn bạn truy cập có thể đã thay đổi hoặc không còn tồn tại."
+                      action={{ label: "Về trang chủ", to: "/", icon: "back" }}
+                      secondaryAction={{ label: "Xem lịch sinh hoạt", to: "/sinh-hoat" }}
+                    />
+                  </main>
+                }
+              />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </div>
       <Footer />
       <ContactFab />

@@ -15,7 +15,11 @@ export default async function handler(req, res) {
 
   const url = (process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
   const key = process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) return res.status(503).json({ error: 'Máy chủ chưa cấu hình Supabase' });
+  if (!url || !key) {
+    // Chưa cấu hình DB trên Cloudflare/Vercel → trả rỗng (200) để CDN cache ngắn và landing dùng nội dung mặc định.
+    res.setHeader('Cache-Control', 'public, s-maxage=30');
+    return res.status(200).json({ content: {} });
+  }
 
   try {
     const response = await fetch(`${url}/rest/v1/site_content?select=key,value`, {

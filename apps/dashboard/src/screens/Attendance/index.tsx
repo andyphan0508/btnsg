@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import type { AttendanceSession, AttendanceStatus, Member, ScheduleEvent } from '@btnsg/shared';
 import { attendanceApi, memberApi, scheduleApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import AttendanceCreateModal, { type AttendanceCreateValues } from './components/AttendanceCreateModal';
 import AttendanceSessionList from './components/AttendanceSessionList';
 import AttendanceSheet from './components/AttendanceSheet';
 
 const AttendanceScreen = () => {
+  const { confirm } = useDialog();
   // 1. State declarations
   const [sessionList, setSessionList] = useState<AttendanceSession[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState<boolean>(false);
@@ -127,7 +129,12 @@ const AttendanceScreen = () => {
   };
 
   const deleteSession = async (session: AttendanceSession): Promise<boolean> => {
-    const confirmed = window.confirm(`Xoá buổi điểm danh "${session.title}" ngày ${session.date}?`);
+    const confirmed = await confirm({
+      title: 'Xóa buổi điểm danh',
+      message: `Xóa buổi điểm danh "${session.title}" ngày ${session.date}?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
     if (!confirmed) return false;
 
     try {

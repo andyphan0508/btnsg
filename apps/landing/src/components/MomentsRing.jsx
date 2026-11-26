@@ -4,6 +4,7 @@ import { PiArrowRight } from "react-icons/pi";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/scroll.js";
 import MediaTile from "./MediaTile.jsx";
 import RollText from "./RollText.jsx";
+import EmptyState from "./EmptyState.jsx";
 import { loadImages, pickImages } from "../lib/gallery.js";
 import { content } from "../lib/siteContent.js";
 import { Rich } from "../lib/rich.jsx";
@@ -18,20 +19,30 @@ const STEP = 360 / COUNT;
 export default function MomentsRing() {
   const root = useRef(null);
   const [images, setImages] = useState([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let alive = true;
     loadImages()
-      .then((all) => alive && setImages(pickImages(all, "home-ring", COUNT)))
-      .catch(() => {});
+      .then((all) => {
+        if (alive) setImages(pickImages(all, "home-ring", COUNT));
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (alive) setLoaded(true);
+      });
     return () => {
       alive = false;
     };
   }, []);
 
+  const isEmpty = loaded && images.length === 0;
+
   useGSAP(
     () => {
-      const ring = root.current.querySelector(".ring");
+      if (isEmpty) return;
+      const ring = root.current?.querySelector(".ring");
+      if (!ring) return;
       const cards = gsap.utils.toArray(".ring-card");
       // --facing: 1 khi ảnh quay thẳng vào người xem, -1 khi ở mặt sau vòng.
       const shade = (rotation) =>
@@ -49,8 +60,31 @@ export default function MomentsRing() {
         onUpdate: () => shade(gsap.getProperty(ring, "rotationY")),
       });
     },
-    { scope: root },
+    { scope: root, dependencies: [isEmpty] },
   );
+
+  if (isEmpty) {
+    return (
+      <section className="section">
+        <div className="wrap">
+          <header className="sec-head">
+            <h2>
+              <Rich text={content.home.ringTitle} />
+            </h2>
+            <p className="lead">{content.home.ringCaption}</p>
+          </header>
+          <EmptyState
+            icon="gallery"
+            compact
+            eyebrow="Thư viện ảnh"
+            title="Khoảnh khắc sắp được chia sẻ"
+            description="Những bức ảnh thờ phượng, sinh hoạt và phục vụ của Ban Thanh Niên sẽ sớm hiện diện tại đây."
+            action={{ label: "Mở thư viện ảnh", to: "/thu-vien", icon: "arrow" }}
+          />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="ring-section" ref={root}>

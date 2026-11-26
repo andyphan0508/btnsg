@@ -3,6 +3,7 @@ import PageHero from "../components/PageHero.jsx";
 import PhotoStrip from "../components/PhotoStrip.jsx";
 import Schedule from "../components/Schedule.jsx";
 import SubCommitteeModal from "../components/SubCommitteeModal.jsx";
+import CustomBlocks from "../components/CustomBlocks.jsx";
 import { iconFor } from "../lib/icons.js";
 import { content } from "../lib/siteContent.js";
 
@@ -40,6 +41,7 @@ export default function Activities() {
           </div>
         </section>
 
+        <CustomBlocks page="activities" />
         <PhotoStrip title={activities.photoTitle} tag={activities.photoTag} />
       </main>
 

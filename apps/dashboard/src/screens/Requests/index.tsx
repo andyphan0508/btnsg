@@ -3,10 +3,12 @@ import type { RequestItem, RequestStatus } from '@btnsg/shared';
 import { REQUEST_STATUS_LABELS } from '@btnsg/shared';
 import { requestApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import RequestFormModal, { type RequestFormValues } from './components/RequestFormModal';
 import RequestTable from './components/RequestTable';
 
 const RequestsScreen = () => {
+  const { confirm } = useDialog();
   // 1. State declarations
   const [requestList, setRequestList] = useState<RequestItem[]>([]);
   const [isLoadingRequests, setIsLoadingRequests] = useState<boolean>(false);
@@ -92,7 +94,12 @@ const RequestsScreen = () => {
   };
 
   const deleteRequest = async (item: RequestItem): Promise<boolean> => {
-    const confirmed = window.confirm(`Xoá request "${item.title}"?`);
+    const confirmed = await confirm({
+      title: 'Xóa đề xuất',
+      message: `Xóa đề xuất "${item.title}"?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
     if (!confirmed) return false;
 
     try {

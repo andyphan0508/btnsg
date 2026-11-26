@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
+import { DialogProvider } from './ui/DialogProvider';
 import { FINANCE_ENABLED, INTERNAL_ENABLED } from './lib/features';
 import { RequireAdmin, RequireAuth } from './auth/guards';
 import DashboardLayout from './layout';
@@ -22,45 +23,49 @@ import RequestsScreen from './screens/Requests';
 import ScheduleScreen from './screens/Schedule';
 import TasksScreen from './screens/Tasks';
 import WebsiteScreen from './screens/Website';
+import ShowcaseEditorScreen from './screens/ShowcaseEditor';
 
 export default function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/dang-nhap" element={<LoginScreen />} />
-        <Route element={<RequireAuth />}>
-          <Route element={<DashboardLayout />}>
-            {INTERNAL_ENABLED ? (
-              <>
-                <Route path="/" element={<OverviewScreen />} />
-                <Route path="/thanh-vien" element={<MembersScreen />} />
-                <Route path="/diem-danh" element={<AttendanceScreen />} />
-                <Route path="/lich-sinh-hoat" element={<ScheduleScreen />} />
-                <Route path="/cong-viec" element={<TasksScreen />} />
-                <Route path="/thong-bao" element={<AnnouncementsScreen />} />
-                <Route path="/de-xuat" element={<RequestsScreen />} />
-                {FINANCE_ENABLED && <Route path="/thu-chi" element={<FinanceScreen />} />}
-                <Route path="/ke-hoach" element={<PlansScreen />} />
-                <Route path="/email-bdh" element={<EmailScreen />} />
-              </>
-            ) : (
-              // Dashboard chỉ cho website: trang chủ (và link cũ tới module đã ẩn) về màn hình đăng bài.
-              <Route path="*" element={<Navigate to="/dang-bai" replace />} />
-            )}
-            <Route path="/chuong-trinh" element={<ProgramsScreen />} />
-            <Route path="/chuong-trinh/moi" element={<ProgramEditorScreen />} />
-            <Route path="/chuong-trinh/:id" element={<ProgramEditorScreen />} />
-            <Route path="/so-ghi-chep" element={<NotebookScreen />} />
-            <Route path="/dang-bai" element={<NewsScreen />} />
-            <Route path="/khoanh-khac" element={<MomentsScreen />} />
-            <Route path="/thong-bao-day" element={<PushNotifyScreen />} />
-            <Route element={<RequireAdmin />}>
-              <Route path="/tai-khoan" element={<AccountsScreen />} />
-              <Route path="/website" element={<WebsiteScreen />} />
+      <DialogProvider>
+        <Routes>
+          <Route path="/dang-nhap" element={<LoginScreen />} />
+          <Route element={<RequireAuth />}>
+            <Route element={<DashboardLayout />}>
+              {INTERNAL_ENABLED ? (
+                <>
+                  <Route path="/" element={<OverviewScreen />} />
+                  <Route path="/thanh-vien" element={<MembersScreen />} />
+                  <Route path="/diem-danh" element={<AttendanceScreen />} />
+                  <Route path="/lich-sinh-hoat" element={<ScheduleScreen />} />
+                  <Route path="/cong-viec" element={<TasksScreen />} />
+                  <Route path="/thong-bao" element={<AnnouncementsScreen />} />
+                  <Route path="/de-xuat" element={<RequestsScreen />} />
+                  {FINANCE_ENABLED && <Route path="/thu-chi" element={<FinanceScreen />} />}
+                  <Route path="/ke-hoach" element={<PlansScreen />} />
+                  <Route path="/email-bdh" element={<EmailScreen />} />
+                </>
+              ) : (
+                // Dashboard chỉ cho website: trang chủ (và link cũ tới module đã ẩn) về màn hình đăng bài.
+                <Route path="*" element={<Navigate to="/dang-bai" replace />} />
+              )}
+              <Route path="/chuong-trinh" element={<ProgramsScreen />} />
+              <Route path="/chuong-trinh/moi" element={<ProgramEditorScreen />} />
+              <Route path="/chuong-trinh/:id" element={<ProgramEditorScreen />} />
+              <Route path="/so-ghi-chep" element={<NotebookScreen />} />
+              <Route path="/dang-bai" element={<NewsScreen />} />
+              <Route path="/khoanh-khac" element={<MomentsScreen />} />
+              <Route path="/thong-bao-day" element={<PushNotifyScreen />} />
+              <Route element={<RequireAdmin />}>
+                <Route path="/tai-khoan" element={<AccountsScreen />} />
+                <Route path="/website" element={<WebsiteScreen />} />
+                <Route path="/trinh-dieu-chinh/hoat-dong" element={<ShowcaseEditorScreen />} />
+              </Route>
             </Route>
           </Route>
-        </Route>
-      </Routes>
+        </Routes>
+      </DialogProvider>
     </AuthProvider>
   );
 }

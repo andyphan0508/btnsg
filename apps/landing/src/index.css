@@ -14,94 +14,82 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --r-sm: 12px;
-  --r-md: 18px;
-  --r-lg: 26px;
-  --r-xl: 34px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
   --r-pill: 999px;
 
   --pad-x: clamp(1rem, 4vw, 3rem);
-  --container: 80rem;
-  --section-y: clamp(6rem, 12vw, 12rem);
-  --blur: 22px;
+  --container: 78rem;
+  --section-y: clamp(4.5rem, 9vw, 8.5rem);
+  --blur: 0px;
 
-  --sun-1: #ffd27a;
-  --sun-2: #ff9a3d;
-  --sun-3: #f0582b;
-  --grad-sun: linear-gradient(100deg, var(--sun-1) 0%, var(--sun-2) 48%, var(--sun-3) 100%);
-  --ink-on-sun: #1b0e05;
-  --photo-shade: rgb(8 6 12 / 0.78);
+  /* Bảng màu đơn sắc phẳng lấy từ logo BTNSG (cam đất · vàng hổ phách · nâu vương miện) — không gradient */
+  --sun-1: #eab159;
+  --sun-2: #e6754a;
+  --sun-3: #d96236;
+  --grad-sun: #e6754a;
+  --ink-on-sun: #ffffff;
+  --photo-shade: rgb(18 16 14 / 0.72);
 
-  /* Tối (mặc định) */
+  /* Tối (mặc định — nâu than ấm hài hòa với logo) */
   color-scheme: dark;
-  --bg: #07060b;
-  --text: #f6f1ea;
-  --text-2: rgb(246 241 234 / 0.72);
-  --text-3: rgb(246 241 234 / 0.5);
-  --accent: var(--sun-2);
-  --line: rgb(255 255 255 / 0.1);
-  --line-2: rgb(255 255 255 / 0.18);
-  --surface: rgb(255 255 255 / 0.05);
-  --surface-2: rgb(255 255 255 / 0.1);
-  --glass-bg: linear-gradient(
-    150deg,
-    rgb(255 255 255 / 0.12),
-    rgb(255 255 255 / 0.035) 55%,
-    rgb(255 255 255 / 0.07)
-  );
-  --glass-solid: rgb(22 18 30 / 0.78);
-  --glass-flat: linear-gradient(150deg, rgb(44 36 56 / 0.82), rgb(24 20 32 / 0.86));
-  --glass-rim: linear-gradient(
-    150deg,
-    rgb(255 255 255 / 0.5),
-    rgb(255 255 255 / 0.08) 35%,
-    rgb(255 255 255 / 0.02) 62%,
-    rgb(255 255 255 / 0.24)
-  );
-  --glass-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.1), 0 30px 60px -28px rgb(0 0 0 / 0.75);
-  --sheen: rgb(255 255 255 / 0.17);
-  --grad-text: var(--grad-sun);
-  --orb-1: #ff7a1a;
-  --orb-2: #e2432a;
-  --orb-3: #2c35c8;
-  --orb-4: #7a1c63;
-  --orb-alpha: 0.5;
+  --bg: #12100e;
+  --text: #f5efe8;
+  --text-2: #b5aba0;
+  --text-3: #7f756b;
+  --accent: #e6754a;
+  --accent-soft: rgb(230 117 74 / 0.14);
+  --gold: #eab159;
+  --line: #29231e;
+  --line-2: #3b322b;
+  --surface: #191613;
+  --surface-2: #221e1a;
+  --glass-bg: var(--surface);
+  --glass-solid: #191613;
+  --glass-flat: var(--surface);
+  --glass-rim: transparent;
+  --glass-shadow: none;
+  --sheen: transparent;
+  --grad-text: none;
+  --orb-1: transparent;
+  --orb-2: transparent;
+  --orb-3: transparent;
+  --orb-4: transparent;
+  --orb-alpha: 0;
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f5efe6;
-  --text: #17110c;
-  --text-2: rgb(23 17 12 / 0.72);
-  --text-3: rgb(23 17 12 / 0.54);
-  --accent: #c2410c;
-  --line: rgb(23 17 12 / 0.1);
-  --line-2: rgb(23 17 12 / 0.16);
-  --surface: rgb(255 255 255 / 0.5);
-  --surface-2: rgb(255 255 255 / 0.8);
-  --glass-bg: linear-gradient(
-    150deg,
-    rgb(255 255 255 / 0.8),
-    rgb(255 255 255 / 0.42) 55%,
-    rgb(255 255 255 / 0.62)
-  );
-  --glass-solid: rgb(255 251 246 / 0.86);
-  --glass-flat: linear-gradient(150deg, rgb(255 255 255 / 0.92), rgb(255 252 247 / 0.84));
-  --glass-rim: linear-gradient(
-    150deg,
-    rgb(255 255 255 / 1),
-    rgb(255 255 255 / 0.35) 40%,
-    rgb(255 255 255 / 0.1) 62%,
-    rgb(255 255 255 / 0.85)
-  );
-  --glass-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.9), 0 24px 50px -26px rgb(80 40 10 / 0.35);
-  --sheen: rgb(255 255 255 / 0.75);
-  --grad-text: linear-gradient(100deg, #e0661f 0%, #c2410c 50%, #9a2412 100%);
-  --orb-1: #ffb070;
-  --orb-2: #ff8f6b;
-  --orb-3: #9fb1ff;
-  --orb-4: #f7a8c8;
-  --orb-alpha: 0.62;
+  --bg: #faf7f2;
+  --text: #231b15;
+  --text-2: #62564b;
+  --text-3: #8c7e71;
+  --accent: #d96236;
+  --accent-soft: #fcedea;
+  --gold: #d6983a;
+  --sun-1: #eab159;
+  --sun-2: #d96236;
+  --sun-3: #bf5028;
+  --grad-sun: #d96236;
+  --ink-on-sun: #ffffff;
+  --line: #e8e0d5;
+  --line-2: #d6cab9;
+  --surface: #ffffff;
+  --surface-2: #f2ece3;
+  --glass-bg: #ffffff;
+  --glass-solid: #ffffff;
+  --glass-flat: #ffffff;
+  --glass-rim: transparent;
+  --glass-shadow: none;
+  --sheen: transparent;
+  --grad-text: none;
+  --orb-1: transparent;
+  --orb-2: transparent;
+  --orb-3: transparent;
+  --orb-4: transparent;
+  --orb-alpha: 0;
 }
 
 /* ---------- 2. Nền tảng ---------- */
@@ -4002,4 +3990,934 @@ img.media-tile:not([data-loaded]),
   :root[data-theme="light"] .glass.stack-card {
     background: linear-gradient(150deg, #ffffff, #fbf6ef);
   }
+}
+
+
+/* ---------- 28. Trạng thái trống (EmptyState) & khung chờ tải (Skeleton) ---------- */
+
+.empty-state {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  max-width: 38rem;
+  margin: 2rem auto;
+  padding: clamp(2.25rem, 5vw, 3.5rem) clamp(1.5rem, 4vw, 2.75rem);
+  border-radius: var(--r-xl);
+  text-align: center;
+}
+
+.empty-state.is-compact {
+  max-width: 32rem;
+  margin: 1rem auto;
+  padding: 2rem 1.5rem;
+  gap: 0.65rem;
+}
+
+.empty-state-glow {
+  position: absolute;
+  inset: -40% 20% auto;
+  height: 12rem;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 154 61 / 0.22), transparent);
+  pointer-events: none;
+}
+
+.empty-state.is-error .empty-state-glow {
+  background: radial-gradient(closest-side, rgb(240 88 43 / 0.24), transparent);
+}
+
+.empty-state-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-2);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 1.65rem;
+  box-shadow: 0 12px 30px -12px rgb(255 154 61 / 0.35);
+}
+
+.empty-state.is-error .empty-state-icon {
+  color: #ff8f86;
+}
+
+:root[data-theme="light"] .empty-state.is-error .empty-state-icon {
+  color: #b42318;
+}
+
+.empty-state-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.empty-state-title {
+  margin: 0;
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.empty-state-desc {
+  margin: 0;
+  max-width: 30rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.empty-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+/* Bento gallery fan placeholder khi thư viện chưa có ảnh */
+.bento-fan-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--r-md);
+  border: 1px dashed var(--line-2);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 0.88rem;
+}
+
+.bento-fan-empty svg {
+  color: var(--accent);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Skeleton shimmer (chỉ dùng opacity để nhẹ GPU) */
+.sk {
+  display: block;
+  border-radius: var(--r-sm);
+  background: linear-gradient(120deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%);
+  background-size: 220% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sk {
+    animation: sk-shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes sk-shimmer {
+  0% {
+    background-position: 100% 0;
+    opacity: 0.65;
+  }
+  50% {
+    background-position: 0 0;
+    opacity: 1;
+  }
+  100% {
+    background-position: -100% 0;
+    opacity: 0.65;
+  }
+}
+
+.sk-pill {
+  width: 6.5rem;
+  height: 1.35rem;
+  border-radius: var(--r-pill);
+}
+
+.sk-title {
+  width: 85%;
+  height: 2.25rem;
+  border-radius: var(--r-sm);
+}
+
+.sk-title.is-short {
+  width: 55%;
+}
+
+.sk-heading {
+  width: 78%;
+  height: 1.45rem;
+}
+
+.sk-line {
+  width: 100%;
+  height: 0.9rem;
+}
+
+.sk-line.is-mid {
+  width: 72%;
+}
+
+.sk-line.is-short {
+  width: 48%;
+}
+
+.sk-btn {
+  width: 10rem;
+  height: 2.6rem;
+  border-radius: var(--r-pill);
+  margin-top: 0.5rem;
+}
+
+.sk-media {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--r-md);
+}
+
+.sk-input {
+  flex: 1 1 16rem;
+  height: 2.9rem;
+  border-radius: var(--r-pill);
+}
+
+.sk-seg {
+  width: 8.5rem;
+  height: 2.9rem;
+  border-radius: var(--r-pill);
+}
+
+.skeleton-page {
+  min-height: 90vh;
+  padding-top: clamp(7rem, 12vw, 9.5rem);
+  padding-bottom: 4rem;
+  display: grid;
+  gap: 3rem;
+}
+
+.skeleton-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.skeleton-hero-copy {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.skeleton-hero-frame {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r-xl);
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1.25rem;
+}
+
+.skeleton-card {
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+}
+
+.skeleton-card-body {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+.skeleton-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  padding: 0.55rem;
+  border-radius: var(--r-lg);
+}
+
+.skeleton-tile {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--r-lg);
+}
+
+.skeleton-featured {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+}
+
+.skeleton-article {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.skeleton-article-head {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.skeleton-article-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--r-lg);
+}
+
+.skeleton-article-body {
+  display: grid;
+  gap: 0.8rem;
+}
+
+@media (max-width: 860px) {
+  .skeleton-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ============================================================
+   29. TỐI ƯU MINIMALIST — ĐƠN SẮC PHẲNG, KHÔNG GRADIENT,
+       GIẢM SHADOW & CO GIÃN ĐA THIẾT BỊ
+   ============================================================ */
+
+html {
+  scrollbar-color: var(--line-2) transparent;
+}
+
+/* Ẩn toàn bộ quầng màu nền, tia sáng, vầng glow & lớp bóng phản chiếu */
+.ambient,
+.hero-glow,
+.hero-rays,
+.hero-frame-sheen,
+.bento-rays,
+.final-glow,
+.final-rays,
+.stack-glow,
+.empty-state-glow,
+.glass::before,
+.glass::after,
+.btn-sun::before {
+  display: none !important;
+}
+
+/* Bề mặt phẳng với viền mảnh 1px thay cho kính mờ & shadow dày */
+.glass,
+.glass.is-solid,
+.glass.stack-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.glass:hover[data-sheen],
+.bento-card:hover,
+.news-card:hover,
+.news-featured:hover,
+.duty-card:hover,
+.contact-card:hover,
+.member:hover {
+  border-color: var(--line-2) !important;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.04) !important;
+}
+
+/* Chữ nhấn dùng chữ nghiêng serif màu cam đất logo (đơn sắc phẳng, không gradient) */
+.text-sun,
+.sec-head h2 em,
+.theme-title,
+.final-title em,
+.scrub-w.is-hl {
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--accent) !important;
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+/* Nút bấm phẳng đơn sắc — tương phản cao, không shadow dày */
+.btn-sun {
+  background: var(--accent) !important;
+  color: var(--ink-on-sun) !important;
+  border: 1px solid var(--accent) !important;
+  box-shadow: none !important;
+}
+
+.btn-sun:hover {
+  opacity: 0.88;
+  box-shadow: none !important;
+}
+
+.btn-glass,
+.chip,
+.icon-btn {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.btn-glass:hover,
+.chip:hover,
+.icon-btn:hover {
+  background: var(--surface-2) !important;
+  border-color: var(--line-2) !important;
+}
+
+.chip.is-active,
+.page-num.is-active,
+.seg button.is-active {
+  background: var(--accent) !important;
+  color: var(--ink-on-sun) !important;
+  border-color: var(--accent) !important;
+  box-shadow: none !important;
+}
+
+/* Thanh điều hướng & Dock mobile phẳng, nhẹ */
+.nav-pill {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.06) !important;
+}
+
+.nav-progress {
+  background: var(--accent) !important;
+}
+
+.nav-link-active {
+  background: var(--accent-soft) !important;
+  box-shadow: none !important;
+}
+
+.nav-link.active,
+.bnav-item.active {
+  color: var(--accent) !important;
+}
+
+/* Thu gọn header các trang con (.page-hero): không để khoảng trắng thừa đẩy nội dung xuống đáy */
+.page-hero {
+  min-height: 0 !important;
+  padding-block: clamp(5.75rem, 9.5vh, 6.75rem) clamp(1.75rem, 3.5vw, 2.5rem) !important;
+}
+
+.page-hero-grid {
+  align-items: center;
+  gap: clamp(1.5rem, 3.5vw, 3rem) !important;
+}
+
+.page-hero-title {
+  font-size: clamp(2rem, 4.2vw, 3.35rem) !important;
+  line-height: 1.1 !important;
+}
+
+.page-hero .hero-lead {
+  margin-top: 0.75rem !important;
+  max-width: 34rem;
+}
+
+.page-hero .hero-visual {
+  max-width: 24rem;
+  justify-self: end;
+  width: 100%;
+}
+
+.page-hero .hero-frame {
+  aspect-ratio: 16 / 10;
+  transform: none !important;
+}
+
+.page-hero + main > .section:first-child,
+.page-hero + main.section {
+  padding-top: clamp(1.25rem, 2.5vw, 2rem) !important;
+}
+
+.hero {
+  min-height: min(92svh, 50rem) !important;
+  padding-block: clamp(6.25rem, 12vh, 7.5rem) clamp(3rem, 6vh, 4.5rem) !important;
+}
+
+@media (max-width: 900px) {
+  .page-hero .hero-visual {
+    max-width: 100%;
+    justify-self: stretch;
+  }
+}
+
+.bottom-nav {
+  background: var(--surface) !important;
+  border-top: 1px solid var(--line) !important;
+  box-shadow: 0 -2px 12px rgb(0 0 0 / 0.06) !important;
+}
+
+.bnav-logo {
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.12) !important;
+  border: 1px solid var(--line-2) !important;
+}
+
+/* Modal, FAB & Popups — giữ bóng siêu nhẹ để tách lớp */
+.fab-btn {
+  background: var(--accent) !important;
+  color: var(--ink-on-sun) !important;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.16) !important;
+}
+
+.fab-panel,
+.modal,
+.bnav-sheet,
+.push-prompt {
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.14) !important;
+}
+
+/* Khung ảnh, Marquee, Accordion, Board, Stack — phẳng & đơn sắc */
+.hero-frame {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.marquee-tape.is-glass {
+  background: var(--surface) !important;
+  border-block: 1px solid var(--line) !important;
+  box-shadow: none !important;
+}
+
+.marquee-tape.is-sun {
+  background: var(--accent) !important;
+  color: var(--ink-on-sun) !important;
+  box-shadow: none !important;
+}
+
+.acc-item {
+  border: 1px solid var(--line) !important;
+  box-shadow: none !important;
+}
+
+.acc-icon,
+.icon-tile,
+.member-avatar,
+.empty-state-icon {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: none !important;
+}
+
+.media-demo,
+.news-nocover,
+.frame-empty,
+.ring-placeholder,
+img.media-tile:not([data-loaded]),
+.hero-frame > img:not([data-loaded]) {
+  background: var(--surface-2) !important;
+}
+
+.sk {
+  background: var(--surface-2) !important;
+  animation-name: sk-pulse !important;
+}
+
+@keyframes sk-pulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.85; }
+}
+
+.live-chip {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line-2) !important;
+  box-shadow: none !important;
+}
+
+.live-dot {
+  background: var(--accent) !important;
+  box-shadow: none !important;
+}
+
+.bento-week span.is-on {
+  background: var(--accent) !important;
+  color: var(--ink-on-sun) !important;
+  box-shadow: none !important;
+}
+
+.bento-fan-card,
+.photostrip-item,
+.gallery-item,
+.ring-card {
+  box-shadow: none !important;
+  border: 1px solid var(--line);
+}
+
+.text-link {
+  background: none !important;
+  border-bottom: 1px solid var(--line-2);
+  padding-bottom: 0.15rem;
+}
+
+.text-link:hover {
+  border-bottom-color: var(--text);
+}
+
+.preview-badge {
+  background: var(--accent) !important;
+  color: var(--ink-on-sun) !important;
+}
+
+/* ---------- Co giãn mượt trên mọi kích thước màn hình ---------- */
+.wrap {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+
+@media (max-width: 760px) {
+  :root {
+    --section-y: clamp(3rem, 8vw, 4.5rem);
+  }
+
+  .btn,
+  .chip,
+  .icon-btn {
+    min-height: 2.75rem;
+  }
+
+  .toolbar {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .seg {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .seg button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .empty-state {
+    padding: 2rem 1.25rem;
+    margin: 1.25rem auto;
+  }
+
+  .empty-state-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .empty-state-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1600px) {
+  :root {
+    --container: 84rem;
+  }
+}
+
+
+/* ---------- 30. Khối thông tin bổ sung & nhóm ảnh theo tuần/chương trình ---------- */
+
+.custom-blocks {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.custom-block {
+  display: grid;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  border-radius: var(--r-lg);
+}
+
+.custom-block.has-media {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+}
+
+.custom-block-media {
+  overflow: hidden;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  aspect-ratio: 16 / 10;
+}
+
+.custom-block-media .media-tile {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.custom-block-body {
+  display: grid;
+  justify-items: start;
+  gap: 0.75rem;
+}
+
+.custom-block-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+  line-height: 1.25;
+}
+
+.custom-block-text {
+  display: grid;
+  gap: 0.65rem;
+  color: var(--text-2);
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.custom-block-text p {
+  margin: 0;
+}
+
+.gallery-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+.gallery-select {
+  height: 2.75rem;
+  padding: 0 0.95rem;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.gallery-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.gallery-groups {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.gallery-group {
+  display: grid;
+  gap: 1rem;
+}
+
+.gallery-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.gallery-group-head h2 {
+  margin: 0;
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  font-weight: 600;
+}
+
+.gallery-group-head span {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+@media (max-width: 820px) {
+  .custom-block.has-media {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-select {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
+
+/* ---------- 31. Rich text WordPress layout & nút chia sẻ Facebook ---------- */
+
+.rich-content::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.rich-content figure.rte-figure {
+  margin: 1.5rem auto;
+  max-width: 100%;
+}
+
+.rich-content figure.rte-figure img {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+}
+
+.rich-content figure.rte-figure.align-full {
+  width: 100%;
+}
+
+.rich-content figure.rte-figure.align-full img {
+  width: 100%;
+}
+
+.rich-content figure.rte-figure.align-left {
+  float: left;
+  max-width: 46%;
+  margin: 0.35rem 1.5rem 1rem 0;
+}
+
+.rich-content figure.rte-figure.align-right {
+  float: right;
+  max-width: 46%;
+  margin: 0.35rem 0 1rem 1.5rem;
+}
+
+.rich-content figcaption {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--text-3);
+}
+
+.article-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.article-share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+@media (max-width: 720px) {
+  .rich-content figure.rte-figure.align-left,
+  .rich-content figure.rte-figure.align-right {
+    float: none;
+    max-width: 100%;
+    margin: 1.25rem auto;
+  }
+
+  .article-foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .article-share {
+    width: 100%;
+  }
+
+  .article-share .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+
+/* ---------- 32. Thẻ Nhịp sinh hoạt mỗi tuần có hình nền đầy thẻ (phẳng, dễ đọc chữ) ---------- */
+
+.stack-time {
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--text) !important;
+}
+
+.stack-card.has-photo {
+  isolation: isolate;
+  color: #f5efe8 !important;
+  border-color: var(--line) !important;
+}
+
+.stack-card.has-photo .stack-photo {
+  position: absolute;
+  inset: 0 !important;
+  z-index: 0 !important;
+  opacity: 1 !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+.stack-card.has-photo .stack-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(18 14 11 / 0.62);
+}
+
+.stack-card.has-photo .stack-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.65s var(--ease-out);
+}
+
+.stack-card.has-photo:hover .stack-photo img {
+  transform: scale(1.03);
+}
+
+.stack-card.has-photo .stack-when,
+.stack-card.has-photo .stack-what {
+  position: relative;
+  z-index: 2;
+}
+
+.stack-card.has-photo .stack-icon {
+  position: absolute;
+  z-index: 2;
+  color: var(--gold, #eab159) !important;
+}
+
+.stack-card.has-photo .stack-day {
+  background: rgb(18 14 11 / 0.55);
+  border-color: rgb(255 255 255 / 0.25);
+  color: #f5efe8;
+}
+
+.stack-card.has-photo .stack-time,
+.stack-card.has-photo .stack-what h3 {
+  color: #ffffff !important;
+}
+
+.stack-card.has-photo .stack-what p {
+  color: rgb(245 239 232 / 0.86) !important;
+}
+
+.stack-card.has-photo .live-chip {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+.stack-card.has-photo .live-dot {
+  background: #ffffff !important;
 }

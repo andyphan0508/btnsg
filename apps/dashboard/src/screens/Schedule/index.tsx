@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ScheduleEvent } from '@btnsg/shared';
 import { scheduleApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import ScheduleFormModal, { type ScheduleFormValues } from './components/ScheduleFormModal';
 import ScheduleTable from './components/ScheduleTable';
 
@@ -19,6 +20,7 @@ const buildSchedulePayload = (values: ScheduleFormValues): Partial<ScheduleEvent
 };
 
 const ScheduleScreen = () => {
+  const { confirm } = useDialog();
   // 1. State declarations
   const [eventList, setEventList] = useState<ScheduleEvent[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState<boolean>(false);
@@ -85,7 +87,12 @@ const ScheduleScreen = () => {
   };
 
   const deleteEvent = async (event: ScheduleEvent): Promise<boolean> => {
-    const confirmed = window.confirm(`Xoá lịch "${event.title}"?`);
+    const confirmed = await confirm({
+      title: 'Xóa lịch sinh hoạt',
+      message: `Xóa lịch "${event.title}"?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
     if (!confirmed) return false;
 
     try {

@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import type { Member, TaskItem, TaskStatus } from '@btnsg/shared';
 import { memberApi, taskApi } from '../../api/resourceApi';
 import LoadingState from '../../ui/LoadingState';
+import { useDialog } from '../../ui/DialogProvider';
 import TaskBoard from './components/TaskBoard';
 import TaskFormModal, { type TaskFormValues } from './components/TaskFormModal';
 
 const TasksScreen = () => {
+  const { confirm } = useDialog();
   // 1. State declarations
   const [taskList, setTaskList] = useState<TaskItem[]>([]);
   const [isLoadingTasks, setIsLoadingTasks] = useState<boolean>(false);
@@ -94,7 +96,12 @@ const TasksScreen = () => {
   };
 
   const deleteTask = async (task: TaskItem): Promise<boolean> => {
-    const confirmed = window.confirm(`Xoá công việc "${task.title}"?`);
+    const confirmed = await confirm({
+      title: 'Xóa công việc',
+      message: `Xóa công việc "${task.title}"?`,
+      confirmLabel: 'Xóa',
+      danger: true,
+    });
     if (!confirmed) return false;
 
     try {

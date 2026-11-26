@@ -1,5 +1,6 @@
 import { content } from "../lib/siteContent.js";
 import { Rich } from "../lib/rich.jsx";
+import EmptyState from "./EmptyState.jsx";
 
 /** Chữ cái đầu của tên gọi (từ cuối trong họ tên tiếng Việt). */
 const initial = (name) => name.trim().split(/\s+/).pop()?.charAt(0) ?? "";
@@ -20,29 +21,38 @@ export default function Board() {
           <p className="lead">{about.boardLead}</p>
         </header>
 
-        <div className="board">
-          {board.map((member, i) => (
-            <article
-              className={`member glass sfx-rise${i === 0 ? " is-lead" : ""}`}
-              style={{ "--i": i % 4, "--h": (i * 29 + 12) % 360 }}
-              key={i}
-              data-sheen
-            >
-              <span className="member-avatar" aria-hidden="true">
-                {initial(member.name)}
-              </span>
-              <div>
-                <h3>{member.name}</h3>
-                <span className="member-role">{member.role}</span>
-                <div className="member-duties">
-                  {member.duties.map((duty) => (
-                    <span key={duty}>{duty}</span>
-                  ))}
+        {board.length === 0 ? (
+          <EmptyState
+            icon="default"
+            compact
+            title="Chưa cập nhật danh sách Ban Điều Hành"
+            description="Thông tin các thành viên Ban Điều Hành sẽ sớm được cập nhật tại đây."
+          />
+        ) : (
+          <div className="board">
+            {board.map((member, i) => (
+              <article
+                className={`member glass sfx-rise${i === 0 ? " is-lead" : ""}`}
+                style={{ "--i": i % 4, "--h": (i * 29 + 12) % 360 }}
+                key={i}
+                data-sheen
+              >
+                <span className="member-avatar" aria-hidden="true">
+                  {initial(member.name)}
+                </span>
+                <div>
+                  <h3>{member.name}</h3>
+                  <span className="member-role">{member.role}</span>
+                  <div className="member-duties">
+                    {member.duties.map((duty) => (
+                      <span key={duty}>{duty}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

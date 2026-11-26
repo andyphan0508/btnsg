@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { PiArrowLeft, PiCalendarBlank, PiClock } from "react-icons/pi";
+import { PiArrowLeft, PiCalendarBlank, PiCheck, PiClock, PiFacebookLogo, PiLink } from "react-icons/pi";
+import { stripHtmlToText } from "@btnsg/shared";
 import Markdown from "../components/Markdown.jsx";
 import RollText from "../components/RollText.jsx";
+import EmptyState from "../components/EmptyState.jsx";
+import { ArticleSkeleton } from "../components/Skeleton.jsx";
 import { driveImage } from "../lib/gallery.js";
 import { fetchPost, formatNewsDate, readNewsCache, subscribeWindowFocus } from "../lib/news.js";
 
 const estimateReadMinutes = (content) => {
-  if (!content) return 1;
-  const words = content.trim().split(/\s+/).length;
+  const plain = stripHtmlToText(content || "");
+  if (!plain) return 1;
+  const words = plain.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
 };
 
@@ -17,6 +21,20 @@ export default function NewsPost() {
   const [post, setPost] = useState(() => readNewsCache(`post:${postId}`));
   const [isLoadingPost, setIsLoadingPost] = useState(!post);
   const [postError, setPostError] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const fbShareHref = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+
+  const onCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // ignore clipboard block
+    }
+  };
 
   const loadPost = async (silent) => {
     try {
@@ -46,10 +64,35 @@ export default function NewsPost() {
     imageMap[name.replace(/\.[a-z0-9]+$/i, "")] = image.id;
   }
 
+  const onRetry = () => {
+    setIsLoadingPost(true);
+    setPostError(null);
+    loadPost(false);
+  };
+
   return (
     <main className="wrap article-page">
-      {isLoadingPost && <div className="status">Đang tải bài viết…</div>}
-      {postError && <div className="status is-error">{postError}</div>}
+      {isLoadingPost && <ArticleSkeleton />}
+      {!isLoadingPost && postError && (
+        <EmptyState
+          icon="error"
+          variant="error"
+          eyebrow="Không tìm thấy bài viết"
+          title="Chưa thể mở bài viết này"
+          description={postError}
+          action={{ label: "Tất cả tin tức", to: "/tin-tuc", icon: "back" }}
+          secondaryAction={{ label: "Thử lại", onClick: onRetry, icon: "retry" }}
+        />
+      )}
+      {!isLoadingPost && !postError && !post && (
+        <EmptyState
+          icon="news"
+          eyebrow="Tin tức"
+          title="Bài viết chưa có nội dung"
+          description="Bài viết này có thể đã được gỡ bỏ hoặc chưa được xuất bản."
+          action={{ label: "Tất cả tin tức", to: "/tin-tuc", icon: "back" }}
+        />
+      )}
 
       {!isLoadingPost && !postError && post && (
         <article className="article">
@@ -84,6 +127,21 @@ export default function NewsPost() {
               <PiArrowLeft aria-hidden="true" />
               <RollText text="Xem các bài viết khác" />
             </Link>
+            <div className="article-share">
+              <a
+                className="btn btn-sun"
+                href={fbShareHref}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <PiFacebookLogo aria-hidden="true" />
+                <RollText text="Chia sẻ Facebook" />
+              </a>
+              <button type="button" className="btn btn-glass" onClick={onCopyLink}>
+                {copied ? <PiCheck aria-hidden="true" /> : <PiLink aria-hidden="true" />}
+                <span>{copied ? "Đã sao chép" : "Sao chép link"}</span>
+              </button>
+            </div>
           </footer>
         </article>
       )}

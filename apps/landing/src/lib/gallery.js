@@ -30,21 +30,6 @@ export function imageUrl(image, width = 1200) {
   return driveImage(image.id, width)
 }
 
-/* ---------- Dữ liệu demo khi chưa cấu hình ---------- */
-
-const DEMO_COUNT = 36
-// Tông nắng/chàm theo bảng màu của giao diện, để dữ liệu mẫu vẫn hài hoà.
-const DEMO_HUES = [22, 250, 34, 330, 14, 268, 42, 205]
-
-function demoImages() {
-  return Array.from({ length: DEMO_COUNT }, (_, i) => ({
-    id: `demo-img-${i}`,
-    name: `Khoảnh khắc ${i + 1}`,
-    demo: true,
-    hue: DEMO_HUES[i % DEMO_HUES.length],
-  }))
-}
-
 /* ---------- API công khai ---------- */
 
 const getJson = (url) =>
@@ -93,12 +78,11 @@ export async function fetchImages() {
   window.__momentsFeed = null
   const data = (early && (await early)) || (await getJson(MOMENTS_FEED))
   let images = Array.isArray(data?.images) ? data.images : []
-  if (images.length === 0) {
-    if (!isGalleryConfigured) return demoImages()
+  if (images.length === 0 && isGalleryConfigured) {
     const drive = await fetchJson(GALLERY_FEED)
     images = Array.isArray(drive.images) ? drive.images : []
   }
-  if (images.length > 0) writeCache(images)
+  writeCache(images)
   return images
 }
 

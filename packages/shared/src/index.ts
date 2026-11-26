@@ -779,6 +779,68 @@ export const nextFreeSunday = (takenDates: string[], fromDate: string = todayInV
 /** Hôm nay theo giờ Việt Nam, dạng YYYY-MM-DD. */
 export const todayInVietnam = (): string => new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
 
+/* ---------- Nhóm & sắp xếp theo Tuần ISO (dùng chung cho Dashboard & Landing) ---------- */
+
+export type IsoWeekInfo = {
+  /** Khoá sắp xếp, ví dụ "2026-W47". */
+  key: string;
+  year: number;
+  week: number;
+  /** Thứ Hai đầu tuần (YYYY-MM-DD). */
+  startDate: string;
+  /** Chúa Nhật cuối tuần (YYYY-MM-DD). */
+  endDate: string;
+  /** Nhãn hiển thị tiếng Việt, ví dụ "Tuần 47 · 2026 (16/11 – 22/11)". */
+  label: string;
+};
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const shortDayMonth = (iso: string) => {
+  const [, m, d] = iso.split('-');
+  return `${Number(d)}/${Number(m)}`;
+};
+
+/** Tính thông tin tuần ISO (Thứ Hai → Chúa Nhật) từ ngày YYYY-MM-DD. */
+export const getIsoWeekInfo = (isoDate?: string | null): IsoWeekInfo | null => {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}/.test(isoDate)) return null;
+  const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  if (Number.isNaN(date.getTime())) return null;
+
+  // ISO week: Thứ Hai = 1 ... Chúa Nhật = 7; tuần 1 chứa Thứ Năm đầu tiên của năm.
+  const dayNum = date.getUTCDay() || 7;
+  const thursday = new Date(date);
+  thursday.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const year = thursday.getUTCFullYear();
+  const yearStart = new Date(Date.UTC(year, 0, 1));
+  const week = Math.ceil(((thursday.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+
+  const monday = new Date(date);
+  monday.setUTCDate(date.getUTCDate() - (dayNum - 1));
+  const sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+
+  const startDate = monday.toISOString().slice(0, 10);
+  const endDate = sunday.toISOString().slice(0, 10);
+  const key = `${year}-W${pad2(week)}`;
+  const label = `Tuần ${week} · ${year} (${shortDayMonth(startDate)} – ${shortDayMonth(endDate)})`;
+  return { key, year, week, startDate, endDate, label };
+};
+
+/** Khoá tuần "YYYY-Www" từ ngày YYYY-MM-DD (trống nếu không có ngày hợp lệ). */
+export const getWeekKey = (isoDate?: string | null): string => getIsoWeekInfo(isoDate)?.key ?? '';
+
+/** Nhãn tuần từ ngày YYYY-MM-DD hoặc khoá "YYYY-Www". */
+export const formatWeekLabel = (value?: string | null): string => {
+  if (!value) return 'Chưa rõ ngày';
+  const fromDate = getIsoWeekInfo(value);
+  if (fromDate) return fromDate.label;
+  const match = /^(\d{4})-W(\d{2})$/.exec(value);
+  if (match) return `Tuần ${Number(match[2])} · ${match[1]}`;
+  return value;
+};
+
 /* ---------- Nội dung landing chỉnh từ dashboard ---------- */
 
 export * from './siteContent';
+export * from './richHtml';

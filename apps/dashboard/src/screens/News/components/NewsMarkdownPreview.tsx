@@ -1,3 +1,4 @@
+import { isHtmlContent, sanitizeRichHtml } from '@btnsg/shared';
 import { parseMarkdown, type InlineSpan, type MarkdownBlock } from '../../../lib/markdown';
 
 type NewsMarkdownPreviewProps = {
@@ -16,7 +17,7 @@ const formatDate = (isoDate: string): string => {
   return `${day} tháng ${month}, ${year}`;
 };
 
-/** Preview bài viết đúng thứ tự hiển thị trên landing: ngày → tiêu đề → mô tả → ảnh bìa → nội dung. */
+/** Preview bài viết đúng thứ tự hiển thị trên landing: ngày → tiêu đề → mô tả → ảnh bìa → nội dung (HTML hoặc Markdown). */
 const NewsMarkdownPreview = ({
   title,
   date,
@@ -26,7 +27,8 @@ const NewsMarkdownPreview = ({
   coverUrl,
 }: NewsMarkdownPreviewProps) => {
   const styles = createStyles();
-  const blocks = parseMarkdown(markdown);
+  const isRich = isHtmlContent(markdown);
+  const blocks = isRich ? [] : parseMarkdown(markdown);
 
   const renderSpan = (span: InlineSpan, key: number) => {
     if (span.type === 'bold') return <strong key={key}>{span.text}</strong>;
@@ -97,13 +99,15 @@ const NewsMarkdownPreview = ({
   return (
     <div style={styles.wrap}>
       {date && <div style={styles.date}>{formatDate(date)}</div>}
-      <h3 style={styles.title}>{title || '(Chưa có tiêu đề)'}</h3>
+      <h1 style={styles.title}>{title || '(Chưa có tiêu đề)'}</h1>
       {description && <p style={styles.lead}>{description}</p>}
       {coverUrl && <img src={coverUrl} alt="Ảnh bìa" style={styles.cover} />}
-      {markdown.trim() ? (
-        blocks.map(renderBlock)
+      {!markdown.trim() ? (
+        <p className="cell-muted">Nội dung bài viết sẽ hiển thị ở đây khi bạn soạn.</p>
+      ) : isRich ? (
+        <div className="rich-content" dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(markdown) }} />
       ) : (
-        <p className="cell-muted">Nội dung Markdown sẽ hiển thị ở đây khi bạn soạn.</p>
+        blocks.map(renderBlock)
       )}
     </div>
   );
@@ -113,21 +117,23 @@ export default NewsMarkdownPreview;
 
 const createStyles = () => {
   return {
-    wrap: { fontSize: '0.92rem', lineHeight: 1.7 },
+    wrap: { fontSize: '0.98rem', lineHeight: 1.75, maxWidth: 740, margin: '0 auto' },
     date: {
       color: 'var(--brand)',
-      fontSize: '0.74rem',
+      fontSize: '0.76rem',
       fontWeight: 700,
       textTransform: 'uppercase' as const,
       letterSpacing: '0.06em',
-      marginBottom: 4,
+      marginBottom: 6,
     },
-    title: { fontSize: '1.25rem', lineHeight: 1.3, margin: '0 0 6px' },
-    lead: { color: 'var(--ink-2)', margin: '0 0 10px' },
+    title: { fontSize: 'clamp(1.5rem, 3vw, 2rem)', lineHeight: 1.25, margin: '0 0 10px' },
+    lead: { color: 'var(--ink-2)', fontSize: '1.05rem', margin: '0 0 16px' },
     cover: {
       width: '100%',
+      maxHeight: 420,
+      objectFit: 'cover' as const,
       borderRadius: 10,
-      marginBottom: 12,
+      marginBottom: 18,
       display: 'block',
     },
     paragraph: { margin: '0 0 0.9em' },
